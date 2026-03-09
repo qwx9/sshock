@@ -76,7 +76,7 @@ void draw_page_buttons(uchar full);
 void inv_change_fullscreen(uchar on);
 void inv_update_fullscreen(uchar full);
 
-errtype inventory_update_screen_mode();
+errtype inventory_update_screen_mode(void);
 
 void push_inventory_cursors(LGCursor *newcurs);
 void pop_inventory_cursors(void);

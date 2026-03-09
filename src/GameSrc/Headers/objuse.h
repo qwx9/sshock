@@ -91,7 +91,7 @@ void multi_anim_callback(ObjID id, intptr_t user_data);
 
 void unmulti_anim_callback(ObjID id, intptr_t user_data);
 
-errtype gear_power_outage();
+errtype gear_power_outage(void);
 
 // Globals
 

@@ -47,12 +47,12 @@ void dirac_frame_idof(int32_t object) {
     //      Here's the real work...
     //      -----------------------
     extern void dirac_mechanicals(int32_t object, Q F[3], Q T[3]);
-    extern void shall_we_dance(int32_t object, Q &result0, Q &result1, Q &result2);
+    extern void shall_we_dance(int32_t object, Q *result0, Q *result1, Q *result2);
 
     //      For alignment...
     //      ----------------
-    extern void mech_localize(Q &X, Q &Y, Q &Z);
-    extern void mech_globalize(Q &X, Q &Y, Q &Z);
+    extern void mech_localize(Q *X, Q *Y, Q *Z);
+    extern void mech_globalize(Q *X, Q *Y, Q *Z);
     Q F_T[3];
 
     Q e0, e1, e2, e3, // For speed plus beauty!
@@ -83,7 +83,7 @@ void dirac_frame_idof(int32_t object) {
 
     //	Are we hitting anything yet?
     //	----------------------------
-    shall_we_dance(object, collide_x, collide_y, collide_z);
+    shall_we_dance(object, &collide_x, &collide_y, &collide_z);
     F[0] += collide_x * I[object][23];
     F[1] += collide_y * I[object][23];
     F[2] += collide_z * I[object][23];
@@ -121,7 +121,7 @@ void dirac_frame_idof(int32_t object) {
 
         //              Auto alignment...
         //              -----------------
-        mech_localize(F_T[0], F_T[1], F_T[2]);
+        mech_localize(&F_T[0], &F_T[1], &F_T[2]);
         if (I[object][2] == 0)
             T[2] += EDMS_CYBER_CURRENT_ALIGN * F_T[1];
         if (I[object][1] == 0)
@@ -138,7 +138,7 @@ void dirac_frame_idof(int32_t object) {
 
     //      Jeeeeeezuz...
     //      -------------
-    mech_globalize(F[0], F[1], F[2]);
+    mech_globalize(&F[0], &F[1], &F[2]);
 
     //      mout << F[2] << "\n";
 
@@ -222,9 +222,9 @@ int32_t make_Dirac_frame(Q init_state[6][3], Q params[10]) {
 
         //		Zeros...
         //		--------
-        sincos(.5 * init_state[3][0], &sin_alpha, &cos_alpha);
-        sincos(.5 * init_state[4][0], &sin_beta, &cos_beta);
-        sincos(.5 * init_state[5][0], &sin_gamma, &cos_gamma);
+        q_sincos(.5 * init_state[3][0], &sin_alpha, &cos_alpha);
+        q_sincos(.5 * init_state[4][0], &sin_beta, &cos_beta);
+        q_sincos(.5 * init_state[5][0], &sin_gamma, &cos_gamma);
 
         S[object_number][3][0] = A[object_number][3][0] =
             cos_gamma * cos_alpha * cos_beta + sin_gamma * sin_alpha * sin_beta;
@@ -285,7 +285,7 @@ int32_t make_Dirac_frame(Q init_state[6][3], Q params[10]) {
         I[object_number][31] = I[object_number][26];
         I[object_number][32] = I[object_number][33] = I[object_number][34] = I[object_number][35] = 0;
         I[object_number][36] = I[object_number][26]; // Shrugoff "mass"...
-        I[object_number][IDOF_COLLIDE] = -1;
+        I[object_number][IDOF_COLLIDE] = fix_make(-1,0);
         I[object_number][IDOF_AUTODESTRUCT] = 0; // No kill I...
 
         //              Zero the controls...

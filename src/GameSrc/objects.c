@@ -61,6 +61,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 
+#include "precompiled.h"
 #include "objects.h"
 #include "map.h"
 
@@ -157,7 +158,7 @@ void ObjsInit(void) {
     // set up the free chains for class-specific info
     for (c = CLASS_FIRST; c < NUM_CLASSES; c++) {
         head = &objSpecHeaders[c];
-        ((ObjSpec *)(head->data))->bits.id = 0; // really head of used chain
+        ((ObjSpec *)(head->data))->bits &= ~((1<<15)-1); // really head of used chain
         for (i = 0; i < head->size - 1; i++) {
             os = (ObjSpec *)(head->data + i * head->struct_size);
             os->next = i + 1;
@@ -198,7 +199,8 @@ uchar ObjAndSpecGrab(ObjClass obclass, ObjID *id, ObjSpecID *specid) {
     objs[*id].obclass = obclass;
     objs[*id].specID = *specid;
     head = &objSpecHeaders[obclass];
-    ((ObjSpec *)(head->data + *specid * head->struct_size))->bits.id = *id;
+    ((ObjSpec *)(head->data + *specid * head->struct_size))->bits &= ~((1<<15)-1);
+    ((ObjSpec *)(head->data + *specid * head->struct_size))->bits |= *id;
 
     // temp
     //	if (!ObjSysOkay())
@@ -780,7 +782,7 @@ uchar ObjSysOkay(void) {
             usedObj[cur] = OBJ_FREE;
             cur = ((ObjSpec *)(head->data + cur * head->struct_size))->next;
         }
-        cur = ((ObjSpec *)head->data)->bits.id;
+        cur = OSBITSID((ObjSpec *)head->data);
         while (cur) {
             if (cur < 0 || cur >= head->size) {
                 DEBUG("%s: Invalid ID (cur) in Class (i) used chain", __FUNCTION__);
@@ -929,8 +931,8 @@ uchar ObjSysOkay(void) {
             head = &objSpecHeaders[objs[cur].obclass];
             data = head->data;
 
-            if (((ObjSpec *)(data + head->struct_size * objs[cur].specID))->bits.id != cur ||
-                ((ObjSpec *)(data + head->struct_size * objs[cur].specID))->bits.tile == TRUE) {
+            if (OSBITSID(((ObjSpec *)(data + head->struct_size * objs[cur].specID))) != cur ||
+                OSBITSTILE(((ObjSpec *)(data + head->struct_size * objs[cur].specID))) == TRUE) {
                 DEBUG("%s: Obj (cur) obclass-specific data does not point back to it", __FUNCTION__);
                 return FALSE;
             }

@@ -404,7 +404,6 @@ grs_vertex **g3_bitmap_common(grs_bitmap *bm, g3s_phandle p) {
         }
     }
     tmap_info.tmap_type = (_g3d_light_flag << 1) + GRC_BILIN;
-    extern bool use_opengl();
     if (!use_opengl()) {
         h_map(bm, 4, _g3d_bitmap_poly, &tmap_info);
     } else {

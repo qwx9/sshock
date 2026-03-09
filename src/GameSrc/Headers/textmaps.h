@@ -122,14 +122,14 @@ typedef struct {
 
 // Prototypes
 void free_textures(void);
-void load_textures();
-errtype load_alternate_textures();
-errtype load_master_texture_properties();
+void load_textures(void);
+errtype load_alternate_textures(void);
+errtype load_master_texture_properties(void);
 errtype load_small_texturemaps(void);
 errtype bitmap_array_unload(int *num_bitmaps, grs_bitmap *arr[]);
 errtype Init_Lighting(void);
-errtype unload_master_texture_properties();
-errtype clear_texture_properties();
+errtype unload_master_texture_properties(void);
+errtype clear_texture_properties(void);
 
 
 // returns whether or not a given bitmap is, well, empty.

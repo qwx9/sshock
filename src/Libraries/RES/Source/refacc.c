@@ -166,7 +166,7 @@ void *RefGet(Ref ref) {
     // We had better loaded the whole thing and not just the reftable.
     assert(prt->raw_data != NULL);
     if (!RefIndexValid(prt, index)) {
-        ERROR("%s: Invalid Index %x", __FUNCTION__, ref);
+        ERROR("%s: Invalid Index %x >= %x", __FUNCTION__, ref, prt->numRefs);
         return (NULL);
     }
 

@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <SDL.h>
 
+#include "precompiled.h"
 #include "Shock.h"
 #include "anim.h"
 #include "gr2ss.h"
@@ -29,7 +30,7 @@ ActAnim current_anim;
 bool done_playing_anim = false;
 
 // play
-void AnimRecur() {
+void AnimRecur(void) {
     int x, y = 0;
 
     if (done_playing_anim)

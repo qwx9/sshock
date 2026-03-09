@@ -210,5 +210,5 @@ do { \
    grd_canvas_table[CLUT_SCALE_DEVICE_BITMAP+2*((bm)->type)]) \
    (bm,x,y,w,h,cl)
 #define gr_roll_ubitmap          grd_canvas_table[ROLL_UBITMAP])
-#define gr_roll_bitmap           ((int (*)())grd_canvas_table[ROLL_BITMAP])
+#define gr_roll_bitmap           ((int (*)(void))grd_canvas_table[ROLL_BITMAP])
 #endif /* !__GRREND_H */

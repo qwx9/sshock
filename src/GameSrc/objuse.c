@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 
+#include "precompiled.h"
 #include "ai.h"
 #include "amap.h"
 #include "audiolog.h"
@@ -88,8 +89,8 @@ uchar obj_fixture_zoom(ObjID id, uchar in_inv, uchar *messagep);
 uchar obj_keypad_crunch(int p, uchar digits[]);
 uchar try_use_epick(ObjID panel, ObjID cursor_obj);
 ObjID door_in_square(ObjLoc *loc, uchar usable);
-void regenetron_door_hack();
-errtype elevator_janitor_run();
+void regenetron_door_hack(void);
+errtype elevator_janitor_run(void);
 
 // not in any way the right way to fix this bug, except
 // that it is the fastest way.  Doug says go.  Ask TJS.
@@ -513,7 +514,7 @@ errtype obj_tractor_beam_func(ObjID id, uchar on) {
     return (OK);
 }
 
-errtype gear_power_outage() {
+errtype gear_power_outage(void) {
     ObjID obj;
     char i;
     for (i = 0; i < NUM_GENERAL_SLOTS; i++) {
@@ -1090,7 +1091,7 @@ ObjID door_in_square(ObjLoc *loc, uchar usable) {
     return (OBJ_NULL);
 }
 
-void regenetron_door_hack() {
+void regenetron_door_hack(void) {
     ObjID id;
 
     id = door_in_square(&(objs[PLAYER_OBJ].loc), TRUE);
@@ -1102,7 +1103,7 @@ void regenetron_door_hack() {
 // Collects all the objects already in the elevator that you are going to
 // and move them outside the door
 #define MAX_JANITOR_OBJS 32
-errtype elevator_janitor_run() {
+errtype elevator_janitor_run(void) {
     short x0, x1, y0, y1, x, y;
     int i, j, obj_count = 0;
     ObjLoc dump_loc = {0, 0, 0, 0, 0, 0}, newloc;

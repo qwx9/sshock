@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // Source code for the Citadel Screen routines
 
+#include "precompiled.h"
 #ifdef SVGA_SUPPORT
 #include "fullscrn.h"
 #endif
@@ -215,7 +216,7 @@ errtype screen_init(void) {
 
 extern void game_redrop_rad(int rad_mod);
 
-void screen_start() {
+void screen_start(void) {
     extern LGRegion *pagebutton_region, *inventory_region;
 
     /*  Not yet
@@ -249,7 +250,7 @@ void screen_start() {
     SetMotionCursorForMouseXY();
 }
 
-void screen_exit() {
+void screen_exit(void) {
 #ifdef SVGA_SUPPORT
     uchar cur_pal[768];
     extern grs_screen *cit_screen;

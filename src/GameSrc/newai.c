@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdlib.h>
 
+#include "precompiled.h"
 #include "ai.h"
 #include "cyber.h"
 #include "player.h"
@@ -82,9 +83,9 @@ extern ObjLoc last_known_loc;
 ulong time_last_seen;
 uchar priority_check;
 
-short compute_base_visibility();
+short compute_base_visibility(void);
 errtype run_evil_otto(ObjID id, int dist);
-errtype run_cspace_ice();
+errtype run_cspace_ice(void);
 errtype ai_spot_player(ObjID id, uchar *raycast_success);
 uchar do_physics_stupidity(ObjID id, int big_dist);
 void check_attitude_adjustment(ObjID id, ObjSpecID osid, int big_dist, uchar raycast_success);
@@ -111,7 +112,7 @@ errtype run_peaceful_ai(ObjID id, int big_dist);
 uchar ice_fire_chances[] = {0x40, 0x80, 0xD0, 0xF0};
 ulong run_ice_time = 0;
 
-errtype run_cspace_ice() {
+errtype run_cspace_ice(void) {
     int dx, dy, dist;
     // Look for hostile ICEs, which closely resemble creatures
     // of course, only do so if we be in cspace
@@ -137,9 +138,9 @@ errtype run_cspace_ice() {
 }
 
 // Compute and return the player's basic visibility for this frame
-short compute_base_visibility() {
+short compute_base_visibility(void) {
     MapElem *pme;
-    short visibility;
+    short visibility = 0;
 
     // Update detection variables
     if (!cspace_decoy_obj) {
@@ -874,7 +875,7 @@ errtype run_peaceful_ai(ObjID id, int big_dist) {
 #define COMBAT_FRAMES 2
 #define DEFAULT_FRAMES 13
 
-errtype ai_run() {
+errtype ai_run(void) {
     ObjSpecID osid;
     ObjID id;
     short visibility;

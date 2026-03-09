@@ -28,7 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif // !defined(__cplusplus)
 
-#pragma pack(push,2)
+#pragma pack on	// 2
 
 typedef struct {
    grs_point3d normal;
@@ -39,7 +39,7 @@ typedef struct {
 extern grs_sys_info grd_info;
 extern grs_drvcap *grd_cap;
 extern grs_drvcap grd_mode_cap;
-extern void (**grd_driver_list[])();
+extern void (**grd_driver_list[])(void);
 extern int grd_mode;
 #define grd_scr_canv grd_screen_canvas
 #define grd_vis_canv grd_visible_canvas
@@ -69,10 +69,10 @@ extern grs_canvas *grd_canvas;
 #define grd_int_clip (grd_gc.clip.i)
 #define grd_fix_clip (grd_gc.clip.f)
 #define grd_clip (grd_int_clip)
-extern void (**grd_pixel_table)();
-extern void (**grd_device_table)();
-extern void (**grd_canvas_table)();
-extern void (**grd_function_table)();
+extern void (**grd_pixel_table)(void);
+extern void (**grd_device_table)(void);
+extern void (**grd_canvas_table)(void);
+extern void (**grd_function_table)(void);
 enum {
    BMT_DEVICE,
    BMT_MONO,
@@ -174,7 +174,7 @@ enum {
    FILL_SOLID,
    GRD_FILL_TYPES
 };
-typedef void (*grt_function_table[GRD_FILL_TYPES][GRD_FUNCS*REAL_BMT_TYPES])();
+typedef void (*grt_function_table[GRD_FILL_TYPES][GRD_FUNCS*REAL_BMT_TYPES])(void);
 extern grt_function_table gen_function_table;
 extern grt_function_table flat8_function_table;
 extern grt_function_table flat8d_function_table;
@@ -223,9 +223,9 @@ extern grt_function_table *grd_function_fill_table;
 #ifndef GRSTATE_H
 #define GRSTATE_H
 #define gr_push_state \
-   ((int (*)())grd_pixel_table[PUSH_STATE])
+   ((int (*)(void))grd_pixel_table[PUSH_STATE])
 #define gr_pop_state \
-   ((int (*)())grd_pixel_table[POP_STATE])
+   ((int (*)(void))grd_pixel_table[POP_STATE])
 #endif
 extern int gr_init (void);
 extern int gr_close (void);
@@ -313,7 +313,7 @@ extern int gr_clip_flat24_bitmap
 
 // gri_set_fill_globals implementation is in PixFill.C
 extern void gri_set_fill_globals(long *fill_type_ptr, long fill_type,
-                          void (***function_table_ptr)(), void (**function_table)(),
+                          void (***function_table_ptr)(void), void (**function_table)(void),
                           grt_uline_fill **line_vector_ptr, grt_uline_fill *line_vector);
 /*#pragma aux gri_set_fill_globals = \
    "mov  [edx],eax" \
@@ -522,10 +522,10 @@ extern grt_line_clip_fill *grd_line_clip_fill_vector;
    ((void (*)(fix x,fix y,fix r))grd_canvas_table[FIX_UDISK])
 #define gr_fix_disk \
    ((int (*)(fix x,fix y,fix r))grd_canvas_table[FIX_DISK])
-#define gr_int_urod              ((void (*)())grd_canvas_table[INT_UROD])
-#define gr_int_rod               ((int (*)())grd_canvas_table[INT_ROD])
-#define gr_fix_urod              ((void (*)()grd_canvas_table[FIX_UROD])
-#define gr_fix_rod               ((int (*)())grd_canvas_table[FIX_ROD])
+#define gr_int_urod              ((void (*)(void))grd_canvas_table[INT_UROD])
+#define gr_int_rod               ((int (*)(void))grd_canvas_table[INT_ROD])
+#define gr_fix_urod              ((void (*)(void)grd_canvas_table[FIX_UROD])
+#define gr_fix_rod               ((int (*)(void))grd_canvas_table[FIX_ROD])
 #define gr_ubitmap(bm,x,y) \
    ((void (*)(grs_bitmap *_bm,short _x,short _y)) \
    grd_canvas_table[DRAW_DEVICE_UBITMAP+2*((bm)->type)])(bm,x,y)
@@ -672,7 +672,7 @@ extern int gr_check_poly_y_min(int n,grs_vertex **vpl,long *h_buf);
 #define gr_set_focus \
    ((void (*)(short x,short y))grd_device_table[GRT_SET_FOCUS])
 #define gr_get_focus \
-   ((void (*)())grd_device_table[GRT_GET_FOCUS])
+   ((void (*)(void))grd_device_table[GRT_GET_FOCUS])
 #define gr_lit_lin_umap(bm,n,vpl) \
    ((void (*)(grs_bitmap *_bm,int _n,grs_vertex **_vpl)) \
    grd_canvas_table[DEVICE_LIT_LIN_UMAP+2*((bm)->type)])(bm,n,vpl)
@@ -928,7 +928,7 @@ do { \
    grd_canvas_table[CLUT_SCALE_DEVICE_BITMAP+2*((bm)->type)]) \
    (bm,x,y,w,h,cl)
 #define gr_roll_ubitmap          grd_canvas_table[ROLL_UBITMAP])
-#define gr_roll_bitmap           ((int (*)())grd_canvas_table[ROLL_BITMAP])
+#define gr_roll_bitmap           ((int (*)(void))grd_canvas_table[ROLL_BITMAP])
 #define gr_uspoly \
     ((void (*)(long c,int n,grs_vertex **vpl))grd_canvas_table[FIX_USPOLY])
 #define gr_spoly \
@@ -1430,9 +1430,9 @@ enum {
    ((void (*)(short top,short bot,grs_span *sp))grd_span_table[f])(t,b,s)
 extern grs_span span_list[];
 extern grs_span int_span_list[];
-extern void (**grd_span_table)();
-extern void (***grd_span_table_list)();
-extern void (***grd_span_table_list_list[])();
+extern void (**grd_span_table)(void);
+extern void (***grd_span_table_list)(void);
+extern void (***grd_span_table_list_list[])(void);
 extern void span_upoint (short x, short y);
 extern void span_point (short x, short y);
 extern void span_uhline (short x0, short y0, short x1);
@@ -1530,9 +1530,9 @@ enum {
    GRPS_LIT_PER_TRANSTLUC8,
    GRPS_FUNCS
 };
-extern void (**grd_polyspan_table)();
-extern void (***grd_polyspan_table_list)();
-extern void (***grd_polyspan_table_list_list[])();
+extern void (**grd_polyspan_table)(void);
+extern void (***grd_polyspan_table_list)(void);
+extern void (***grd_polyspan_table_list_list[])(void);
 extern void span_upoly_draw(short top, short bottom, grs_span *p, int func);
 extern void span_poly_draw(short top, short bottom, grs_span *p, int func);
 extern int make_poly_spans(short nverts, grs_span_vertex *vlist, int *top, int *bottom);
@@ -1592,10 +1592,10 @@ uchar *gr_rsd8_unpack(uchar* src, uchar *dst);
 #define GR_UNPACK_RSD8_OK 0
 #define GR_UNPACK_RSD8_NOBUF 1
 #define GR_UNPACK_RSD8_NOTRSD 2
-uchar gr_free_blend(void);
+int gr_free_blend(void);
 uchar gr_init_blend(int log_blend_levels);
 typedef struct iaaiiaia{
-   void (*f)();
+   void (*f)(void);
    struct iaaiiaia *next;
    uchar flags;
 } grs_func_chain;
@@ -1604,44 +1604,44 @@ extern short grd_canvas_index;
 extern uchar chn_flags;
 #define CHN_ON 1
 #define CHN_GEN 2
-extern grs_func_chain *gr_chain_add_over(int n, void (*f)());
+extern grs_func_chain *gr_chain_add_over(int n, void (*f)(void));
 extern grs_func_chain *gr_chain_add_before(int n, void (*f)(void));
 extern grs_func_chain *gr_chain_add_after(int n, void (*f)(void));
-extern void (*chain_rest())();
+extern void (*chain_rest())(void);
 extern void gr_unchain(int n);
 extern void gr_rechain(int n);
-extern void gr_unchain_all();
-extern void gr_rechain_all();
+extern void gr_unchain_all(void);
+extern void gr_rechain_all(void);
 #define gr_do_chain (chain_rest())
 #define gr_chaining_on() (chn_flags |= CHN_ON)
 #define gr_chaining_off() (chn_flags &= ~CHN_ON)
 #define gr_chaining_toggle() (chn_flags ^= CHN_ON)
 #define gr_generic (chn_flags & CHN_GEN)
-extern void gr_force_generic();
-extern void gr_unforce_generic();
+extern void gr_force_generic(void);
+extern void gr_unforce_generic(void);
 #define gr_toggle_generic() (gr_generic? gr_unforce_generic() : gr_force_generic())
-#define gr_start_frame ((void (*)())grd_canvas_table[START_FRAME])
-#define gr_end_frame ((void (*)())grd_canvas_table[END_FRAME])
+#define gr_start_frame ((void (*)(void))grd_canvas_table[START_FRAME])
+#define gr_end_frame ((void (*)(void))grd_canvas_table[END_FRAME])
 #define MAX_PPROF_OBJ_CNT (1<<12)
 extern unsigned short *pixprof_screen;
-extern uchar pixprof_setup();
-extern void pixprof_report();
+extern uchar pixprof_setup(void);
+extern void pixprof_report(void);
 #define install_pixprof_report() (gr_chain_add_before(END_FRAME, &pixprof_report))
 #define pixprof_on() (gr_chaining_on(), gr_force_generic())
 #define pixprof_off() (gr_chaining_off(), gr_unforce_generic())
 #define pixprof_toggle() (gr_chaining_toggle(), gr_toggle_generic())
-extern void start_thing_prof();
-extern void end_thing_prof();
+extern void start_thing_prof(void);
+extern void end_thing_prof(void);
 extern unsigned short pixprof_objects;
 extern char *fcount_names[GRD_CANVAS_FUNCS];
 extern int *fcount_table;
-extern void fcount_increment();
-extern void fcount_start();
-extern void fcount_stop();
-extern void fcount_report();
-extern void fcount_install();
+extern void fcount_increment(void);
+extern void fcount_start(void);
+extern void fcount_stop(void);
+extern void fcount_report(void);
+extern void fcount_install(void);
 
-#pragma pack(pop)
+#pragma pack off
 
 #if defined(__cplusplus)
 }

@@ -35,8 +35,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 errtype load_dynamic_memory(int mask);
 errtype free_dynamic_memory(int mask);
 int avail_memory(int debug_src);
-void Memory_Check();
-int slorkatron_memory_check();
+void Memory_Check(void);
+int slorkatron_memory_check(void);
 int flush_resource_cache(void);
 
 // If LZW stuff ever gets lots more efficient, may need to raise this up some.

@@ -61,13 +61,13 @@ grs_drvcap grd_mode_cap;
 grs_drvcap *grd_cap = &grd_mode_cap;
 
 /* pointer to start of current device driver's function table. */
-void (**grd_device_table)();
+void (**grd_device_table)(void);
 
-void (**grd_pixel_table)();
+void (**grd_pixel_table)(void);
 
 /* pointer to start of current bitmap driver's function table for clipped
    primitives. */
-void (**grd_canvas_table)();
+void (**grd_canvas_table)(void);
 
 /* currently active graphics mode. -1 means unrecognized mode */
 int grd_mode=-1;

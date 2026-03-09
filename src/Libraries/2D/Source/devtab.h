@@ -37,7 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef __DEVTAB_H
 #define __DEVTAB_H
-extern void (*flat8_device_table[])();
-extern void (*vga_device_table[])();
-extern void (*vesa_device_table[])();
+extern void (*flat8_device_table[])(void);
+extern void (*vga_device_table[])(void);
+extern void (*vesa_device_table[])(void);
 #endif /* !__DEVTAB_H */

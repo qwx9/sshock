@@ -32,9 +32,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //--------------------
 int main(int argc, char **argv);
 
-void InitSDL();
+void InitSDL(void);
 void SetSDLPalette(int index, int count, uchar *pal);
-void SDLDraw();
+void SDLDraw(void);
 void CaptureMouse(bool capture);
 bool CheckArgument(char *name);
 

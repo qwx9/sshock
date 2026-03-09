@@ -1,0 +1,433 @@
+</$objtype/mkfile
+LIB=libshock.a$O
+HFILES=\
+	2D/Source/2d.h\
+	2D/Source/Clip/clip.h\
+	2D/Source/Clip/clpcon.h\
+	2D/Source/Clip/clpfcn.h\
+	2D/Source/Clip/clpltab.h\
+	2D/Source/Clip/clpltyp.h\
+	2D/Source/Flat8/fl8clin.h\
+	2D/Source/Flat8/fl8lin.h\
+	2D/Source/Flat8/fl8p.h\
+	2D/Source/Flat8/fl8slin.h\
+	2D/Source/Flat8/fl8tf.h\
+	2D/Source/Flat8/fl8tmapdv.h\
+	2D/Source/Flat8/fl8wclin.h\
+	2D/Source/Flat8/flat8.h\
+	2D/Source/GR/grbm.h\
+	2D/Source/GR/grcbm.h\
+	2D/Source/GR/grclhbm.h\
+	2D/Source/GR/grcply.h\
+	2D/Source/GR/grd.h\
+	2D/Source/GR/grdbm.h\
+	2D/Source/GR/grdev.h\
+	2D/Source/GR/grgbm.h\
+	2D/Source/GR/grhbm.h\
+	2D/Source/GR/grlin.h\
+	2D/Source/GR/grmalloc.h\
+	2D/Source/GR/grnull.h\
+	2D/Source/GR/grp24.h\
+	2D/Source/GR/grpix.h\
+	2D/Source/GR/grply.h\
+	2D/Source/GR/grrect.h\
+	2D/Source/GR/grrend.h\
+	2D/Source/GR/grs.h\
+	2D/Source/GR/grstate.h\
+	2D/Source/Gen/genel.h\
+	2D/Source/Gen/general.h\
+	2D/Source/Gen/genov.h\
+	2D/Source/Gen/gente.h\
+	2D/Source/Gen/gentf.h\
+	2D/Source/MacDev.h\
+	2D/Source/RSD/rsd.h\
+	2D/Source/RSD/rsdunpck.h\
+	2D/Source/bit.h\
+	2D/Source/bitmap.h\
+	2D/Source/blend.h\
+	2D/Source/blncon.h\
+	2D/Source/blndat.h\
+	2D/Source/blnfcn.h\
+	2D/Source/buffer.h\
+	2D/Source/canvas.h\
+	2D/Source/chain.h\
+	2D/Source/close.h\
+	2D/Source/cnvdat.h\
+	2D/Source/cnvdrv.h\
+	2D/Source/cnvtab.h\
+	2D/Source/context.h\
+	2D/Source/ctxmac.h\
+	2D/Source/detect.h\
+	2D/Source/devtab.h\
+	2D/Source/fcntab.h\
+	2D/Source/fill.h\
+	2D/Source/icanvas.h\
+	2D/Source/idevice.h\
+	2D/Source/ifcn.h\
+	2D/Source/init_2D.h\
+	2D/Source/initint.h\
+	2D/Source/line.h\
+	2D/Source/linfcn.h\
+	2D/Source/lintab.h\
+	2D/Source/lintyp.h\
+	2D/Source/mode.h\
+	2D/Source/pal.h\
+	2D/Source/pertol.h\
+	2D/Source/pertyp.h\
+	2D/Source/pixfill.h\
+	2D/Source/pixtab.h\
+	2D/Source/plytyp.h\
+	2D/Source/poly.h\
+	2D/Source/polyint.h\
+	2D/Source/rgb.h\
+	2D/Source/scrdat.h\
+	2D/Source/screen.h\
+	2D/Source/scrmac.h\
+	2D/Source/state.h\
+	2D/Source/status_2D.h\
+	2D/Source/string/chr.h\
+	2D/Source/string/str.h\
+	2D/Source/tabdat.h\
+	2D/Source/tabdrv.h\
+	2D/Source/tlucdat.h\
+	2D/Source/tluctab.h\
+	2D/Source/tmapfcn.h\
+	2D/Source/tmapint.h\
+	2D/Source/tmaps.h\
+	2D/Source/tmaptab.h\
+	2D/Source/valloc.h\
+	2D/Source/vesa.h\
+	2D/Source/vtab.h\
+	2D/Source/wire.h\
+	3D/Source/3d.h\
+	3D/Source/3dinterp.h\
+	3D/Source/GlobalV.h\
+	3D/Source/fauxrend.h\
+	AFILE/Source/afile.h\
+	AFILE/Source/circbuff.h\
+	AFILE/Source/compose.h\
+	AFILE/Source/draw4x4.h\
+	AFILE/Source/huff.h\
+	AFILE/Source/movie.h\
+	DSTRUCT/Source/array.h\
+	DSTRUCT/Source/hash.h\
+	DSTRUCT/Source/pqueue.h\
+	DSTRUCT/Source/rect.h\
+	DSTRUCT/Source/slist.h\
+	EDMS/Source/MODELS/d_frame.h\
+	EDMS/Source/MODELS/ftl.h\
+	EDMS/Source/MODELS/pelvis.h\
+	EDMS/Source/MODELS/robot.h\
+	EDMS/Source/edms.h\
+	EDMS/Source/edms_chk.h\
+	EDMS/Source/edms_int.h\
+	EDMS/Source/edms_mod.h\
+	EDMS/Source/externs.h\
+	EDMS/Source/idof.h\
+	EDMS/Source/physhand.h\
+	EDMS/Source/ss_flet.h\
+	FIX/Source/fix.h\
+	FIX/Source/trigtab.h\
+	FIXPP/Source/fixpp.h\
+	H/2dres.h\
+	H/error.h\
+	H/keydefs.h\
+	H/lg_types.h\
+	INPUT/Source/kb.h\
+	INPUT/Source/kbcook.h\
+	INPUT/Source/mouse.h\
+	INPUT/Source/sdl_events.h\
+	LG/Source/LOG/src/log.h\
+	LG/Source/dbg.h\
+	LG/Source/lg.h\
+	LG/Source/memall.h\
+	LG/Source/tmpalloc.h\
+	PALETTE/Source/palette.h\
+	RES/Source/lzw.h\
+	RES/Source/res.h\
+	RES/Source/res_.h\
+	RES/Source/resformat.h\
+	RES/Source/restypes.h\
+	RND/Source/rnd.h\
+	SND/Source/lgsndx.h\
+	UI/Source/curdat.h\
+	UI/Source/cursors.h\
+	UI/Source/curtyp.h\
+	UI/Source/event.h\
+	UI/Source/hotkey.h\
+	UI/Source/region.h\
+	UI/Source/resgadg.h\
+	UI/Source/slab.h\
+	UI/Source/vmouse.h\
+	VOX/Source/vox.h\
+	../MacSrc/OpenGL.h\
+	../GameSrc/Headers/tickcount.h\
+
+OFILES=\
+	2D/Source/Clip/clpclin.$O\
+	2D/Source/Clip/clpf24.$O\
+	2D/Source/Clip/clplin.$O\
+	2D/Source/Clip/clplin2.$O\
+	2D/Source/Clip/clpltab.$O\
+	2D/Source/Clip/clpmono.$O\
+	2D/Source/Clip/clpply.$O\
+	2D/Source/Clip/clppoly.$O\
+	2D/Source/Clip/clprect.$O\
+	2D/Source/Clip/clpslin.$O\
+	2D/Source/Flat8/FL8OPL.$O\
+	2D/Source/Flat8/Fl8F.$O\
+	2D/Source/Flat8/fl8bl.$O\
+	2D/Source/Flat8/fl8bldbl.$O\
+	2D/Source/Flat8/fl8chfl8.$O\
+	2D/Source/Flat8/fl8clear.$O\
+	2D/Source/Flat8/fl8clin.$O\
+	2D/Source/Flat8/fl8cnv.$O\
+	2D/Source/Flat8/fl8cop.$O\
+	2D/Source/Flat8/fl8cply.$O\
+	2D/Source/Flat8/fl8ctp.$O\
+	2D/Source/Flat8/fl8dbl.$O\
+	2D/Source/Flat8/fl8fl8.$O\
+	2D/Source/Flat8/fl8fl8c.$O\
+	2D/Source/Flat8/fl8fl8m.$O\
+	2D/Source/Flat8/fl8fltr2.$O\
+	2D/Source/Flat8/fl8ft.$O\
+	2D/Source/Flat8/fl8g24.$O\
+	2D/Source/Flat8/fl8gfl8.$O\
+	2D/Source/Flat8/fl8gpix.$O\
+	2D/Source/Flat8/fl8hfl8.$O\
+	2D/Source/Flat8/fl8hlin.$O\
+	2D/Source/Flat8/fl8lf.$O\
+	2D/Source/Flat8/fl8lin.$O\
+	2D/Source/Flat8/fl8ll.$O\
+	2D/Source/Flat8/fl8lnop.$O\
+	2D/Source/Flat8/fl8lop.$O\
+	2D/Source/Flat8/fl8lp.$O\
+	2D/Source/Flat8/fl8ltp.$O\
+	2D/Source/Flat8/fl8lw.$O\
+	2D/Source/Flat8/fl8mono.$O\
+	2D/Source/Flat8/fl8mscl.$O\
+	2D/Source/Flat8/fl8nl.$O\
+	2D/Source/Flat8/fl8ns.$O\
+	2D/Source/Flat8/fl8ntrp2.$O\
+	2D/Source/Flat8/fl8p.$O\
+	2D/Source/Flat8/fl8p24.$O\
+	2D/Source/Flat8/fl8pix.$O\
+	2D/Source/Flat8/fl8ply.$O\
+	2D/Source/Flat8/fl8pnt.$O\
+	2D/Source/Flat8/fl8rect.$O\
+	2D/Source/Flat8/fl8row.$O\
+	2D/Source/Flat8/fl8rsd8.$O\
+	2D/Source/Flat8/fl8s.$O\
+	2D/Source/Flat8/fl8slin.$O\
+	2D/Source/Flat8/fl8sply.$O\
+	2D/Source/Flat8/fl8sub.$O\
+	2D/Source/Flat8/fl8tl8.$O\
+	2D/Source/Flat8/fl8tpl.$O\
+	2D/Source/Flat8/fl8tsmap.$O\
+	2D/Source/Flat8/fl8vlin.$O\
+	2D/Source/Flat8/fl8w.$O\
+	2D/Source/Flat8/fl8wclin.$O\
+	2D/Source/Flat8/fl8wlin.$O\
+	2D/Source/GR/grd.$O\
+	2D/Source/GR/grilin.$O\
+	2D/Source/GR/grmalloc.$O\
+	2D/Source/GR/grnull.$O\
+	2D/Source/GR/gruilin.$O\
+	2D/Source/Gen/genbox.$O\
+	2D/Source/Gen/genchfl8.$O\
+	2D/Source/Gen/gencirc.$O\
+	2D/Source/Gen/genclin.$O\
+	2D/Source/Gen/gencnv.$O\
+	2D/Source/Gen/gencwlin.$O\
+	2D/Source/Gen/gendisk.$O\
+	2D/Source/Gen/genel.$O\
+	2D/Source/Gen/general.$O\
+	2D/Source/Gen/genf24.$O\
+	2D/Source/Gen/genfl8.$O\
+	2D/Source/Gen/genfl8c.$O\
+	2D/Source/Gen/gengfl8.$O\
+	2D/Source/Gen/genhfl8.$O\
+	2D/Source/Gen/genhlin.$O\
+	2D/Source/Gen/genlin.$O\
+	2D/Source/Gen/genmono.$O\
+	2D/Source/Gen/genov.$O\
+	2D/Source/Gen/genpix.$O\
+	2D/Source/Gen/genrect.$O\
+	2D/Source/Gen/genrsd8.$O\
+	2D/Source/Gen/genrsdbm.$O\
+	2D/Source/Gen/genrsdtm.$O\
+	2D/Source/Gen/genslin.$O\
+	2D/Source/Gen/gente.$O\
+	2D/Source/Gen/gentl8.$O\
+	2D/Source/Gen/gentm.$O\
+	2D/Source/Gen/genuclin.$O\
+	2D/Source/Gen/genuhlin.$O\
+	2D/Source/Gen/genulin.$O\
+	2D/Source/Gen/genuslin.$O\
+	2D/Source/Gen/genuvlin.$O\
+	2D/Source/Gen/genvcply.$O\
+	2D/Source/Gen/genvlin.$O\
+	2D/Source/Gen/genvpoly.$O\
+	2D/Source/Gen/genvrect.$O\
+	2D/Source/Gen/genwclin.$O\
+	2D/Source/Gen/genwlin.$O\
+	2D/Source/MacDev.$O\
+	2D/Source/RSD/RSDUnpack.$O\
+	2D/Source/RSD/rsdcvt.$O\
+	2D/Source/StateStk.$O\
+	2D/Source/bit.$O\
+	2D/Source/bitmap.$O\
+	2D/Source/blend.$O\
+	2D/Source/canvas.$O\
+	2D/Source/close.$O\
+	2D/Source/cnvtab.$O\
+	2D/Source/context.$O\
+	2D/Source/detect.$O\
+	2D/Source/devtab.$O\
+	2D/Source/fcntab.$O\
+	2D/Source/init.$O\
+	2D/Source/lintab.$O\
+	2D/Source/mode.$O\
+	2D/Source/pal.$O\
+	2D/Source/permap.$O\
+	2D/Source/persetup.$O\
+	2D/Source/pertol.$O\
+	2D/Source/rgb.$O\
+	2D/Source/screen.$O\
+	2D/Source/sscrn.$O\
+	2D/Source/string/chrsiz.$O\
+	2D/Source/string/genchr.$O\
+	2D/Source/string/genstr.$O\
+	2D/Source/string/genuchr.$O\
+	2D/Source/string/genustr.$O\
+	2D/Source/string/strnsiz.$O\
+	2D/Source/string/strscl.$O\
+	2D/Source/string/strsiz.$O\
+	2D/Source/string/struscl.$O\
+	2D/Source/string/strwrap.$O\
+	2D/Source/svgainit.$O\
+	2D/Source/tempbm.$O\
+	2D/Source/temptm.$O\
+	2D/Source/tlucdat.$O\
+	2D/Source/tluctab.$O\
+	2D/Source/valloc.$O\
+	2D/Source/vtab.$O\
+	3D/Source/Bitmap.$O\
+	3D/Source/GlobalV.$O\
+	3D/Source/alloc.$O\
+	3D/Source/clip.$O\
+	3D/Source/detail.$O\
+	3D/Source/fov.$O\
+	3D/Source/instance.$O\
+	3D/Source/interp.$O\
+	3D/Source/light.$O\
+	3D/Source/matrix.$O\
+	3D/Source/points.$O\
+	3D/Source/polygon.$O\
+	3D/Source/slew.$O\
+	3D/Source/tmap.$O\
+	3D/Source/vector.$O\
+	AFILE/Source/afile.$O\
+	AFILE/Source/amov.$O\
+	AFILE/Source/compose.$O\
+	AFILE/Source/movie.$O\
+	AFILE/Source/draw4x4.$O\
+	AFILE/Source/huffde.$O\
+	DSTRUCT/Source/array.$O\
+	DSTRUCT/Source/hash.$O\
+	DSTRUCT/Source/pqueue.$O\
+	DSTRUCT/Source/rect.$O\
+	EDMS/Source/collide.$O\
+	EDMS/Source/globals.$O\
+	EDMS/Source/interfac.$O\
+	EDMS/Source/intrsect.$O\
+	EDMS/Source/phy_tool.$O\
+	EDMS/Source/soliton.$O\
+	EDMS/Source/MODELS/d_f_2.$O\
+	EDMS/Source/MODELS/d_f_face.$O\
+	EDMS/Source/MODELS/d_frame.$O\
+	EDMS/Source/MODELS/ftl.$O\
+	EDMS/Source/MODELS/ftlface.$O\
+	EDMS/Source/MODELS/pelface.$O\
+	EDMS/Source/MODELS/pelvis.$O\
+	EDMS/Source/MODELS/robot.$O\
+	FIX/Source/MakeTables.$O\
+	FIX/Source/f_exp.$O\
+	FIX/Source/fix.$O\
+	FIX/Source/fix_sqrt.$O\
+	INPUT/Source/kbcook.$O\
+	INPUT/Source/mouse.$O\
+	INPUT/Source/sdl_events.$O\
+	LG/Source/LOG/src/log.$O\
+	LG/Source/memall.$O\
+	LG/Source/stack.$O\
+	LG/Source/tmpalloc.$O\
+	PALETTE/Source/palette.$O\
+	RES/Source/caseless.$O\
+	RES/Source/lzw.$O\
+	RES/Source/refacc.$O\
+	RES/Source/res.$O\
+	RES/Source/resacc.$O\
+	RES/Source/resbuild.$O\
+	RES/Source/resfile.$O\
+	RES/Source/resformat.$O\
+	RES/Source/resload.$O\
+	RES/Source/resmake.$O\
+	RES/Source/restypes.$O\
+	RND/Source/rnd.$O\
+	UI/Source/curdrw.$O\
+	UI/Source/cursors.$O\
+	UI/Source/event.$O\
+	UI/Source/hotkey.$O\
+	UI/Source/region.$O\
+	UI/Source/slab.$O\
+	UI/Source/vmouse.$O\
+	VOX/Source/vox2d.$O\
+	VOX/Source/vox3d.$O\
+	VOX/Source/voxinit.$O\
+
+</sys/src/cmd/mklib
+
+CLEANFILES=$CLEANFILES $OFILES
+
+# -DDEBUGGING_BLIT -DUSE_OPENGL -DUSEFLUIDSYNTH=1 -DSVGA_SUPPORT
+CFLAGS=$CFLAGS -p -D__plan9__ -D__${objtype}__ \
+	-DUSE_SDL_MIXER \
+	-I2D/Source \
+	-I2D/Source/GR \
+	-I2D/Source/Clip \
+	-I2D/Source/Flat8 \
+	-I2D/Source/GR \
+	-I2D/Source/Gen \
+	-I2D/Source/RSD \
+	-I2D/Source/string \
+	-I3D/Source \
+	-IAFILE/Source \
+	-IDSTRUCT/Source \
+	-IEDMS/Source \
+	-IEDMS/Source/MODELS \
+	-IFIXPP/Source \
+	-IFIX/Source \
+	-IH \
+	-IINPUT/Source \
+	-ILG/Source \
+	-ILG/Source/LOG/src \
+	-IPALETTE/Source \
+	-IRES/Source \
+	-IRND/Source \
+	-ISND/Source \
+	-IUI/Source \
+	-IVOX/Source \
+	-I../MacSrc \
+	-I../GameSrc/Headers \
+	-I/sys/include/npe \
+	-I/sys/include/npe/SDL2 \
+
+%.$O: %.c
+	$CC $CFLAGS -o $target $stem.c
+
+%.$O: %.cc
+	$CC $CFLAGS -o $target $stem.cc
+
+%.$O: %.cpp
+	$CC $CFLAGS -o $target $stem.cpp

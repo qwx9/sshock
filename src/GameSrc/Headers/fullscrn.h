@@ -61,11 +61,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Typedefs
 
 // Prototypes
-void change_svga_screen_mode();
+void change_svga_screen_mode(void);
 errtype fullscreen_init(void);
-void fullscreen_start();
+void fullscreen_start(void);
 void fullscreen_exit(void);
-errtype fullscreen_overlay();
+errtype fullscreen_overlay(void);
 errtype full_lower_region(LGRegion *r);
 errtype full_raise_region(LGRegion *r);
 

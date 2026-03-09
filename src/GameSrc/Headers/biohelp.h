@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mfdint.h"
 
-errtype biohelp_load_cursor();
+errtype biohelp_load_cursor(void);
 
 errtype mfd_biohelp_init(MFD_Func *f);
 void mfd_biohelp_expose(MFD *mfd, ubyte control);

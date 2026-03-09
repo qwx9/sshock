@@ -52,7 +52,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Comparson function, works like strcmp
 typedef int (*QueueCompare)(void* elem1, void* elem2);
 
-#pragma pack(push,2)
+#pragma pack on // 2
 typedef struct _pqueue
 {
    int32_t size;
@@ -96,6 +96,6 @@ errtype pqueue_destroy(PQueue* q);
 
 // Globals
 
-#pragma pack(pop)
+#pragma pack off
 
 #endif // __PQUEUE_H

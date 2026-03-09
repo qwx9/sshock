@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
+#include "precompiled.h"
 #include "faketime.h"
 
 #include "frtypes.h"
@@ -49,7 +50,7 @@ ubyte olh_radius = MIN_OLH_RADIUS;
 
 fauxrend_context *olh_full_context = NULL;
 
-extern fauxrend_context *svga_render_context;
+extern frc *svga_render_context;
 
 #define FULL_SCAN_WID (FULL_VIEW_WIDTH / SCAN_RATIO)
 #define FULL_SCAN_HGT (FULL_VIEW_HEIGHT / SCAN_RATIO)
@@ -84,7 +85,7 @@ void olh_svga_deal(void) {
     y_mul = fix_div(fix_make(200, 0), fix_make(grd_mode_cap.h, 0));
 }
 
-extern int last_real_time;
+extern ulong last_real_time;
 
 ushort olh_scan_objs(void) {
     int xl, yl;

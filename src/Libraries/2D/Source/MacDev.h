@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef __MACDEV_H
 #define __MACDEV_H
-extern void (**mac_device_table[])();
+extern void (**mac_device_table[])(void);
 
 extern int mac_set_state(void *buf,int clear);
 extern int mac_get_state(void *buf,int flags);

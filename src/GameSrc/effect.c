@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 
+#include "precompiled.h"
 #include "grenades.h"
 #include "objgame.h"
 #include "objuse.h"
@@ -322,7 +323,7 @@ errtype increment_anim(ulong num_units) {
             handart_show = (handart_fire) ? 1 : 2;
     }
     if ((handart_show != 1) && handart_flash) {
-        byte light_val;
+        byte light_val = 0;
         ubyte slot = player_struct.actives[ACTIVE_WEAPON];
         extern byte gun_fire_offset;
 
@@ -756,7 +757,7 @@ errtype remove_obj_from_animlist(ObjID id) {
     return (ERR_NOEFFECT);
 }
 
-errtype animlist_clear() {
+errtype animlist_clear(void) {
     LG_memset(animlist, 0, sizeof(AnimListing) * MAX_ANIMLIST_SIZE);
     anim_counter = 0;
     return (OK);

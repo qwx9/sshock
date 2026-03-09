@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // for Cyberia
 #define __CYBMEM_SRC
 
+#include "precompiled.h"
 #include "cybmem.h"
 #include "tools.h"
 #include "textmaps.h"
@@ -133,7 +134,7 @@ errtype load_dynamic_memory(int mask) {
 #define MAX_PTRS 25
 #define MINIMUM_SLORK_SIZE 100000
 
-int slorkatron_memory_check() {
+int slorkatron_memory_check(void) {
     int retval, size;
     int ptr_count, i;
     uchar *mem_ptrs[MAX_PTRS];

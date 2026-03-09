@@ -58,16 +58,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "fixpp.h"
 
 // state of each object
-extern Q S[MAX_OBJ][DOF][DOF_DERIVS];
+extern fix S[MAX_OBJ][DOF][DOF_DERIVS];
 
 // This is a copy of S that can be mucked with
 extern EDMS_Argblock_Pointer A;
 
 // internal degrees of freedom for each object
-extern Q I[MAX_OBJ][DOF_MAX];
+extern fix I[MAX_OBJ][DOF_MAX];
 
 // expansion coefficients ??
-extern Q k[4][MAX_OBJ][DOF];
+extern fix k[4][MAX_OBJ][DOF];
 
 // 0 if this object is sleeping ??
 extern int32_t no_no_not_me[MAX_OBJ];
@@ -76,7 +76,7 @@ extern int32_t no_no_not_me[MAX_OBJ];
 extern int32_t min_physics_handle;
 
 // ??
-extern const Q min_scale_slice;
+extern const fix min_scale_slice;
 
 // does A contain the current state of awake objects, instead of S?
 extern bool A_is_active;
@@ -101,7 +101,7 @@ extern uint32_t data[EDMS_DATA_SIZE][EDMS_DATA_SIZE];
 ////
 
 // multiply by this to go from physics units to collision bin units
-extern Q hash_scale;
+extern fix hash_scale;
 
 // ??
 extern int32_t EDMS_robot_global_badness_indicator;
@@ -116,18 +116,18 @@ void collision_wakeup(int32_t object);
 
 //	Solvers
 //	=======
-void soliton(Q timestep);
-void soliton_lite(Q timestep);
-void soliton_lite_holistic(Q timestep);
-void soliton_vector(Q timestep);
-void soliton_vector_holistic(Q timestep);
+void soliton(fix timestep);
+void soliton_lite(fix timestep);
+void soliton_lite_holistic(fix timestep);
+void soliton_vector(fix timestep);
+void soliton_vector_holistic(fix timestep);
 
 // Tools
 // =====
 int32_t settle_object(int32_t object);
 void mprint_state(int32_t object);
 void inventory_and_statistics(int32_t show_sleepers);
-int32_t sanity_check();
+int32_t sanity_check(void);
 
 //	Collisions
 //	==========
@@ -137,12 +137,12 @@ void reset_collisions(int32_t object);
 //	EDMS internal testbed wireframe...
 //	==================================
 void draw_object(int32_t);
-void setup_graphics();
-void kill_graphics();
+void setup_graphics(void);
+void kill_graphics(void);
 
 //	Get the Euler angles we need from the stuff in the state...
 //	===========================================================
-void EDMS_get_Euler_angles(Q &alpha, Q &beta, Q &gamma, int32_t object);
+void EDMS_get_Euler_angles(fix *alpha, fix *beta, fix *gamma, int32_t object);
 
 ////////////////////////////// more stuff
 

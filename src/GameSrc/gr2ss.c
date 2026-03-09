@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include "precompiled.h"
 #include "cit2d.h"
 #include "gr2ss.h"
 #include "frtypes.h"
@@ -25,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "gamescr.h"
 
 
+#include "precompiled.h"
 #ifdef STEREO_SUPPORT
 #include <i6dvideo.h>
 extern uchar inp6d_stereo_active;

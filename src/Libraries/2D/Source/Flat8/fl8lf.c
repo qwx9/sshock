@@ -181,9 +181,9 @@ void gri_trans_lit_floor_umap_init(grs_tmap_loop_info *tli) {
         tli->vtab = gr_make_vtab(&(tli->bm));
         tli->bm.hlog = GRL_TRANS;
     }
-    tli->loop_func = (void (*)())gri_lit_floor_umap_loop;
-    tli->left_edge_func = (void (*)())gri_uviwx_edge;
-    tli->right_edge_func = (void (*)())gri_uviwx_edge;
+    tli->loop_func = (void (*)(void))gri_lit_floor_umap_loop;
+    tli->left_edge_func = (void (*)(void))gri_uviwx_edge;
+    tli->right_edge_func = (void (*)(void))gri_uviwx_edge;
 }
 
 void gri_opaque_lit_floor_umap_init(grs_tmap_loop_info *tli) {
@@ -194,7 +194,7 @@ void gri_opaque_lit_floor_umap_init(grs_tmap_loop_info *tli) {
         tli->vtab = gr_make_vtab(&(tli->bm));
         tli->bm.hlog = GRL_OPAQUE;
     }
-    tli->loop_func = (void (*)())gri_lit_floor_umap_loop;
-    tli->left_edge_func = (void (*)())gri_uviwx_edge;
-    tli->right_edge_func = (void (*)())gri_uviwx_edge;
+    tli->loop_func = (void (*)(void))gri_lit_floor_umap_loop;
+    tli->left_edge_func = (void (*)(void))gri_uviwx_edge;
+    tli->right_edge_func = (void (*)(void))gri_uviwx_edge;
 }

@@ -273,7 +273,7 @@ extern void gen_clut_scale_bitmap
 
 extern void gen_roll_ubitmap
    (grs_bitmap *bm, fix angle, short x, short y);
-extern void gen_roll_bitmap ();
+extern void gen_roll_bitmap (void);
 
 extern void gen_flat8_wall_umap
    (grs_bitmap *bm, int n, fix **vpl);

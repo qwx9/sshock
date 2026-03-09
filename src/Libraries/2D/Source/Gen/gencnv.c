@@ -32,9 +32,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "general.h"
 #include "icanvas.h"
 
-typedef void (*ptr_type)();
+typedef void (*ptr_type)(void);
 
-void (*gen_canvas_table[GRD_CANVAS_FUNCS])() = {
+void (*gen_canvas_table[GRD_CANVAS_FUNCS])(void) = {
    gr_null,                   /*  NO generic pixel routines! */
    gr_null,
    gr_null,

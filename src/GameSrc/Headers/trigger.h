@@ -70,14 +70,19 @@ typedef struct {
     uchar x;
     uchar y;
     union {
+    /*
 	struct {
 	    uchar floor : 1;
             uchar key : 7;
 	};
+	*/
 	uchar floor_key;
     };
     char inuse;
 } height_semaphor;
+
+#define	THFLOOR(x)	((x)->floor_key & 1)
+#define	THKEY(x)	((x)->floor_key >> 1)
 
 typedef struct _EmailSchedEvent {
     ushort timestamp;
@@ -117,13 +122,13 @@ errtype trap_sfx_func(int p1, int p2, int p3, int p4);
 
 errtype check_deathwatch_triggers(ObjID id, uchar really_dead);
 errtype check_entrance_triggers(uchar old_x, uchar old_y, uchar new_x, uchar new_y);
-errtype do_shodan_triggers();
+errtype do_shodan_triggers(void);
 
 errtype do_multi_stuff(ObjID id);
 
 void animate_callback_func(ObjID id, intptr_t user_data);
 uchar comparator_check(int comparator, ObjID obj, uchar *special_code);
-errtype do_level_entry_triggers();
+errtype do_level_entry_triggers(void);
 
 short qdata_get(short qdata);
 

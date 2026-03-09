@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h> // for memset
 
+#include "precompiled.h"
 #include "effect.h"
 #include "gameobj.h"
 

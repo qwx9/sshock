@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <ctype.h>
 
+#include "precompiled.h"
 #include "Prefs.h"
 
 #include "invdims.h"
@@ -624,7 +625,7 @@ void parse_email_mugs(char *mug, uchar *mcolor, ushort mugnums[NUM_MFDS], uchar 
     char *s;
     // char *sfront;
     short lastmug = -1;
-    uchar esc_param, different;
+    uchar esc_param = 0, different;
     char buf[64];
 
     s = buf;
@@ -1084,7 +1085,7 @@ void email_turnoff(uchar visible, uchar real_stop) {
 
 #define FLASH_TIME_INTERVAL 30
 
-void update_email_ware() {
+void update_email_ware(void) {
     if ((player_struct.game_time >> APPROX_CIT_CYCLE_SHFT) % FLASH_TIME_INTERVAL != 0)
         return;
 

@@ -301,7 +301,7 @@ LzwC lzwc; // current compress state
     }
 
 int32_t LzwCompress(void (*f_SrcCtrl)(intptr_t srcLoc, LzwCtrl ctrl),   // func to control source
-                    uint8_t (*f_SrcGet)(),                              // func to get bytes from source
+                    uint8_t (*f_SrcGet)(void),                              // func to get bytes from source
                     intptr_t srcLoc,                                    // source "location" (ptr, FILE *, etc.)
                     int32_t srcSize,                                    // size of source in bytes
                     void (*f_DestCtrl)(intptr_t destLoc, LzwCtrl ctrl), // func to control dest
@@ -423,7 +423,7 @@ typedef struct {
 
 LzwE lzwe; // current expand state
 
-static uint32_t LzwInputCode(uint8_t (*f_SrcGet)()) {
+static uint32_t LzwInputCode(uint8_t (*f_SrcGet)(void)) {
     uint32_t return_value;
 
     while (lzwe.lzwInputBitCount <= 24) {
@@ -439,7 +439,7 @@ static uint32_t LzwInputCode(uint8_t (*f_SrcGet)()) {
 }
 
 int32_t LzwExpand(void (*f_SrcCtrl)(intptr_t srcLoc, LzwCtrl ctrl),   // func to control source
-                  uint8_t (*f_SrcGet)(),                              // func to get bytes from source
+                  uint8_t (*f_SrcGet)(void),                              // func to get bytes from source
                   intptr_t srcLoc,                                    // source "location" (ptr, FILE *, etc.)
                   void (*f_DestCtrl)(intptr_t destLoc, LzwCtrl ctrl), // func to control dest
                   void (*f_DestPut)(uint8_t byte),                    // func to put bytes to dest

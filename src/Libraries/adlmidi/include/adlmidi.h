@@ -171,13 +171,13 @@ extern int adl_setBank(struct ADL_MIDIPlayer *device, int bank);
  * @brief Returns total number of available banks
  * @return Total number of available embedded banks
  */
-extern int adl_getBanksCount();
+extern int adl_getBanksCount(void);
 
 /**
  * @brief Returns pointer to array of names of every bank
  * @return Array of strings containing the name of every embedded bank
  */
-extern const char *const *adl_getBankNames();
+extern const char *const *adl_getBankNames(void);
 
 /**
  * @brief Reference to dynamic bank
@@ -592,13 +592,13 @@ extern int adl_setDeviceIdentifier(struct ADL_MIDIPlayer *device, unsigned id);
  * @brief Returns string which contains a version number
  * @return String which contains a version of the library
  */
-extern const char *adl_linkedLibraryVersion();
+extern const char *adl_linkedLibraryVersion(void);
 
 /**
  * @brief Returns structure which contains a version number of library
  * @return Library version context structure which contains version number of the library
  */
-extern const ADL_Version *adl_linkedVersion();
+extern const ADL_Version *adl_linkedVersion(void);
 
 
 /* ======== Error Info ======== */
@@ -611,7 +611,7 @@ extern const ADL_Version *adl_linkedVersion();
  *
  * @return String with error message related to library initialization
  */
-extern const char *adl_errorString();
+extern const char *adl_errorString(void);
 
 /**
  * @brief Returns string which contains last error message on specific device

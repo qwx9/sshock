@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
+#include "precompiled.h"
 #include "Prefs.h"
 
 #include "ai.h"
@@ -122,7 +123,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define BIT_SET(val, bit) (((val) & (1 << bit)) == (1 << bit))
 
 #define REACTOR_BOOM_QB 0x14
-errtype do_special_reactor_hack();
+errtype do_special_reactor_hack(void);
 
 errtype do_destroy(int victim_data);
 
@@ -163,7 +164,7 @@ errtype trap_expose_func(int dmg, int dtype, int tsecs, int dummy);
 errtype trap_bark_func(int speaker, int strnum, int color, int hud_bark);
 
 errtype grind_trap(char type, int p1, int p2, int p3, int p4, ubyte *destroy_count_ptr, ObjID id);
-errtype do_ecology_triggers();
+errtype do_ecology_triggers(void);
 
 #define SHODOMETER_QVAR_BASE 0x10
 
@@ -2028,7 +2029,7 @@ errtype grind_trap(char type, int p1, int p2, int p3, int p4, ubyte *destroy_cou
 uchar trap_activate(ObjID id, uchar *use_message) {
     uchar retval = FALSE;
     ubyte traptype;
-    int comparator;
+    int comparator = 0;
     int p1, p2, p3, p4;
     ubyte *destroy_count_ptr;
     uchar special;
@@ -2170,7 +2171,7 @@ errtype check_entrance_triggers(uchar old_x, uchar old_y, uchar new_x, uchar new
 
 #define REACTOR_BOOM_QB 0x14
 
-errtype do_special_reactor_hack() {
+errtype do_special_reactor_hack(void) {
     ObjSpecID osid;
 
     if (!qdata_get(REACTOR_BOOM_QB | 0x2000))
@@ -2189,7 +2190,7 @@ errtype do_special_reactor_hack() {
     return (OK);
 }
 
-errtype do_level_entry_triggers() {
+errtype do_level_entry_triggers(void) {
     ObjSpecID osid;
     uchar special;
 
@@ -2209,7 +2210,7 @@ errtype do_level_entry_triggers() {
     return (OK);
 }
 
-errtype do_shodan_triggers() {
+errtype do_shodan_triggers(void) {
     ObjSpecID osid;
     uchar special;
 
@@ -2226,7 +2227,7 @@ errtype do_shodan_triggers() {
     return (OK);
 }
 
-errtype do_ecology_triggers() {
+errtype do_ecology_triggers(void) {
     ObjSpecID osid, osid2;
     ObjClass cl;
     char counter = 0, quan;
@@ -2242,11 +2243,11 @@ errtype do_ecology_triggers() {
             quan = objTraps[osid].comparator >> 24;
             cl = (ObjClass)((objTraps[osid].comparator & 0xFF0000) >> 16);
             trip = objTraps[osid].comparator & 0xFFFFFF;
-            osid2 = (*(ObjSpec *)objSpecHeaders[cl].data).bits.id;
+            osid2 = OSBITSID((ObjSpec *)objSpecHeaders[cl].data);
             counter = 0;
             while (osid2 != OBJ_SPEC_NULL) {
                 ospec = *(ObjSpec *)(objSpecHeaders[cl].data + (osid2 * objSpecHeaders[cl].struct_size));
-                if (ID2TRIP(ospec.bits.id) == trip)
+                if (ID2TRIP(OSBITSID(&ospec)) == trip)
                     counter++;
                 if (counter > quan)
                     osid2 = OBJ_SPEC_NULL;

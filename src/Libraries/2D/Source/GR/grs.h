@@ -106,8 +106,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "fix.h"
 
-// FIXME pragma pack
-#pragma pack(push,2)
+#pragma pack on	// 2
 
 /* system information structure. */
 typedef struct {
@@ -243,6 +242,6 @@ typedef struct {
    fix x,y,z;    /* 3's */
 } grs_point3d;
 
-#pragma pack(pop)
+#pragma pack off
 
 #endif /* !__GRS_H */

@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "precompiled.h"
 #include "faketime.h"
 #include "player.h"
 #include "newmfd.h"
@@ -975,7 +976,7 @@ static int test_bot(bots_state *bs, int x, int y) {
 
 void games_run_bots(bots_state *bs) {
     int rev, guys;
-    uint8_t i;
+    int8_t i;
 
     bs->hpos += bs->hspd;
     // test if we've scrolled a bot off the left
@@ -1704,7 +1705,7 @@ void games_init_15(void *game_state) {
     games_time_diff = 0;
 }
 
-static uchar puzz15_won() {
+static uchar puzz15_won(void) {
     puzzle15_state *st = (puzzle15_state *)GAME_DATA;
     int i;
 
@@ -2158,7 +2159,7 @@ int tictactoe_evaluator(void *pos) {
 // note that this procedure duplicates a lot of the work done by
 // tictactoe_evaluator: we do not consolidate them because we don't
 // want to slow down the evaluator.
-void tictactoe_drawwin(ttt_state *st) {
+static void tictactoe_drawwin(ttt_state *st) {
     uchar win, realwin;
     int i;
     LGPoint p1, p2;

@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
+#include "precompiled.h"
 #include "ShockBitmap.h"
 #include "Prefs.h"
 
@@ -96,7 +97,7 @@ uiSlab fullscreen_slab;
 #define CFG_TIME_VAR "time_passes"
 
 extern void olh_svga_deal(void);
-void change_svga_cursors();
+void change_svga_cursors(void);
 
 LGRegion fullroot_region_data, fullview_region_data;
 LGRegion *fullroot_region = &fullroot_region_data; // DUH
@@ -141,7 +142,7 @@ errtype fullscreen_init(void) {
 }
 
 // Draw all relevant overlays
-errtype fullscreen_overlay() {
+errtype fullscreen_overlay(void) {
     extern char last_message[128];
     extern uchar game_paused;
 
@@ -170,7 +171,7 @@ errtype fullscreen_overlay() {
 
 // Set all appropriate things to convert us to full screen mode
 
-void change_svga_cursors() {
+void change_svga_cursors(void) {
     ObjID old_obj;
 
     extern int last_side_icon;
@@ -201,7 +202,7 @@ void change_svga_cursors() {
     ss_set_hack_mode(0, &temp);
 }
 
-void change_svga_screen_mode() {
+void change_svga_screen_mode(void) {
     extern uchar redraw_paused;
 
     uchar cur_pal[768];
@@ -334,7 +335,7 @@ void change_svga_screen_mode() {
     redraw_paused = TRUE;
 }
 
-void fullscreen_start() {
+void fullscreen_start(void) {
     extern LGRegion *pagebutton_region;
     extern LGRegion *inventory_region;
 
@@ -392,7 +393,7 @@ void fullscreen_start() {
 
 // Restore all appropriate things to put us back in normal
 // screen mode
-void fullscreen_exit() {
+void fullscreen_exit(void) {
 #ifdef SVGA_SUPPORT
     uchar cur_pal[768];
     extern grs_screen *cit_screen;

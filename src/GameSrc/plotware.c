@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include <string.h>
 
+#include "precompiled.h"
 #include "mfdint.h"
 #include "mfdext.h"
 #include "mfdfunc.h"

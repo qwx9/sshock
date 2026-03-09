@@ -53,7 +53,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	3. Actual chunks, as pointed at in MovieChunk[] array
 
 //	Movie chunk format
-#pragma pack(push,1)
+#pragma pack on	// 1
 // FIXME bitfield and little-endian hell of madness...
 /*
 typedef struct {
@@ -71,7 +71,12 @@ typedef struct {
     uint32_t played : 1;    // has this chunk been clocked out?
     uint32_t offset;        // int8_t offset to chunk start
 } MovieChunk;
-#pragma pack(pop)
+typedef struct {
+	ubyte time[3];
+	ubyte cfp;
+    uint32_t offset;        // int8_t offset to chunk start
+} DMovieChunk;
+#pragma pack off
 
 //	Movie chunk types
 
@@ -96,7 +101,7 @@ typedef struct {
 #define MOVIE_FTABLE_HUFFTAB 1  // huffman table (compressed)
 
 //	Movie header layout
-#pragma pack(push,1)
+#pragma pack on	// 1
 typedef struct {
     uint32_t magicId;        // 'MOVI' (MOVI_MAGIC_ID)
     int32_t numChunks;       // number of chunks in movie
@@ -114,7 +119,7 @@ typedef struct {
     uint8_t reserved[216];   // so chunk is 1K in size
     uint8_t palette[768];    // palette
 } MovieHeader;
-#pragma pack(pop)
+#pragma pack off
 
 #ifndef SAMPRATE_11KHZ // also appear in voc.h
 #define SAMPRATE_11KHZ fix_make(11127, 0)
@@ -151,7 +156,7 @@ typedef struct {
     CircBuff cb;            // circular data buffer
     int32_t blockLen;       // # bytes to read in each block
     int32_t ovfLen;         // # overflow bytes past circular buffer
-    MovieChunk *pCurrChunk; // ptr to current chunk to use
+    DMovieChunk *pCurrChunk; // ptr to current chunk to use
     int32_t bytesLeft;      // bytes left to read
 } MovieBuffInfo;
 
@@ -163,7 +168,7 @@ typedef struct {
 
 typedef struct Movie_ {
     MovieHeader *pmh;                               // ptr to movie header (read from 1st bytes of movie)
-    MovieChunk *pmc;                                // ptr to movie chunk array
+    DMovieChunk *pmc;                                // ptr to movie chunk array
     int32_t fd;                                     // file being read from
     int32_t fileOff;                                // offset in file to start of movie
     grs_canvas *pcanvas;                            // ptr to canvas being played into
@@ -222,7 +227,7 @@ extern MovieAudioBuffers movieAudioBuffers;
 
 // 4x4 cleanup routine (frees
 
-void Draw4x4FreeResources();
+void Draw4x4FreeResources(void);
 
 // Custom functions
 int32_t AfilePrepareRes(Id id, Afile *afile);

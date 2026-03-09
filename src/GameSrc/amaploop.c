@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ShockBitmap.h"
 
+#include "precompiled.h"
 #include "amaploop.h"
 #include "audiolog.h"
 #include "criterr.h"

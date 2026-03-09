@@ -98,15 +98,15 @@ int gri_cpoly_loop(grs_tmap_loop_info *ti) {
 void gri_cpoly_init(grs_tmap_loop_info *ti) {
     ti->bm.hlog = GRL_OPAQUE;
     ti->d = ti->y * grd_bm.row + grd_bm.bits;
-    ti->loop_func = (void (*)())gri_cpoly_loop;
-    ti->top_edge_func = (void (*)())gri_rgbx_edge;
-    ti->bot_edge_func = (void (*)())gri_rgbx_edge;
+    ti->loop_func = (void (*)(void))gri_cpoly_loop;
+    ti->top_edge_func = (void (*)(void))gri_rgbx_edge;
+    ti->bot_edge_func = (void (*)(void))gri_rgbx_edge;
 }
 
 void gri_clut_cpoly_init(grs_tmap_loop_info *ti) {
     ti->bm.hlog = GRL_CLUT;
     ti->d = ti->y * grd_bm.row + grd_bm.bits;
-    ti->loop_func = (void (*)())gri_cpoly_loop;
-    ti->top_edge_func = (void (*)())gri_rgbx_edge;
-    ti->bot_edge_func = (void (*)())gri_rgbx_edge;
+    ti->loop_func = (void (*)(void))gri_cpoly_loop;
+    ti->top_edge_func = (void (*)(void))gri_rgbx_edge;
+    ti->bot_edge_func = (void (*)(void))gri_rgbx_edge;
 }

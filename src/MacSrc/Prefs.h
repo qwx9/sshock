@@ -77,8 +77,10 @@ int16_t SavePrefs(void);
 //  Enums
 //-------------------
 enum OPT_SEQ_ { // Must be in the same order as in wraper.h
-    OPT_SEQ_ADLMIDI = 0,
-    OPT_SEQ_NativeMI,
+    OPT_SEQ_NativeMI = 0,
+#ifdef USE_ADLMIDI
+    OPT_SEQ_ADLMIDI,
+#endif
 #ifdef USE_FLUIDSYNTH
     OPT_SEQ_FluidSyn,
 #endif // USE_FLUIDSYNTH

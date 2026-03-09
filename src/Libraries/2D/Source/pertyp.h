@@ -60,8 +60,8 @@ typedef struct {
 /* and its magnitude is always <= 1.                     */
 /*********************************************************/
 typedef struct {
-   void (*scanline_func)();   /* function to do scanline.   */
-   void (*shell_func)();      /* perspective mapping shell. */
+   void (*scanline_func)(void);   /* function to do scanline.   */
+   void (*shell_func)(void);      /* perspective mapping shell. */
    union {uchar *clut; intptr_t fill_parm;};
    fix scan_slope;
    int dp;

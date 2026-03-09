@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * $Date: 1994/11/28 08:38:42 $
  */
 
+#include "precompiled.h"
 #include "criterr.h"
 #include "objects.h"
 #include "player.h"
@@ -51,14 +52,14 @@ extern uchar curr_alog_vol;
 //#define ASYNCH_DIGI
 
 int digi_timer_id;
-void start_asynch_digi_fx() {
+void start_asynch_digi_fx(void) {
 #ifdef ASYNCH_DIGI
     if (sfx_on)
         tm_activate_process(digi_timer_id);
 #endif
 }
 
-void stop_asynch_digi_fx() {
+void stop_asynch_digi_fx(void) {
 #ifdef ASYNCH_DIGI
     if (sfx_on)
         tm_deactivate_process(digi_timer_id);
@@ -67,7 +68,7 @@ void stop_asynch_digi_fx() {
 
 #endif
 
-errtype stop_digi_fx() {
+errtype stop_digi_fx(void) {
 #ifdef AUDIOLOGS
     if (audiolog_setting)
         audiolog_stop();
@@ -79,11 +80,11 @@ errtype stop_digi_fx() {
     return (ERR_NOEFFECT);
 }
 
-void clear_digi_fx() { stop_digi_fx(); }
+void clear_digi_fx(void) { stop_digi_fx(); }
 
 //#define SND_TEST
 
-errtype digifx_init() {
+errtype digifx_init(void) {
 
     FILE *fp = fopen_caseless("res/data/digiparm.bin", "rb");
     if (fp == NULL) {

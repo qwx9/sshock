@@ -109,31 +109,31 @@ int gri_tluc8_scale_umap_loop(grs_tmap_loop_info *tli) {
 void gri_tluc8_trans_scale_umap_init(grs_tmap_loop_info *tli) {
     tli->bm.hlog = GRL_TRANS;
     tli->d = grd_bm.bits + grd_bm.row * tli->y;
-    tli->loop_func = (void (*)())gri_tluc8_scale_umap_loop;
+    tli->loop_func = (void (*)(void))gri_tluc8_scale_umap_loop;
     tli->right_edge_func = gr_null;
-    tli->left_edge_func = (void (*)())gri_scale_edge;
+    tli->left_edge_func = (void (*)(void))gri_scale_edge;
 }
 
 void gri_tluc8_opaque_scale_umap_init(grs_tmap_loop_info *tli) {
     tli->bm.hlog = GRL_OPAQUE;
     tli->d = grd_bm.bits + grd_bm.row * tli->y;
-    tli->loop_func = (void (*)())gri_tluc8_scale_umap_loop;
+    tli->loop_func = (void (*)(void))gri_tluc8_scale_umap_loop;
     tli->right_edge_func = gr_null;
-    tli->left_edge_func = (void (*)())gri_scale_edge;
+    tli->left_edge_func = (void (*)(void))gri_scale_edge;
 }
 
 void gri_tluc8_trans_clut_scale_umap_init(grs_tmap_loop_info *tli) {
     tli->bm.hlog = GRL_TRANS | GRL_CLUT;
     tli->d = grd_bm.bits + grd_bm.row * tli->y;
-    tli->loop_func = (void (*)())gri_tluc8_scale_umap_loop;
+    tli->loop_func = (void (*)(void))gri_tluc8_scale_umap_loop;
     tli->right_edge_func = gr_null;
-    tli->left_edge_func = (void (*)())gri_scale_edge;
+    tli->left_edge_func = (void (*)(void))gri_scale_edge;
 }
 
 void gri_tluc8_opaque_clut_scale_umap_init(grs_tmap_loop_info *tli) {
     tli->bm.hlog = GRL_OPAQUE | GRL_CLUT;
     tli->d = grd_bm.bits + grd_bm.row * tli->y;
-    tli->loop_func = (void (*)())gri_tluc8_scale_umap_loop;
+    tli->loop_func = (void (*)(void))gri_tluc8_scale_umap_loop;
     tli->right_edge_func = gr_null;
-    tli->left_edge_func = (void (*)())gri_scale_edge;
+    tli->left_edge_func = (void (*)(void))gri_scale_edge;
 }

@@ -112,7 +112,7 @@ void gen_fix_rod (void)
 //void gen_flat24_ubitmap (grs_bitmap *bm, short x, short y)
 
 #ifdef INCLUDE_GEN_FUNC_TABLES
-void (*gen_func[grd_FUNCS])() = {
+void (*gen_func[grd_FUNCS])(void) = {
    gr_null,          /* set_upixel */
    gr_null,          /* set_pixel */
    gr_null,          /* get_upixel */

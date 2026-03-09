@@ -51,7 +51,7 @@ typedef struct ActAnim_ {
 
 //      General prototypes: anim.c
 
-void AnimRecur();                                                       // update animations in progress
+void AnimRecur(void);                                                       // update animations in progress
 
 //      Play and control anims: anim.c
 

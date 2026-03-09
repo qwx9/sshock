@@ -123,9 +123,9 @@ void gri_trans_solid_lin_umap_init(grs_tmap_loop_info *tli) {
         tli->vtab = gr_make_vtab(&(tli->bm));
         tli->bm.hlog = GRL_TRANS;
     }
-    tli->loop_func = (void (*)())gri_trans_solid_lin_umap_loop;
-    tli->right_edge_func = (void (*)())gri_uvx_edge;
-    tli->left_edge_func = (void (*)())gri_uvx_edge;
+    tli->loop_func = (void (*)(void))gri_trans_solid_lin_umap_loop;
+    tli->right_edge_func = (void (*)(void))gri_uvx_edge;
+    tli->left_edge_func = (void (*)(void))gri_uvx_edge;
 }
 
 int gri_trans_solid_floor_umap_loop(grs_tmap_loop_info *tli) {
@@ -212,9 +212,9 @@ void gri_trans_solid_floor_umap_init(grs_tmap_loop_info *tli) {
         tli->vtab = gr_make_vtab(&(tli->bm));
         tli->bm.hlog = GRL_TRANS;
     }
-    tli->loop_func = (void (*)())gri_trans_solid_floor_umap_loop;
-    tli->left_edge_func = (void (*)())gri_uvwx_edge;
-    tli->right_edge_func = (void (*)())gri_uvwx_edge;
+    tli->loop_func = (void (*)(void))gri_trans_solid_floor_umap_loop;
+    tli->left_edge_func = (void (*)(void))gri_uvwx_edge;
+    tli->right_edge_func = (void (*)(void))gri_uvwx_edge;
 }
 
 int gri_solid_wall_umap_loop(grs_tmap_loop_info *tli) {
@@ -307,9 +307,9 @@ void gri_trans_solid_wall_umap_init(grs_tmap_loop_info *tli) {
         tli->vtab = gr_make_vtab(&(tli->bm));
         tli->bm.hlog = GRL_TRANS;
     }
-    tli->loop_func = (void (*)())gri_solid_wall_umap_loop;
-    tli->left_edge_func = (void (*)())gri_uvwy_edge;
-    tli->right_edge_func = (void (*)())gri_uvwy_edge;
+    tli->loop_func = (void (*)(void))gri_solid_wall_umap_loop;
+    tli->left_edge_func = (void (*)(void))gri_uvwy_edge;
+    tli->right_edge_func = (void (*)(void))gri_uvwy_edge;
 }
 
 void gri_trans_solid_per_umap_hscan_scanline(grs_per_info *pi, grs_bitmap *bm) {
@@ -552,11 +552,11 @@ extern void gri_per_umap_hscan(grs_bitmap *bm, int n, grs_vertex **vpl, grs_per_
 extern void gri_per_umap_vscan(grs_bitmap *bm, int n, grs_vertex **vpl, grs_per_setup *ps);
 
 void gri_trans_solid_per_umap_hscan_init(grs_bitmap *bm, grs_per_setup *ps) {
-    ps->shell_func = (void (*)())gri_per_umap_hscan;
-    ps->scanline_func = (void (*)())gri_trans_solid_per_umap_hscan_scanline;
+    ps->shell_func = (void (*)(void))gri_per_umap_hscan;
+    ps->scanline_func = (void (*)(void))gri_trans_solid_per_umap_hscan_scanline;
 }
 
 void gri_trans_solid_per_umap_vscan_init(grs_bitmap *bm, grs_per_setup *ps) {
-    ps->shell_func = (void (*)())gri_per_umap_vscan;
-    ps->scanline_func = (void (*)())gri_trans_solid_per_umap_vscan_scanline;
+    ps->shell_func = (void (*)(void))gri_per_umap_vscan;
+    ps->scanline_func = (void (*)(void))gri_trans_solid_per_umap_vscan_scanline;
 }

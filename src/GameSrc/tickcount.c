@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include "precompiled.h"
 #include "tickcount.h"
 
 // number of ticks since system start (1 Tick is about 1/60 second)

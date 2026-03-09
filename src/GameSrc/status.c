@@ -33,6 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <math.h>
 
+#include "precompiled.h"
 #include "status.h"
 #include "player.h"
 #include "tools.h"
@@ -373,13 +374,13 @@ void status_bio_set(short bio_mode) {
 // Do the init stuff for the biorhythm. 2d should be initialized and
 // screen canvas should be unchanged when this is called.
 
-void status_bio_update_screenmode() { bio_canvas = *grd_screen_canvas; /* make copy for int routine */ }
+void status_bio_update_screenmode(void) { bio_canvas = *grd_screen_canvas; /* make copy for int routine */ }
 
 void status_bio_init(void) {
     status_bio_update_screenmode();
 
 #ifndef TIMING_PROCEDURES_OFF
-    bio_time_id = tm_add_process((void (*)())status_bio_update, 0, TMD_FREQ / 140);
+    bio_time_id = tm_add_process((void (*)(void))status_bio_update, 0, TMD_FREQ / 140);
 #endif
 }
 
@@ -500,7 +501,7 @@ errtype status_bio_add(int *var, int max_value, int update_time, int track_numbe
     }
 }
 
-errtype clear_bio_tracks() {
+errtype clear_bio_tracks(void) {
     int i;
     for (i = 0; i < NUM_BIO_TRACKS; i++)
         status_bio_add(NULL, 0, 0, i, 0, 0);
@@ -517,7 +518,7 @@ int FIND_OVERLAP(int x, int y) { return (((x)-y + STATUS_BIO_LENGTH) % STATUS_BI
 // status_bio_synchronous()
 //
 // Does the synchronous blitting of biorhythm canvas
-void status_bio_synchronous() {
+void status_bio_synchronous(void) {
     if (!convert_use_mode)
         return;
     gr_push_canvas(grd_screen_canvas);

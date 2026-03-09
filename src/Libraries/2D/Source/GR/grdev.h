@@ -82,5 +82,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define gr_set_focus \
    ((void (*)(short x,short y))grd_device_table[GRT_SET_FOCUS])
 #define gr_get_focus \
-   ((void (*)())grd_device_table[GRT_GET_FOCUS])
+   ((void (*)(void))grd_device_table[GRT_GET_FOCUS])
 #endif /* !__GRDEV_H */

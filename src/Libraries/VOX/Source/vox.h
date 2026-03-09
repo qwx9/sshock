@@ -40,7 +40,7 @@ typedef struct {
 uchar vx_init(int max_depth);
 
 // Close the voxel system
-void vx_close();
+void vx_close(void);
 
 // Initialize a voxel
 // Pass it pointer to the voxel structure

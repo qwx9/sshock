@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <string.h>
 
+#include "precompiled.h"
 #include "MacTune.h"
 
 #include "saveload.h"
@@ -74,7 +75,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // INTERNAL PROTOTYPES
 // -----------------
-void load_level_data();
+void load_level_data(void);
 void store_objects(char **buf, ObjID *obj_array, char obj_count);
 void restore_objects(char *buf, ObjID *obj_array, char obj_count);
 errtype write_id(Id id_num, short index, uint32_t version, void *ptr, long sz, int fd, short flags);
@@ -707,7 +708,7 @@ errtype expand_old_class(char cl, short new_start)
 }
 */
 
-void load_level_data() {
+void load_level_data(void) {
     // KLC-removed from here    obj_load_art(FALSE);
     load_small_texturemaps();
 }

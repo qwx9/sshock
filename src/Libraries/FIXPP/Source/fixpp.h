@@ -29,14 +29,20 @@ language.
 #ifndef __FIXPP_H
 #define __FIXPP_H
 
+/*
 #include <istream>
 #include <cstdio>
 #include <cstdlib>
+*/
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 //#include "mprintf.h"
 #include "fix.h" // A big thank you to Dan and Matt.
+#ifdef __cplusplus
 }
+#endif
 
 // How many bits to shift an integer up to make it a fixpoint.
 // ===========================================================
@@ -64,6 +70,7 @@ extern "C" {
 // Here is a nice forward declaration.
 // ===================================
 
+#ifdef __cplusplus
 class Fixpoint;
 
 #define Q Fixpoint
@@ -698,5 +705,107 @@ inline Fixpoint abs(Fixpoint fp) {
 void touch(Fixpoint &);
 
 #endif /* FIXDEBUG */
+
+#else
+
+typedef fix Q;
+typedef fix Fixpoint;
+
+static inline int32_t
+q_to_int(Q val)
+{
+	return (int32_t)(val >> SHIFTUP);
+}
+
+static inline fix
+to_fix(int32_t val)
+{
+	return (fix)val;
+}
+
+#define f2Fixpoint(x) ((fix)((x)*SHIFTMULTIPLIER))
+
+static inline fixang
+q_to_fixang(Q val)
+{
+    Q temp = val * f2Fixpoint(0.159154943);
+
+    // for temp, 360 degrees = 1.0.
+    // The lower 16 bits of the internal rep is the fixang.
+
+    return (uint16_t)temp;
+}
+
+static inline void
+q_sincos(Fixpoint ang, Fixpoint *sn, Fixpoint *cs) {
+    fix fsn, fcs;
+    fix_sincos(q_to_fixang(ang), &fsn, &fcs);
+    *sn = fsn;
+    *cs = fcs;
+}
+
+/*
+typedef struct Q Q;
+struct Q{
+	fix val;
+};
+typedef Q Fixpoint;
+//typedef fix Q;
+
+#define f2Fixpoint(x)	((fix)((x) * SHIFTMULTIPLIER))
+
+static inline Q
+q_from_double(double val)
+{
+	Q q;
+
+	q.val = f2Fixpoint(val);
+	return q;
+}
+
+static inline Q
+q_from_int(uint32_t val)
+{
+	Q q;
+
+	q.val = val << SHIFTUP;
+	return q;
+}
+
+static inline int32_t
+q_to_int(Q q)
+{
+	return q.val >> SHIFTUP;
+}
+
+static inline fix
+q_to_fix(Q q)
+{
+	return q.val;
+}
+
+static inline fixang
+q_to_fixang(Q q)
+{
+    Q temp;
+    
+	temp.val = q.val * f2Fixpoint(0.159154943);
+
+    // for temp, 360 degrees = 1.0.
+    // The lower 16 bits of the internal rep is the fixang.
+
+    return (uint16_t)temp.val;
+}
+
+static inline void
+q_sincos(Q ang, fix *sn, fix *cs) {
+    fix fsn, fcs;
+    fix_sincos(q_to_fixang(ang), &fsn, &fcs);
+    *sn = fsn;
+    *cs = fcs;
+}
+*/
+
+#endif /* __cplusplus */
 
 #endif /* !__FIXPP_H */

@@ -26,8 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 extern void palfx_fade_up(uchar do_now);
-extern void palfx_fade_down();
-extern void palfx_init();
+extern void palfx_fade_down(void);
+extern void palfx_init(void);
 
 void finish_pal_effect(byte id);
 byte palfx_start_fade_up(uchar *new_pal);

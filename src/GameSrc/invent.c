@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 
+#include "precompiled.h"
 #include "email.h"
 #include "invent.h"
 #include "leanmetr.h"
@@ -1827,7 +1828,7 @@ ubyte add_to_some_page(ObjID obj, uchar select) {
     inv_display *dpy;
     int i;
     for (i = 0; gen_inv_displays(&i, &dpy); i++) {
-        ubyte pop;
+        ubyte pop = 0;
         if (global_fullmap->cyber && (objs[obj].obclass == CLASS_BIGSTUFF)) {
             if (!(dpy->add_classes & (1 << CLASS_SOFTWARE)))
                 continue;
@@ -1961,7 +1962,7 @@ errtype inventory_clear(void) {
     return (OK);
 }
 
-errtype inventory_full_redraw() {
+errtype inventory_full_redraw(void) {
     int i;
     inv_last_page = -1;
     for (i = 0; i < NUM_PAGE_BUTTONS; i++)
@@ -2507,7 +2508,7 @@ LGRegion *create_invent_region(LGRegion *root, LGRegion **pbuttons, LGRegion **p
     return invreg;
 }
 
-errtype inventory_update_screen_mode() {
+errtype inventory_update_screen_mode(void) {
     if (convert_use_mode) {
         gr_init_sub_canvas(grd_scr_canv, &inv_norm_canvas, SCONV_X(INVENTORY_PANEL_X), SCONV_Y(INVENTORY_PANEL_Y),
                            SCONV_X(INVENTORY_PANEL_WIDTH), SCONV_Y(INVENTORY_PANEL_HEIGHT));

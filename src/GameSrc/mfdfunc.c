@@ -30,6 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 
+#include "precompiled.h"
 #include "ammomfd.h"
 #include "bark.h"
 #include "biohelp.h"
@@ -204,7 +205,7 @@ void draw_blank_mfd(void) {
 // expose/handler pairs, and also where you set their flags.  This is also
 // where MFD virtual slots are set to point at their functions.
 
-void mfd_init_funcs() {
+void mfd_init_funcs(void) {
     int i;
     // Define a couple of MFD functions.
     for (i = 0; i < MFD_NUM_FUNCS; i++)
@@ -2102,7 +2103,7 @@ void mfd_bioware_expose(MFD *m, ubyte control) {
 //
 // Open the space station resource file for animation
 
-errtype mfd_anim_init() {
+errtype mfd_anim_init(void) {
 #ifdef USING_DORKY_BROKEN_ANIM
     if (ResOpenFile("space4.res") < 0)
         critical_error(CRITERR_RES | 5);

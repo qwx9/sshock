@@ -64,7 +64,7 @@ typedef short ObjSpecID;
 #include "objapp.h"
 #endif
 
-#pragma pack(push,2)
+#pragma pack on // 2
 
 // The common data for all objects
 typedef struct Obj {
@@ -130,19 +130,27 @@ typedef struct ObjSpecHeader {
 // as appropriate.
 
 typedef struct ObjSpec {
+    /*
     union {
         struct {
             ObjID id : 15;   // ID in master list
             ushort tile : 1; // look in tiled array?
         } bits;
+    */
+        ushort bits;
         ObjSpecID headused;
+    /*
     };
+    */
     union {
         ObjSpecID next; // next struct in free or used chain
         ObjSpecID headfree;
     };
     ObjSpecID prev; // prev struct in used chain
 } ObjSpec;
+
+#define	OSBITSID(x)	((x)->bits & (1<<15)-1)
+#define	OSBITSTILE(x)	((x)->bits >> 15 & 1)
 
 // This macro permutes the ObjSpecID pmo through all of the ObjSpecs in the
 // used chain of objspec.  "tile" is set to whether it's a tiled object.
@@ -311,6 +319,6 @@ uchar ObjInstInit(ObjID id, ObjSpecID specid, ObjSubClass subclass);
 
 //////////////////////////////
 
-#pragma pack(pop)
+#pragma pack off
 
 #endif // __OBJECTS_H

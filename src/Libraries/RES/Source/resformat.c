@@ -22,11 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "grs.h" // grs_font
 
 // Defines the layout of a FrameDesc within a resource file.
-const ResLayout FrameDescLayout = {
-  28, // on-disc size
-  sizeof(FrameDesc), // in-memory size
-  LAYOUT_FLAG_RAW_DATA_FOLLOWS, // flags
-  {
+const ResField FrameDescLayoutf[] = {
     { RFFT_PAD, 4 }, // skip placeholder bits pointer
     { RFFT_UINT8,  offsetof(FrameDesc,bm.type) },
     { RFFT_UINT8,  offsetof(FrameDesc,bm.align) },
@@ -43,7 +39,12 @@ const ResLayout FrameDescLayout = {
     { RFFT_UINT32, offsetof(FrameDesc,pallOff) },
     { RFFT_RAW,    sizeof(FrameDesc) }, // raw bitmap data follows
     { RFFT_END, 0 }
-  }
+};
+const ResLayout FrameDescLayout = {
+  28, // on-disc size
+  sizeof(FrameDesc), // in-memory size
+  LAYOUT_FLAG_RAW_DATA_FOLLOWS, // flags
+  FrameDescLayoutf
 };
 
 // Decoder function for frames: decodes using the layout in the normal way and
@@ -58,11 +59,7 @@ const ResourceFormat FrameDescFormat = {
 
 // Describe a font.
 // FIXME treats the offsets table as raw, should be decoded also.
-const ResLayout FontLayout = {
-    84,                           // size on disc (header only)
-    offsetof(grs_font, off_tab),  // size in memory (header only)
-    LAYOUT_FLAG_RAW_DATA_FOLLOWS, // flags
-    {
+const ResField FontLayoutf[] = {
 	{ RFFT_UINT16, offsetof(grs_font, id)      },
 	{ RFFT_PAD,    34 }, // dummy1
 	{ RFFT_UINT16, offsetof(grs_font, min)     },
@@ -75,7 +72,12 @@ const ResLayout FontLayout = {
 	{ RFFT_RAW,    offsetof(grs_font, off_tab) },
 	{ RFFT_END,    0 }
 	// offsets table follows, then bitmap data
-    }
+};
+const ResLayout FontLayout = {
+    84,                           // size on disc (header only)
+    offsetof(grs_font, off_tab),  // size in memory (header only)
+    LAYOUT_FLAG_RAW_DATA_FOLLOWS, // flags
+    FontLayoutf
 };
 
 const ResourceFormat FontFormat = RES_FORMAT(FontLayout);

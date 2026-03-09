@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <ctype.h>
 #include <SDL.h>
 
+#include "precompiled.h"
 #include "criterr.h"
 #include "gr2ss.h"
 #include "tools.h"
@@ -190,8 +191,8 @@ errtype draw_res_bm(Ref id, int x, int y) { return (draw_res_bm_core(id, x, y, T
 // Note, does no mouse code!
 errtype draw_full_res_bm(Ref id, int x, int y, uchar fade_in) {
     FrameDesc *f;
-    short *temp_pall;
-    byte pal_id;
+    short *temp_pall = NULL;
+    byte pal_id = 0;
 
     f = RefLock(id);
     if (f == NULL)
@@ -470,7 +471,7 @@ errtype message_info(const char *info_text) {
 
 uchar message_clear_on = TRUE;
 
-errtype message_clear_check() {
+errtype message_clear_check(void) {
     // much as I like spews that print every frame.......
     //   Spew(DSRC_GAMESYS_Messages, ("%d >? %d\n",player_struct.game_time,message_clear_time));
     if (*tmd_ticks < message_clear_time)
@@ -686,9 +687,9 @@ int hyphenated_wrap_text(char *ps, char *out, short width) {
 
 char wait_count = 0;
 
-errtype begin_wait() {
+errtype begin_wait(void) {
     extern LGCursor wait_cursor;
-    errtype retval;
+    errtype retval = OK;
     if (wait_count == 0) {
         uiHideMouse(NULL);
         retval = uiPushGlobalCursor(&wait_cursor);
@@ -718,8 +719,8 @@ errtype spoof_mouse_event(void) {
 }
 #endif // NOT_YET
 
-errtype end_wait() {
-    errtype retval;
+errtype end_wait(void) {
+    errtype retval = OK;
     wait_count--;
     if (wait_count <= 0) {
         uiHideMouse(NULL);

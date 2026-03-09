@@ -157,13 +157,13 @@ typedef struct _mfd_func {
     MFDhandler handlers[NUM_MFD_HANDLERS];
 } MFD_Func;
 
-extern void init_mfd_funcs();
+extern void init_mfd_funcs(void);
 extern uchar mfd_view_callback_full(uiEvent *e, LGRegion *r, intptr_t udata);
 extern uchar mfd_view_callback(uiEvent *e, LGRegion *r, intptr_t udata);
 extern uchar mfd_button_callback(uiEvent *e, LGRegion *r, intptr_t udata);
 extern uchar mfd_button_callback_kb(ushort keycode, uint32_t context, intptr_t data);
 extern uchar mfd_update_current_slot(ubyte mfd_id, ubyte status, ubyte num_steps);
-extern void mfd_init_funcs();
+extern void mfd_init_funcs(void);
 extern void mfd_set_cliprect(LGRect *r);
 extern void set_mfd_func(int fnum, void *e, void *h, void *initf, ubyte flags);
 extern LGPoint mfd_draw_string(char *s, short x, short y, long c, uchar DrawString);
@@ -172,7 +172,7 @@ extern LGPoint mfd_full_draw_string(char *s, short x, short y, long c, int font,
 extern void set_slot_to_func(ubyte snum, ubyte fnum, MFD_Status stat);
 extern void mfd_draw_bitmap(grs_bitmap *bmp, short x, short y);
 extern void mfd_partial_clear(LGRect *r);
-extern void init_newmfd_button_cursors();
+extern void init_newmfd_button_cursors(void);
 extern void mfd_update_display(MFD *m, short x0, short y0, short x1, short y1);
 extern void mfd_clear_rects(void);
 extern errtype mfd_add_rect(short x, short y, short x1, short y1);

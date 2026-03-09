@@ -1,5 +1,6 @@
 #include <SDL.h>
 
+#include "precompiled.h"
 #include "Xmi.h"
 #include "MusicDevice.h"
 #include "Prefs.h"
@@ -687,9 +688,8 @@ void InitReadXMI(void) {
     int channel, i;
     SDL_Thread *thread;
 
-    InitDecXMI();
-
     MyMutex = SDL_CreateMutex();
+    InitDecXMI();
 
     for (channel = 0; channel < 16; channel++) {
         ChannelThread[channel] = -1;
@@ -722,11 +722,13 @@ void InitDecXMI(void) {
     int musicrate = 48000;
 
     switch (gShockPrefs.soMidiBackend) {
+#ifdef USE_ADLMIDI
     case OPT_SEQ_ADLMIDI: // adlmidi
     {
         INFO("Creating ADLMIDI device");
         musicdev = CreateMusicDevice(Music_AdlMidi);
     } break;
+#endif
     case OPT_SEQ_NativeMI: // native midi
     {
         INFO("Creating native MIDI device");
@@ -778,12 +780,14 @@ void ReloadDecXMI(void) {
         case Music_None:
             deviceTypeMatch = 0;
             break;
-        case Music_AdlMidi:
-            deviceTypeMatch = (gShockPrefs.soMidiBackend == 0);
-            break;
         case Music_Native:
             deviceTypeMatch = (gShockPrefs.soMidiBackend == 1);
             break;
+#ifdef USE_ADLMIDI
+        case Music_AdlMidi:
+            deviceTypeMatch = (gShockPrefs.soMidiBackend == 0);
+            break;
+#endif
 #ifdef USE_FLUIDSYNTH
         case Music_FluidSynth:
             deviceTypeMatch = (gShockPrefs.soMidiBackend == 2);

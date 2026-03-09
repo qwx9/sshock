@@ -103,7 +103,7 @@ bool EDMS_frere_jaques(physics_handle ph);
 
 //	Checks integrity of EDMS.  Returns EDMS error codes, as seen below.
 //	-------------------------------------------------------------------
-int32_t EDMS_sanity_check();
+int32_t EDMS_sanity_check(void);
 
 //	Here we exclude objects from hitting specific others...
 //	-------------------------------------------------------

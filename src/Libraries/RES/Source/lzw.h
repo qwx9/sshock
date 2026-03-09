@@ -60,8 +60,8 @@ void LzwTerm(void); // Calls LzwFreeBuffer()
 //	buffer has been set or allocated, one will automatically be allocated).
 
 int32_t LzwSetBuffer(void *buff, int32_t buffSize); // Set buffer for lzw use
-int32_t LzwMallocBuffer();                          // Malloc buffer for lzw use
-void LzwFreeBuffer();                               // free alloced buffer if any
+int32_t LzwMallocBuffer(void);                          // Malloc buffer for lzw use
+void LzwFreeBuffer(void);                               // free alloced buffer if any
 
 //	Sizing constants (just needed to define LZW_BUFF_SIZE)
 
@@ -100,7 +100,7 @@ typedef enum {
 //	The Ginzo compression knife
 
 int32_t LzwCompress(void (*f_SrcCtrl)(intptr_t srcLoc, LzwCtrl ctrl),   // func to control source
-                    uint8_t (*f_SrcGet)(),                              // func to get bytes from source
+                    uint8_t (*f_SrcGet)(void),                              // func to get bytes from source
                     intptr_t srcLoc,                                    // source "location" (ptr, FILE *, etc.)
                     int32_t srcSize,                                    // size of source in bytes
                     void (*f_DestCtrl)(intptr_t destLoc, LzwCtrl ctrl), // func to control dest
@@ -112,7 +112,7 @@ int32_t LzwCompress(void (*f_SrcCtrl)(intptr_t srcLoc, LzwCtrl ctrl),   // func 
 //	And its expansion counterpart, both for $19.95 while supplies last
 
 int32_t LzwExpand(void (*f_SrcCtrl)(intptr_t srcLoc, LzwCtrl ctrl),   // func to control source
-                  uint8_t (*f_SrcGet)(),                              // func to get bytes from source
+                  uint8_t (*f_SrcGet)(void),                              // func to get bytes from source
                   intptr_t srcLoc,                                    // source "location" (ptr, FILE *, etc.)
                   void (*f_DestCtrl)(intptr_t destLoc, LzwCtrl ctrl), // func to control dest
                   void (*f_DestPut)(uint8_t byte),                    // func to put bytes to dest
@@ -314,11 +314,11 @@ int32_t LzwExpandFd2Buff(int32_t fdSrc, uint8_t *pdest, int32_t destSkip, int32_
 //	Prototypes of standard sources
 
 void LzwBuffSrcCtrl(intptr_t srcLoc, LzwCtrl ctrl);
-uint8_t LzwBuffSrcGet();
+uint8_t LzwBuffSrcGet(void);
 void LzwFdSrcCtrl(intptr_t srcLoc, LzwCtrl ctrl);
-uint8_t LzwFdSrcGet();
+uint8_t LzwFdSrcGet(void);
 void LzwFpSrcCtrl(intptr_t srcLoc, LzwCtrl ctrl);
-uint8_t LzwFpSrcGet();
+uint8_t LzwFpSrcGet(void);
 
 //	Prototypes of standard destinations
 

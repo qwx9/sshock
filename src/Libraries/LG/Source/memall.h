@@ -84,7 +84,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 void MemSetAllocator(void *(*fm)(size_t size),
 	void *(*fr)(void *p, size_t size), void (*ff)(void *p));
 int MemPushAllocator(void *(*fm)(size_t size),
-	void *(*fr)(void *p, size_t size), void (*ff)());
+	void *(*fr)(void *p, size_t size), void (*ff)(void));
 int MemPopAllocator(void);
 
 //	Allocating, reallocating, & freeing memory
@@ -128,8 +128,8 @@ void MemCheckOff(void);
 //	Heap management (memgrow.c)
 
 int MemGrowHeap(int wantK);
-void MemLockHeap();
-void MemUnlockHeap();
+void MemLockHeap(void);
+void MemUnlockHeap(void);
 
 //	Calling previous (underlying) allocators (only from top level!)
 

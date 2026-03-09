@@ -35,9 +35,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "grnull.h"
 #include "ifcn.h"
 
-typedef void (*ptr_type)();
+typedef void (*ptr_type)(void);
 
-void (*flat8_function_table[GRD_FILL_TYPES][GRD_FUNCS * REAL_BMT_TYPES])() = {
+void (*flat8_function_table[GRD_FILL_TYPES][GRD_FUNCS * REAL_BMT_TYPES])(void) = {
     {/* normal fill type - from fl8nft.h */
      /* FILL_NORM */
      /* BMT_DEVICE */

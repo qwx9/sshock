@@ -75,7 +75,7 @@ void setup_start(void);
 void setup_exit(void);
 
 // Displays the intro screen(s)
-errtype setup_intro_draw();
+errtype setup_intro_draw(void);
 
 // Call this when ready to start a new game.
 void go_and_start_the_game_already(void);

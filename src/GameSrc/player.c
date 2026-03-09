@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 
+#include "precompiled.h"
 #include "objwpn.h"
 #include "player.h"
 #include "diffq.h" // for time limit
@@ -217,7 +218,7 @@ errtype init_player(Player *pplr) {
 #define INITIAL_PLAYER_X 0x1E00
 #define INITIAL_PLAYER_Y 0x1620
 
-errtype player_create_initial() {
+errtype player_create_initial(void) {
     ObjLoc plr_loc;
     extern Pelvis standard_pelvis;
 

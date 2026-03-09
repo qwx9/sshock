@@ -59,7 +59,7 @@ void alloc_cursor_bitmaps(void);
 /**
  * @deprecated does nothing
  */
-void free_cursor_bitmaps();
+void free_cursor_bitmaps(void);
 
 void input_chk(void);
 // uchar main_kb_callback(uiEvent *h, LGRegion *r, intptr_t udata);

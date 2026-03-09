@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
+#include "precompiled.h"
 #include "sideicon.h"
 #include "sideart.h"
 #include "popups.h"
@@ -151,7 +152,7 @@ void side_icon_language_change(void) {
     load_string_array(REF_STR_IconCursor, cursor_strings, cursor_strbuf, sizeof(cursor_strbuf), NUM_SIDE_ICONS);
 }
 
-void init_all_side_icons() {
+void init_all_side_icons(void) {
     int i;
 
     // Now, figure out on-screen locations
@@ -372,7 +373,7 @@ uchar side_icon_prog_hotkey_func(ushort keycode, uint32_t context, intptr_t notu
 //
 // Sort of an initial-draw-everything type of routine
 
-void side_icon_expose_all() {
+void side_icon_expose_all(void) {
     for (uint8_t i = 0; i < NUM_SIDE_ICONS; i++)
         side_icon_expose(i);
 }
@@ -497,7 +498,7 @@ void side_icon_expose(ubyte icon_num) {
 //
 // Load the bitmaps for all side icons and states from the resource system.
 
-errtype side_icon_load_bitmaps() {
+errtype side_icon_load_bitmaps(void) {
 #ifdef PRELOAD_BITMAPS
     RefTable *side_icon_rft;
     int i, j, index /*, file_handle */;
@@ -523,7 +524,7 @@ errtype side_icon_load_bitmaps() {
     return (OK);
 }
 
-errtype side_icon_free_bitmaps() {
+errtype side_icon_free_bitmaps(void) {
 #ifdef PRELOAD_BITMAPS
     int i, j, index;
     Free(side_icon_background.bits);

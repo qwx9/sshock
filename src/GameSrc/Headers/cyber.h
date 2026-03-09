@@ -18,10 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "player.h"
 
-errtype exit_cyberspace_stuff();
+errtype exit_cyberspace_stuff(void);
 errtype enter_cyberspace_stuff(char dest_level);
-errtype early_exit_cyberspace_stuff();
-errtype check_cspace_death();
+errtype early_exit_cyberspace_stuff(void);
+errtype check_cspace_death(void);
 
 #define NUM_CS_EFFECTS 3
 

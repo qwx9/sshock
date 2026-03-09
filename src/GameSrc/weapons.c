@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 
+#include "precompiled.h"
 #include "weapons.h"
 #include "damage.h"
 #include "hand.h"
@@ -1298,7 +1299,7 @@ ubyte drain_energy(ubyte e) {
 // returns the triple of the player's currently selected weapon.
 // returns -1 if no weapon is currently selected.
 
-int current_weapon_trip() {
+int current_weapon_trip(void) {
     weapon_slot *ws;
     int slot;
 

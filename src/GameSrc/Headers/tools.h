@@ -93,7 +93,7 @@ errtype message_box(char *box_text);
 // Writes a message to the info LGRegion
 errtype string_message_info(int strnum);
 errtype message_info(const char *info_text);
-errtype message_clear_check();
+errtype message_clear_check(void);
 
 // Spit up a box asking for confirmation.  Returns true or false, accordingly.
 uchar confirm_box(char *box_text);
@@ -108,8 +108,8 @@ char *next_number_fname(char *fname);
 errtype tight_loop(uchar check_input);
 
 // set / unset "wait" cursor
-errtype begin_wait();
-errtype end_wait();
+errtype begin_wait(void);
+errtype end_wait(void);
 
 // search/replace characters in string
 void string_replace_char(char *s, char from, char to);

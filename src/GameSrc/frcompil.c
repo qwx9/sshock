@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * Initial revision
  *
  */
+#include "precompiled.h"
 #define __FRCOMPIL_SRC
 #include "frintern.h"
 #include "map.h"

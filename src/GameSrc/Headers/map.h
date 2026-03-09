@@ -155,14 +155,20 @@ typedef struct _omap_element {
     //};
     uchar param;
     struct _lighting {
+    	/*
         uchar floor : 4;
         uchar ceil : 4;
+        */
+        uchar fc;
     } templight;
     union _space {
         struct _tmaps {
+        	/*
             ushort floor : 5;
             ushort ceil : 5;
             ushort wall : 6;
+            */
+            ushort fcw;
         } real;
         struct _cybcolors {
             uchar floor;
@@ -174,9 +180,12 @@ typedef struct _omap_element {
     struct _render_info {
         uchar sub_clip;
         uchar clear;
+        /*
         uchar rotflr : 2;
         uchar rotceil : 2;
         uchar flicker : 4;
+        */
+        uchar rotf;
     } rinfo;
 } oMapElem;
 
@@ -190,9 +199,9 @@ typedef struct {
 } oFullMap;
 
 #define ome_tiletype(me_ptr)             ((me_ptr)->tiletype)
-#define ome_tmap_flr(me_ptr)             ((me_ptr)->space.real.floor)
-#define ome_tmap_wall(me_ptr)            ((me_ptr)->space.real.wall)
-#define ome_tmap_ceil(me_ptr)            ((me_ptr)->space.real.ceil)
+#define ome_tmap_flr(me_ptr)             ((me_ptr)->space.real.fcw & 31)
+#define ome_tmap_wall(me_ptr)            ((me_ptr)->space.real.fcw >> 5 & 31)
+#define ome_tmap_ceil(me_ptr)            ((me_ptr)->space.real.fcw >> 10 & 63)
 #define ome_tmap(me_ptr, idx) \
     (((idx) == TMAP_FLR) ? me_tmap_flr(me_ptr) : (((idx) == TMAP_CEIL) ? me_tmap_ceil(me_ptr) : me_tmap_wall(me_ptr)))
 #define ome_objref(me_ptr)               ((me_ptr)->objRef)
@@ -203,13 +212,13 @@ typedef struct {
 #define ome_height(me_ptr,idx)           (((idx) == HGT_FLOOR) ? me_height_flr(me_ptr) : me_height_ceil(me_ptr))
 #define ome_cybcolor_flr(me_ptr)         ((me_ptr)->space.cyber.floor)
 #define ome_cybcolor_ceil(me_ptr)        ((me_ptr)->space.cyber.ceil)
-#define ome_templight_flr(me_ptr)        ((me_ptr)->templight.floor)
-#define ome_templight_ceil(me_ptr)       ((me_ptr)->templight.ceil)
+#define ome_templight_flr(me_ptr)        ((me_ptr)->templight.fc & 15)
+#define ome_templight_ceil(me_ptr)       ((me_ptr)->templight.fc >> 4 & 15)
 #define ome_subclip(me_ptr)              ((me_ptr)->rinfo.sub_clip)
 #define ome_clearsolid(me_ptr)           ((me_ptr)->rinfo.clear)
-#define ome_rotflr(me_ptr)               ((me_ptr)->rinfo.rotflr)
-#define ome_rotceil(me_ptr)              ((me_ptr)->rinfo.rotceil)
-#define ome_flicker(me_ptr)              ((me_ptr)->rinfo.flicker)
+#define ome_rotflr(me_ptr)               ((me_ptr)->rinfo.rotf & 3)
+#define ome_rotceil(me_ptr)              ((me_ptr)->rinfo.rotf >> 2 & 3)
+#define ome_flicker(me_ptr)              ((me_ptr)->rinfo.rotf >> 4 & 15)
 #endif
 
 typedef struct {

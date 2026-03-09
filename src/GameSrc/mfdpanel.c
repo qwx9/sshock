@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <limits.h>
 
+#include "precompiled.h"
 #include "mfdpanel.h"
 #include "mfdint.h"
 #include "mfdext.h"
@@ -515,7 +516,7 @@ void mfd_setup_wirepanel(uchar special, ObjID id) {
     mfd_notify_func(MFD_ACCESSPANEL_FUNC, MFD_INFO_SLOT, TRUE, MFD_ACTIVE, TRUE);
 }
 
-uchar mfd_solve_wirepanel() {
+uchar mfd_solve_wirepanel(void) {
     wirePosPuzzle *wppz = (wirePosPuzzle *)&player_struct.mfd_access_puzzles[0];
     int wire, swapper, targ, num_wires;
     int score;
@@ -999,7 +1000,7 @@ void gpz_add_gate(gridFlowPuzzle *gfpz, ObjID me) {
     return;
 }
 
-uchar mfd_solve_gridpanel() {
+uchar mfd_solve_gridpanel(void) {
     gridFlowPuzzle *gfpz = (gridFlowPuzzle *)&player_struct.mfd_access_puzzles[0];
     gridFlowPuzzle solved;
     int search_depth;

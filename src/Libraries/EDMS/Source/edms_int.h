@@ -49,11 +49,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //	Actual object types...
 //	======================
-extern Q VACUUM, MARBLE, ROBOT, FIELD_POINT, BIPED, PELVIS, DEATH, D_FRAME;
+extern fix VACUUM, MARBLE, ROBOT, FIELD_POINT, BIPED, PELVIS, DEATH, D_FRAME;
 
 //	Commands for soliton from the state stream (in the Global.cc file)...
 //	=====================================================================
-extern Q END;
+extern fix END;
 
 //	Max and Minima...
 //	=================
@@ -85,8 +85,8 @@ extern Q END;
 
 //	Memory conserving stuff...
 //	==========================
-typedef Q EDMS_Argument_Block[MAX_OBJ][DOF][DOF_DERIVS];
-typedef Q (*EDMS_Argblock_Pointer)[DOF][DOF_DERIVS];
+typedef fix EDMS_Argument_Block[MAX_OBJ][DOF][DOF_DERIVS];
+typedef fix (*EDMS_Argblock_Pointer)[DOF][DOF_DERIVS];
 
 //	Have some functions...
 //	======================
@@ -117,22 +117,16 @@ typedef int32_t object_number;
 #define physics_handle_to_object_number(ph) (ph2on[ph])
 #define object_number_to_physics_handle(on) (on2ph[on])
 
-extern "C" {
-
 void EDMS_init_handles(void);
 physics_handle EDMS_bind_object_number(object_number on);
 void EDMS_remap_object_number(object_number old, object_number nu);
 physics_handle EDMS_get_free_ph(void);
 void EDMS_release_object(physics_handle ph);
 
-}
-
 //	Terrain
 //	=======
-Q terrain(Q X, Q Y, int32_t deriv);                         // This calls Terrain()
-TerrainHit indoor_terrain(Q X, Q Y, Q Z, Q R, physics_handle ph, TFType type); // Indoor for Citadel, FBO, etc...
-
-extern "C" {
+fix terrain(fix X, fix Y, int32_t deriv);                         // This calls Terrain()
+TerrainHit indoor_terrain(fix X, fix Y, fix Z, fix R, physics_handle ph, TFType type); // Indoor for Citadel, FBO, etc...
 
 fix Terrain(fix X, fix Y, int32_t deriv);                           // This is provided by the user...
 TerrainHit Indoor_Terrain(fix X, fix Y, fix Z, fix R, physics_handle ph, TFType type); // As is this...
@@ -167,10 +161,9 @@ typedef struct {
 
 bool FF_terrain(fix X, fix Y, fix Z, uchar fast, terrain_ff *TFF); // From Freefall...
 bool FF_raycast(fix x, fix y, fix z, fix *vec, fix range, fix *where_hit, terrain_ff *tff);
-}
 
-bool ff_terrain(Q X, Q Y, Q Z, uchar fast, terrain_ff *TFF); // For the refined...
-bool ff_raycast(Q x, Q y, Q z, Fixpoint *vec, Q range, Fixpoint *where_hit, terrain_ff *FFT);
+bool ff_terrain(fix X, fix Y, fix Z, uchar fast, terrain_ff *TFF); // For the refined...
+bool ff_raycast(fix x, fix y, fix z, fix *vec, fix range, fix *where_hit, terrain_ff *FFT);
 
 //		Motion package functions...
 //		===========================
@@ -202,7 +195,7 @@ void field_point_Z(int32_t object);
 // Playfield information and scaling...
 // ------------------------------------
 //#define COLLISION_SIZE 100
-#define DELTA_BY_TWO .5
+#define DELTA_BY_TWO fix_from_float(.5)
 
 #define NUM_OBJECT_BITS 32
 
@@ -222,9 +215,11 @@ void field_point_Z(int32_t object);
 
 // Check for a given collision...
 // ------------------------------
+/*
 #define check_object(caller, looker)                                                                  \
     (data[(hash_scale * A[caller][DOF_X][0]).to_int()][(hash_scale * A[caller][DOF_Y][0]).to_int()] & \
      object_bit(looker))
+*/
 
 // This used to be a function in collide.cc
 // I had to change the name because Seamus had some files locked out.

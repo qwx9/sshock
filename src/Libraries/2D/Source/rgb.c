@@ -33,7 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "scrdat.h"
 
 // prototypes
-static int _redloop();
+static int _redloop(void);
 
 /* Static Globals for his and her pleasure */
 static int bcenter, gcenter, rcenter;
@@ -167,7 +167,7 @@ static void inv_cmap_2(int colors, uchar *colormap[3],int bits,ulong *dist_buf, 
 }
 
 /* redloop -- loop up and down from red center. */
-static int _redloop()
+static int _redloop(void)
 {
 	int detect, r, first;
 	long txsqr = xsqr + xsqr;

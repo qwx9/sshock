@@ -34,19 +34,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 extern int32_t alarm_clock[MAX_OBJ];
 extern int32_t no_no_not_me[MAX_OBJ];
 
-bool do_work(int32_t object, int32_t other_object, Q my_rad, Q your_rad, Fixpoint *my_pos, Fixpoint *other_pos,
-             Q &result0, Q &result1, Q &result2);
+bool do_work(int32_t object, int32_t other_object, fix my_rad, fix your_rad, fix *my_pos, fix *other_pos,
+             fix *result0, fix *result1, fix *result2);
 
-void shall_we_dance(int32_t object, Q &result0, Q &result1, Q &result2);
+void shall_we_dance(int32_t object, fix *result0, fix *result1, fix *result2);
 
 //	Call me instead of having special code everywhere...
 //	====================================================
-void shall_we_dance(int32_t object, Q &result0, Q &result1, Q &result2) {
+void shall_we_dance(int32_t object, fix *result0, fix *result1, fix *result2) {
     int32_t other_object;
 
-    Q my_radius, your_radius;
+    fix my_radius, your_radius;
 
-    Q my_position[3], your_position[3];
+    fix my_position[3], your_position[3];
 
     //	Collision B/C...
     //	----------------
@@ -69,7 +69,7 @@ void shall_we_dance(int32_t object, Q &result0, Q &result1, Q &result2) {
             for (other_object = bit; other_object < MAX_OBJ && S[other_object][0][0] > END;
                  other_object += NUM_OBJECT_BITS) {
 
-                if (other_object != object && I[object][IDOF_COLLIDE].to_int() != other_object) {
+                if (other_object != object && fix_int(I[object][IDOF_COLLIDE]) != other_object) {
 
                     //	Okay, now we have a confirmed hash hit...
                     //	-----------------------------------------
@@ -103,23 +103,23 @@ void shall_we_dance(int32_t object, Q &result0, Q &result1, Q &result2) {
                     //	Are YOU special???
                     //	------------------
                     if (I[other_object][IDOF_MODEL] == PELVIS) {
-                        Q offset_x = I[other_object][0] * sin(A[other_object][4][0]),
-                          offset_y = -1.5 * I[other_object][0] * sin(A[other_object][5][0]),
-                          offset_z = I[other_object][0] * cos(A[other_object][4][0]) * cos(A[other_object][5][0]);
+                        fix offset_x = fix_mul(I[other_object][0], fix_sin(fix_to_fang(A[other_object][4][0]))),
+                          offset_y = fix_mul(fix_mul(fix_from_float(-1.5), I[other_object][0]), fix_sin(fix_to_fang(A[other_object][5][0]))),
+                          offset_z = fix_mul(fix_mul(I[other_object][0], fix_cos(fix_to_fang(A[other_object][4][0]))), fix_cos(fix_to_fang(A[other_object][5][0])));
 
-                        Q sin_alpha = 0, cos_alpha = 0;
+                        fix sin_alpha = 0, cos_alpha = 0;
 
-                        sincos(-A[other_object][3][0], &sin_alpha, &cos_alpha);
+                        fix_sincos(fix_to_fang(-A[other_object][3][0]), &sin_alpha, &cos_alpha);
 
-                        Q final_x = cos_alpha * offset_x + sin_alpha * offset_y;
-                        Q final_y = -sin_alpha * offset_x + cos_alpha * offset_y;
+                        fix final_x = fix_mul(cos_alpha, offset_x) + fix_mul(sin_alpha, offset_y);
+                        fix final_y = fix_mul(-sin_alpha, offset_x) + fix_mul(cos_alpha, offset_y);
 
                         your_position[0] = A[other_object][0][0] + final_x;
                         your_position[1] = A[other_object][1][0] + final_y;
                         your_position[2] = A[other_object][2][0] + offset_z;
 
                         my_radius = I[object][IDOF_RADIUS];
-                        your_radius = .75 * I[other_object][IDOF_PELVIS_RADIUS];
+                        your_radius = fix_mul(fix_from_float(.75), I[other_object][IDOF_PELVIS_RADIUS]);
 
                         do_work(object, other_object, my_radius, your_radius, my_position, your_position, result0,
                                 result1, result2);
@@ -128,16 +128,16 @@ void shall_we_dance(int32_t object, Q &result0, Q &result1, Q &result2) {
                     // Am I special???
                     // ---------------
                     if (I[object][IDOF_MODEL] == PELVIS) {
-                        Q offset_x = I[object][0] * sin(A[object][4][0]),
-                          offset_y = -1.5 * I[object][0] * sin(A[object][5][0]),
-                          offset_z = I[object][0] * cos(A[object][4][0]) * cos(A[object][5][0]);
+                        fix offset_x = fix_mul(I[object][0], fix_sin(fix_to_fang(A[object][4][0]))),
+                          offset_y = fix_mul(fix_mul(fix_from_float(-1.5), I[object][0]), fix_sin(fix_to_fang(A[object][5][0]))),
+                          offset_z = fix_mul(fix_mul(I[object][0], fix_cos(fix_to_fang(A[object][4][0]))), fix_cos(fix_to_fang(A[object][5][0])));
 
-                        Q sin_alpha = 0, cos_alpha = 0;
+                        fix sin_alpha = 0, cos_alpha = 0;
 
-                        sincos(-A[object][3][0], &sin_alpha, &cos_alpha);
+                        fix_sincos(fix_to_fang(-A[object][3][0]), &sin_alpha, &cos_alpha);
 
-                        Q final_x = cos_alpha * offset_x + sin_alpha * offset_y;
-                        Q final_y = -sin_alpha * offset_x + cos_alpha * offset_y;
+                        fix final_x = fix_mul(cos_alpha, offset_x) + fix_mul(sin_alpha, offset_y);
+                        fix final_y = fix_mul(-sin_alpha, offset_x) + fix_mul(cos_alpha, offset_y);
 
                         my_position[0] = A[object][0][0] + final_x;
                         my_position[1] = A[object][1][0] + final_y;
@@ -155,7 +155,7 @@ void shall_we_dance(int32_t object, Q &result0, Q &result1, Q &result2) {
                             your_position[2] = S[other_object][2][0];
                         }
 
-                        my_radius = .75 * I[object][IDOF_PELVIS_RADIUS];
+                        my_radius = fix_mul(fix_from_float(.75), I[object][IDOF_PELVIS_RADIUS]);
                         your_radius = I[other_object][IDOF_RADIUS];
 
                         do_work(object, other_object, my_radius, your_radius, my_position, your_position, result0,
@@ -175,9 +175,9 @@ Q dx, dy, dz;
 
 //	Here's the meat of the sutuation...
 //	===================================
-bool do_work(int32_t object, int32_t other_object, Q my_rad, Q your_rad, Fixpoint *my_pos, Fixpoint *other_pos,
-             Q &result0, Q &result1, Q &result2) {
-    Q cm_radius = (my_rad + your_rad);
+bool do_work(int32_t object, int32_t other_object, fix my_rad, fix your_rad, fix *my_pos, fix *other_pos,
+             fix *result0, fix *result1, fix *result2) {
+    fix cm_radius = (my_rad + your_rad);
 
     // First do a preliminary check to avoid overflow.
     dx = my_pos[0] - other_pos[0];
@@ -190,47 +190,47 @@ bool do_work(int32_t object, int32_t other_object, Q my_rad, Q your_rad, Fixpoin
 
     // Test for primary collision...
     // =============================
-    Q test_radius = sqrt(dx * dx + dy * dy + dz * dz);
+    fix test_radius = fix_sqrt(fix_mul(dx, dx) + fix_mul(dy, dy) + fix_mul(dz, dz));
 
-    if ((test_radius < cm_radius) && (test_radius > 0.0005)) {
+    if ((test_radius < cm_radius) && (test_radius > fix_from_float(0.0005))) {
 
         // Is there a problem???
         // ---------------------
-        if (test_radius < .03)
-            test_radius = .03;
+        if (test_radius < fix_from_float(.03))
+            test_radius = fix_from_float(.03);
 
         //	Callback...
         //	-----------
         physics_handle C = on2ph[object], V = on2ph[other_object];
 
-        int32_t badness = (20 * (1. - test_radius / cm_radius)).to_int();
+        int32_t badness = fix_int(fix_mul(fix_make(20,0), fix_from_float(1.) - fix_div(test_radius, cm_radius)));
 
         fix location[3];
 
-        location[0] = my_pos[0].to_fix();
-        location[1] = my_pos[1].to_fix();
-        location[2] = my_pos[2].to_fix();
+        location[0] = my_pos[0];
+        location[1] = my_pos[1];
+        location[2] = my_pos[2];
 
         EDMS_object_collision(C, V, badness, 0, 0, location);
 
-        Q Eta = (cm_radius - test_radius); // Eta...
+        fix Eta = (cm_radius - test_radius); // Eta...
 
-        test_radius = 1 / test_radius;
-        result0 += Eta * dx * test_radius;
-        result1 += Eta * dy * test_radius;
-        result2 += Eta * dz * test_radius;
+        test_radius = fix_div(FIX_UNIT, test_radius);
+        *result0 += fix_mul(fix_mul(Eta, dx), test_radius);
+        *result1 += fix_mul(fix_mul(Eta, dy), test_radius);
+        *result2 += fix_mul(fix_mul(Eta, dz), test_radius);
 
         // God save the Queen...
         // ---------------------
-        if (result0 > my_rad)
-            result0 = my_rad;
-        if (result0 < -my_rad)
-            result0 = -my_rad;
+        if (*result0 > my_rad)
+            *result0 = my_rad;
+        if (*result0 < -my_rad)
+            *result0 = -my_rad;
 
-        if (result1 > my_rad)
-            result1 = my_rad;
-        if (result1 < -my_rad)
-            result1 = -my_rad;
+        if (*result1 > my_rad)
+            *result1 = my_rad;
+        if (*result1 < -my_rad)
+            *result1 = -my_rad;
 
         //	Wakeup...
         //	=========

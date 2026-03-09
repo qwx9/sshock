@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 
+#include "precompiled.h"
 #include "target.h"
 #include "colors.h"
 #include "mfdext.h"
@@ -467,7 +468,7 @@ void toggle_current_target_backwards(void) {
 //
 // Doofy code to cycle through all extant critters and pop 'em up on targeting
 
-void toggle_current_target() {
+void toggle_current_target(void) {
     ObjSpecID oldsid, osid;
     ObjID old;
 

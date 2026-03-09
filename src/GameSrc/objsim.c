@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include "precompiled.h"
 #include "Shock.h"
 
 #include "amap.h"
@@ -113,8 +114,8 @@ int physics_handle_max = -1;
 
 // Internal Prototypes
 errtype ObjClassInit(ObjID id, ObjSpecID specid, int subclass);
-errtype obj_set_secondary_properties();
-errtype do_ecology_triggers();
+errtype obj_set_secondary_properties(void);
+errtype do_ecology_triggers(void);
 grs_bitmap *get_text_bitmap_from_string(int d1, char dest_type, char *s, uchar scroll, int scroll_index);
 grs_bitmap *obj_get_model_data(ObjID id, fix *x, fix *y, fix *z, grs_bitmap *bm2, Ref *ref1, Ref *ref2);
 void place_obj_at_objloc(ObjID id, ObjLoc *newloc, ushort xsize, ushort ysize);
@@ -171,7 +172,7 @@ grs_canvas text_canvases[NUM_TEXT_BITMAPS];
 
 int memcount = 0;
 
-errtype obj_init() {
+errtype obj_init(void) {
     uchar c_class, c_subclass;
     int i, j, count, class_count = 0;
     Id ids;
@@ -239,7 +240,7 @@ Ref ref_from_critter_data(ObjID oid, int triple, byte posture, short frame, shor
     ubyte v, p;
     ulong old_ticks;
     extern ulong last_real_time;
-    Id our_id;
+    Id our_id = 0;
     RefTable *prt;
     char curr_frames;
     uchar load_all_views = TRUE;
@@ -695,7 +696,7 @@ char extract_object_special_color(ObjID id) {
 }
 
 // Shutdown the object system and free up memory as appropriate
-errtype obj_shutdown() {
+errtype obj_shutdown(void) {
     // Free the word-buffer bitmap
     for (int i = 0; i < NUM_TEXT_BITMAPS; i++) {
         if (text_bitmap_ptrs[i] != NULL)
@@ -1059,7 +1060,7 @@ errtype obj_move_to_vel(ObjID id, ObjLoc *newloc, uchar phys_tel, fix x_dot, fix
             EDMS_holistic_teleport(objs[id].info.ph, &new_state);
     }
 
-    if (objs[id].loc.x == -1) {
+    if (objs[id].loc.x == (ushort)-1) {
         ObjRefState newref;
 
         ObjPlace(id, newloc);
@@ -1377,7 +1378,7 @@ errtype ObjClassInit(ObjID id, ObjSpecID specid, int subclass) {
 // ## INSERT NEW CLASS HERE
 // ## INSERT NEW SUBCLASS HERE
 
-errtype obj_load_properties() {
+errtype obj_load_properties(void) {
     // Handle   res;
     int version, i, j;
     char *cp;
@@ -1866,7 +1867,7 @@ errtype obj_load_properties() {
     return (OK);
 }
 
-errtype obj_set_secondary_properties() {
+errtype obj_set_secondary_properties(void) {
     char i, j;
     RefTable *prt;
     int fn, fn2;
@@ -1926,7 +1927,7 @@ errtype obj_zero_unused(void) {
         for (specid = 1; specid < curHead->size;
              specid++) { /* find the base of our obj and cast it to a ObjSpec common header struct */
             ObjSpec *curSpec = (ObjSpec *)(curHead->data + (curHead->struct_size * specid));
-            if (!objs[id = curSpec->bits.id].active) /* toast all but the Spec part */
+            if (!objs[id = OSBITSID(curSpec)].active) /* toast all but the Spec part */
                 LG_memset(((char *)curSpec) + sizeof(ObjSpec), 0, curHead->struct_size - sizeof(ObjSpec));
             counters[0][objs[id].active ? 1 : 0]++;
         }
@@ -2392,7 +2393,7 @@ static short old_critter_hp[] = {25,  325, 400, 160, 200, 65,  60,  300, 150, 0,
                                  550, 450, 30,  60,  250, 250, 150, 400, 60,  750, 400};
 #endif
 
-errtype obj_level_munge() {
+errtype obj_level_munge(void) {
     short count = 0;
 #ifdef ELDER_DEMON_EXORCISM
     ObjID oid;
@@ -2589,7 +2590,7 @@ errtype obj_level_munge() {
 #endif
 
 #ifdef TEXTURE_CRUNCH_HACK
-    extern errtype texture_crunch_go();
+    extern errtype texture_crunch_go(void);
     texture_crunch_go();
 #endif
 

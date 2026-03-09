@@ -35,7 +35,6 @@
 
 //============================================================================
 // Includes
-#include <string.h>
 
 #include "lg.h"
 
@@ -51,7 +50,6 @@
 //
 //	HuffExpandFlashTables() compresses huffman flash-decoder tables.
 
-extern "C" {
 
 void HuffExpandFlashTables(uchar *pFlashTab, uint lenTab, uint *pc,
     int tokSize)
@@ -85,4 +83,3 @@ void HuffExpandFlashTables(uchar *pFlashTab, uint lenTab, uint *pc,
     }
 }
 
-}

@@ -99,9 +99,9 @@ typedef struct {
     ubyte flags;                                     // Do we have a sideicon, etc.
     ubyte sideicon;                                  // Which sideicon corresponds
     void (*turnon)(uchar visible, uchar real_start); // Function slots for turn on, etc.
-    void (*effect)();
+    void (*effect)(void);
     void (*turnoff)(uchar visible, uchar real_stop);
-    bool (*check)();
+    bool (*check)(void);
 } WARE;
 
 typedef struct {
@@ -137,10 +137,10 @@ int get_player_ware_version(int waretype, int num);
 // of a ware in the player's inventory.  zero means
 // the player doesn't have it.
 
-void wares_init();
+void wares_init(void);
 // sets up the wares system
 
-void wares_update();
+void wares_update(void);
 // called from the game loop
 
 void hardware_closedown(uchar visible);

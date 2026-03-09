@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 
+#include "precompiled.h"
 #include "gamerend.h"
 #include "render.h"
 #include "frprotox.h"
@@ -112,7 +113,7 @@ int hack_camera_draw_callback(grs_canvas *cvs, grs_bitmap *bm, int u1, int u2, i
 
 typedef int (*frdraw)(void *dstc, void *dstbm, int x, int y, int flg);
 
-errtype init_hack_cameras() {
+errtype init_hack_cameras(void) {
     int i;
     grs_canvas *tmp_cnv;
     uchar *tmp_mem;
@@ -153,7 +154,7 @@ errtype init_hack_cameras() {
     return (OK);
 }
 
-errtype shutdown_hack_cameras() {
+errtype shutdown_hack_cameras(void) {
     int i;
     for (i = 0; i < MAX_CAMERAS_VISIBLE; i++) {
         fr_free_view(hack_cam_frcs[i]);
@@ -162,13 +163,13 @@ errtype shutdown_hack_cameras() {
     return (OK);
 }
 
-errtype do_screen_static() {
+errtype do_screen_static(void) {
     if (!screen_static_drawn)
         draw_full_static(static_bitmap, GRAY_8_BASE);
     return (OK);
 }
 
-errtype render_hack_cameras() {
+errtype render_hack_cameras(void) {
     int i, count;
 
     // efficiency good....
@@ -234,7 +235,7 @@ errtype hack_camera_takeover(int hack_cam) {
     return (OK);
 }
 
-errtype hack_camera_relinquish() {
+errtype hack_camera_relinquish(void) {
     cams *cam = fr_camera_getdef();
     fr_camera_update(cam, (unsigned int)PLAYER_OBJ, 0, 0);
 

@@ -66,7 +66,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 typedef struct iaaiiaia{
-   void (*f)();
+   void (*f)(void);
    struct iaaiiaia *next;
    uchar flags;
 } grs_func_chain;
@@ -78,15 +78,15 @@ extern uchar chn_flags;
 #define CHN_ON 1
 #define CHN_GEN 2
 
-extern grs_func_chain *gr_chain_add_over(int n, void (*f)());
+extern grs_func_chain *gr_chain_add_over(int n, void (*f)(void));
 extern grs_func_chain *gr_chain_add_before(int n, void (*f)(void));
 extern grs_func_chain *gr_chain_add_after(int n, void (*f)(void));
-extern void (*chain_rest())();
+extern void (*chain_rest())(void);
 
 extern void gr_unchain(int n);
 extern void gr_rechain(int n);
-extern void gr_unchain_all();
-extern void gr_rechain_all();
+extern void gr_unchain_all(void);
+extern void gr_rechain_all(void);
 
 #define gr_do_chain (chain_rest())
 #define gr_chaining_on() (chn_flags |= CHN_ON)
@@ -94,11 +94,11 @@ extern void gr_rechain_all();
 #define gr_chaining_toggle() (chn_flags ^= CHN_ON)
 
 #define gr_generic (chn_flags & CHN_GEN)
-extern void gr_force_generic();
-extern void gr_unforce_generic();
+extern void gr_force_generic(void);
+extern void gr_unforce_generic(void);
 #define gr_toggle_generic() (gr_generic? gr_unforce_generic() : gr_force_generic())
 
-#define gr_start_frame ((void (*)())grd_canvas_table[START_FRAME])
-#define gr_end_frame ((void (*)())grd_canvas_table[END_FRAME])
+#define gr_start_frame ((void (*)(void))grd_canvas_table[START_FRAME])
+#define gr_end_frame ((void (*)(void))grd_canvas_table[END_FRAME])
 
 #endif

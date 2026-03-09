@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //--------------------
 //  Includes
 //--------------------
+#include "precompiled.h"
 #include "InitMac.h"
 #include "Shock.h"
 #include "ShockBitmap.h"
@@ -83,7 +84,7 @@ void SetupOffscreenBitmaps(int width, int height) {
 
     // Point the renderer at the screen bytes
     gScreenRowbytes = drawSurface->w;
-    gScreenAddress = drawSurface->pixels;
+    gScreenAddress = (intptr_t *)drawSurface->pixels;
 
     grd_mode_cap.vbase = gScreenAddress;
 }

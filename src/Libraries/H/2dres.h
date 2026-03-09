@@ -49,7 +49,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "../RES/Source/res.h"
 #include "../DSTRUCT/Source/rect.h"
 
-#pragma pack(push,2)
+#pragma pack on	// 2
 
 // A Ref in a resource gets you a Frame Descriptor:
 
@@ -144,6 +144,6 @@ typedef struct {
    fix   uper;    // (w - u) / u
 } CylBMFrame;     // one frame of the cylindrical bm object.  Always put the bits after this.  S
 
-#pragma pack(pop)
+#pragma pack off
 
 #endif

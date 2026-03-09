@@ -32,9 +32,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "grnull.h"
 #include "icanvas.h"
 
-typedef void (*ptr_type)();
+typedef void (*ptr_type)(void);
 
-void (*flat8_canvas_table[GRD_CANVAS_FUNCS])() = {
+void (*flat8_canvas_table[GRD_CANVAS_FUNCS])(void) = {
     (ptr_type)flat8_set_upixel, /* 8-bit pixel set/get */
     (ptr_type)gen_set_pixel,
     (ptr_type)flat8_get_upixel,

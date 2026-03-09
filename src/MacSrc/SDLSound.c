@@ -1,3 +1,5 @@
+#include "precompiled.h"
+#include <SDL2/SDL.h>
 #include "Xmi.h"
 #include "MusicDevice.h"
 

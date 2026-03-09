@@ -24,7 +24,7 @@ extern void init_all(void);
 extern void free_all(void);
 extern uchar ppall[]; // pointer to main shadow palette
 
-extern void shock_alloc_ipal();
+extern void shock_alloc_ipal(void);
 
 errtype load_da_palette(void);
 

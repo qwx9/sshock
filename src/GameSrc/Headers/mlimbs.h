@@ -102,7 +102,7 @@ extern volatile uint default_rel_vol;
 extern volatile uint default_ramp_time;
 extern volatile uchar num_XMIDI_sequences;
 extern volatile ulong mlimbs_counter;
-extern volatile void (*mlimbs_AI)();
+extern volatile void (*mlimbs_AI)(void);
 extern volatile int mlimbs_master_slot;
 
 /* Function prototypes */

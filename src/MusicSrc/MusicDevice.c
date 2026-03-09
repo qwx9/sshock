@@ -149,7 +149,7 @@ static void NullMidiGetOutputName(MusicDevice *dev, const unsigned int outputInd
     (void)outputIndex;
 }
 
-static MusicDevice *createNullMidiDevice()
+static MusicDevice *createNullMidiDevice(void)
 {
     MusicDevice *dev = malloc(sizeof(MusicDevice));
     dev->init = &NullMidiInit;
@@ -176,6 +176,7 @@ static MusicDevice *createNullMidiDevice()
 //------------------------------------------------------------------------------
 // ADLMIDI player for OPL3
 
+#ifdef USE_ADLMIDI
 #include "adlmidi.h"
 
 typedef struct AdlMidiDevice
@@ -325,7 +326,7 @@ static void AdlMidiGetOutputName(MusicDevice *dev, const unsigned int outputInde
     (void)outputIndex;
 }
 
-static MusicDevice *createAdlMidiDevice()
+static MusicDevice *createAdlMidiDevice(void)
 {
     AdlMidiDevice *adev = malloc(sizeof(AdlMidiDevice));
     adev->dev.init = &AdlMidiInit;
@@ -348,6 +349,7 @@ static MusicDevice *createAdlMidiDevice()
     adev->dev.musicType = MUSICTYPE_SBLASTER;
     return &adev->dev;
 }
+#endif
 
 //------------------------------------------------------------------------------
 // Native OS MIDI
@@ -969,7 +971,7 @@ static void NativeMidiGetOutputName(MusicDevice *dev, const unsigned int outputI
     (void)dev;
 }
 
-static MusicDevice *createNativeMidiDevice()
+static MusicDevice *createNativeMidiDevice(void)
 {
     NativeMidiDevice *ndev = malloc(sizeof(NativeMidiDevice));
     ndev->dev.init = &NativeMidiInit;
@@ -1285,7 +1287,7 @@ static void FluidMidiGetOutputName(MusicDevice *dev, const unsigned int outputIn
     (void)outputIndex;
 }
 
-static MusicDevice *createFluidSynthDevice()
+static MusicDevice *createFluidSynthDevice(void)
 {
     FluidMidiDevice *fdev = malloc(sizeof(FluidMidiDevice));
     fdev->dev.init = &FluidMidiInit;
@@ -1320,12 +1322,14 @@ MusicDevice *CreateMusicDevice(MusicType type)
     case Music_None:
         dev = createNullMidiDevice();
         break;
-    case Music_AdlMidi:
-        dev = createAdlMidiDevice();
-        break;
     case Music_Native:
         dev = createNativeMidiDevice();
         break;
+#ifdef USE_ADLMIDI
+    case Music_AdlMidi:
+        dev = createAdlMidiDevice();
+        break;
+#endif
 #ifdef USE_FLUIDSYNTH
     case Music_FluidSynth:
         dev = createFluidSynthDevice();

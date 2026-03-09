@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "precompiled.h"
 #include "ai.h"
 #include "cyber.h"
 #include "cybstrng.h"
@@ -155,7 +156,7 @@ void unshodanizing_callback(ObjID id, intptr_t user_data) {
 
 #define MONSTER_THEME_PATH_LENGTH 12
 
-void check_nearby_objects() {
+void check_nearby_objects(void) {
     short x, y;
     int dist, best_dist;
     ObjRefID oref;
@@ -719,7 +720,7 @@ extern ObjID shodan_avatar_id;
 #define REALSPACE_HUDS \
     (HUD_RADPOISON | HUD_BIOPOISON | HUD_FATIGUE | HUD_BIOHAZARD | HUD_RADIATION | HUD_ZEROGRAV | HUD_ENVIROUSE)
 
-void do_stuff_every_second() {
+void do_stuff_every_second(void) {
     long running_dt = player_struct.game_time - player_struct.last_second_update;
     extern int bio_energy_var;
     extern int bio_absorb;

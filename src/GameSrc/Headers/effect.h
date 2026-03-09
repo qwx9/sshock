@@ -169,7 +169,7 @@ void advance_animations(void);
 errtype add_obj_to_animlist(ObjID id, uchar repeat, uchar reverse, uchar cycle, short speed, int cb_id, intptr_t user_data,
                             short cbtype);
 errtype remove_obj_from_animlist(ObjID id);
-errtype animlist_clear();
+errtype animlist_clear(void);
 uchar anim_data_from_id(ObjID id, bool *reverse, bool *cycle);
 
 #define MAX_ANIMLIST_SIZE 64

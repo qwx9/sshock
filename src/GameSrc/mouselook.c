@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <SDL.h>
 
+#include "precompiled.h"
 #include "leanmetr.h"
 #include "mouselook.h"
 #include "mouse.h"
@@ -44,7 +45,7 @@ void get_mouselook_vel(int *vx, int *vy);
 
 int mlook_enabled = FALSE;
 
-void mouse_look_physics() {
+void mouse_look_physics(void) {
 
     if (game_paused || !global_fullmap || !mlook_enabled)
         return;

@@ -621,7 +621,7 @@ uchar *do_dbg(uchar *opcode) {
     return opcode + 8;
 }
 
-extern void (*g3_tmap_func)();
+extern int (*g3_tmap_func)(int, g3s_phandle *, grs_bitmap *);
 extern int temp_poly(long c, int n, grs_vertex **vpl);
 
 uchar *do_tmap_op(uchar *opcode) {

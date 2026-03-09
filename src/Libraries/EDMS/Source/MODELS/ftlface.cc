@@ -37,15 +37,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	Data...
 //	=======
 extern EDMS_Argblock_Pointer A;
-extern Q S[MAX_OBJ][7][4], I[MAX_OBJ][DOF_MAX];
+extern fix S[MAX_OBJ][7][4], I[MAX_OBJ][DOF_MAX];
 
 //	Structs...
 //	==========
 //	Nope.
-
-//	We need to link to c...
-//	=======================
-extern "C" {
 
 //	Here are the bridge routines to the models...
 //	=============================================
@@ -60,20 +56,20 @@ physics_handle EDMS_beam_weapon(fix X[3], fix D[3], fix kick, fix knock, fix siz
     physics_handle ph = -1;
     int32_t EXCLUDE = 0;
 
-    Q DD[3];
+    fix DD[3];
 
-    Q Kick, Knock, Size, Range;
+    fix Kick, Knock, Size, Range;
 
-    Q *XX = (Q *)&X[0];
+    fix *XX = (fix *)&X[0];
 
-    DD[0].fix_to(D[0]);
-    DD[1].fix_to(D[1]);
-    DD[2].fix_to(D[2]);
+    DD[0] = D[0];
+    DD[1] = D[1];
+    DD[2] = D[2];
 
-    Kick.fix_to(kick);
-    Knock.fix_to(knock);
-    Size.fix_to(size);
-    Range.fix_to(range);
+    Kick = kick;
+    Knock = knock;
+    Size = size;
+    Range = range;
 
     //	Is this a valid physics handle???
     //	=================================
@@ -83,17 +79,17 @@ physics_handle EDMS_beam_weapon(fix X[3], fix D[3], fix kick, fix knock, fix siz
 
     //		Do it...
     //		========
-    ph = EDMS_cast_projectile(XX, DD, Kick, Knock, Size, Range, EXCLUDE, shooter);
+    ph = EDMS_cast_projectile(X, D, kick, knock, size, range, EXCLUDE, shooter);
 
     //      	Convert back to the goofbakk fixpoint system...
     //		-----------------------------------------------
-    X[0] = XX[0].to_fix();
-    X[1] = XX[1].to_fix();
-    X[2] = XX[2].to_fix();
+    /*
+    X[0] = XX[0];
+    X[1] = XX[1];
+    X[2] = XX[2];
+    */
 
     //	Return a physics handle...
     //	==========================
     return ph;
 }
-
-} // End of extern "C" for the &^%$@% compiler...

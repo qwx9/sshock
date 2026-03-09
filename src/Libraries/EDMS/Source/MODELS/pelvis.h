@@ -18,5 +18,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 //	This seems silly now, but later it will all make sense, sensei...
 //	=================================================================
-int32_t make_pelvis(Q init_state[6][3], Q params[10]);
-void pelvis_set_control(int32_t pelvis, Q forward, Q turn, Q sidestep, Q lean, Q jump, int32_t crouch);
+int32_t make_pelvis(fix init_state[6][3], fix params[10]);
+void pelvis_set_control(int32_t pelvis, fix forward, fix turn, fix sidestep, fix lean, fix jump, int32_t crouch);

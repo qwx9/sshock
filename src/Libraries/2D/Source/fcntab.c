@@ -29,7 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "tabdrv.h"
 
-void (**grd_function_table)();
+void (**grd_function_table)(void);
 grt_function_table *grd_function_fill_table;
 grt_function_table *grd_function_table_list[] = {
    NULL,                 /* device driver-initialized by gr_set_mode */

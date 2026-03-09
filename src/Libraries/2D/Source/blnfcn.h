@@ -35,7 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BLNFCN_H
 #define __BLNFCN_H
 /* prototypes for blend table maintenance, TRUE means success, FALSE not */
-uchar gr_free_blend(void);
+int gr_free_blend(void);
 /* tab_cnt is how many blend steps, note cnt<=0 is equivalent to calling
    free blend */
 uchar gr_init_blend(int log_blend_levels);

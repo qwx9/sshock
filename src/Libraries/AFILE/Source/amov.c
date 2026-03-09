@@ -52,12 +52,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "draw4x4.h"
 #include "huff.h"
 
+#define	PBIT24(p,v)	do{(p)[0]=(v);(p)[1]=(v)>>8;(p)[2]=(v)>>16;}while(0)
+#define	GBIT24(p)	(((uchar*)(p))[0]|(((uchar*)(p))[1]<<8)|(((uchar*)(p))[2]<<16))
+#define	AMTIME(p)	GBIT24((p)->time)
+#define	AMTYPE(p)	((p)->cfp & 7)
+#define	AMFLAGS(p)	((p)->cfp >> 3 & 15)
+#define	AMPLAYED(p)	((p)->cfp >> 7 & 1)
+
 //	Type-specific information
 
 typedef struct {
     MovieHeader movieHdr;   // movie header
-    MovieChunk *pmc;        // ptr to movie chunk array
-    MovieChunk *pcurrChunk; // current chunk ptr
+    DMovieChunk *pmc;        // ptr to movie chunk array
+    DMovieChunk *pcurrChunk; // current chunk ptr
     FILE *fpTemp;           // temp file for writing
     uint8_t pal[768];       // space for palette
     uint8_t newPal;         // new pal flag
@@ -123,7 +130,7 @@ void mfseek(MFILE *mf, int pos)
 
 int32_t AmovReadHeader(Afile *paf) {
     AmovInfo *pmi;
-    MovieChunk *pchunk;
+    DMovieChunk *pchunk;
 
     //	Allocate type-specific info
 
@@ -154,15 +161,15 @@ int32_t AmovReadHeader(Afile *paf) {
     paf->a.sampleSize = pmi->movieHdr.audioSampleSize;
 
     // Read in chunk offsets
-    pmi->pmc = (MovieChunk *)malloc(pmi->movieHdr.sizeChunks);
+    pmi->pmc = (DMovieChunk *)malloc(pmi->movieHdr.sizeChunks);
     mfread(pmi->pmc, pmi->movieHdr.sizeChunks, paf->mf);
 
     // Compute # frames
     paf->v.numFrames = 0;
-    for (pchunk = pmi->pmc; pchunk->chunkType != MOVIE_CHUNK_END; pchunk++) {
-        if (pchunk->chunkType == MOVIE_CHUNK_VIDEO)
+    for (pchunk = pmi->pmc; AMTYPE(pchunk) != MOVIE_CHUNK_END; pchunk++) {
+        if (AMTYPE(pchunk) == MOVIE_CHUNK_VIDEO)
             paf->v.numFrames++;
-        if (pchunk->chunkType == MOVIE_CHUNK_AUDIO)
+        if (AMTYPE(pchunk) == MOVIE_CHUNK_AUDIO)
             paf->a.numSamples++;
     }
 
@@ -202,13 +209,13 @@ int32_t AmovReadFrame(Afile *paf, grs_bitmap *pbm, fix *ptime) {
 
 NEXT_CHUNK:
 
-    switch (pmi->pcurrChunk->chunkType) {
+    switch (AMTYPE(pmi->pcurrChunk)) {
     case MOVIE_CHUNK_END:
         return (-1);
 
     case MOVIE_CHUNK_VIDEO:
         DEBUG("MOVIE_CHUNK_VIDEO");
-        pbm->type = pmi->pcurrChunk->flags & MOVIE_FVIDEO_BMTMASK;
+        pbm->type = AMFLAGS(pmi->pcurrChunk) & MOVIE_FVIDEO_BMTMASK;
         if (pbm->type == MOVIE_FVIDEO_BMF_4X4) {
             mfseek(paf->mf, pmi->pcurrChunk->offset);
             len = MovieChunkLength(pmi->pcurrChunk);
@@ -229,14 +236,14 @@ NEXT_CHUNK:
             len = MovieChunkLength(pmi->pcurrChunk) - sizeof(LGRect);
             mfread(pbm->bits, len, paf->mf);
         }
-        *ptime = pmi->pcurrChunk->time;
+        *ptime = AMTIME(pmi->pcurrChunk);
         pmi->pcurrChunk++;
         return (len);
 
     case MOVIE_CHUNK_TABLE:
         DEBUG("MOVIE_CHUNK_TABLE");
         mfseek(paf->mf, pmi->pcurrChunk->offset);
-        switch (pmi->pcurrChunk->flags) {
+        switch (AMFLAGS(pmi->pcurrChunk)) {
         case MOVIE_FTABLE_COLORSET:
             if (pColorSet)
                 free(pColorSet);
@@ -263,12 +270,12 @@ NEXT_CHUNK:
 
     case MOVIE_CHUNK_PALETTE:
         DEBUG("MOVIE_CHUNK_PALETTE");
-        if (pmi->pcurrChunk->flags == MOVIE_FPAL_SET) {
+        if (AMFLAGS(pmi->pcurrChunk) == MOVIE_FPAL_SET) {
             mfseek(paf->mf, pmi->pcurrChunk->offset);
             mfread(pmi->pal, 768, paf->mf);
             pmi->newPal = TRUE;
         }
-        else if (pmi->pcurrChunk->flags & MOVIE_FPAL_CLEAR) {
+        else if (AMFLAGS(pmi->pcurrChunk) & MOVIE_FPAL_CLEAR) {
             // Clear the bitmap data prior to decoding an iframe. Setting to 0
             // isn't ideal here since it's the transparency colour, but we don't
             // have a better candidate without searching the palette (which is
@@ -350,9 +357,9 @@ int32_t AmovReadAudio(Afile *paf, void *paudio) {
     void *p = (uint8_t *)malloc(MOVIE_DEFAULT_BLOCKLEN);
 
     pmi = (AmovInfo *)paf->pspec;
-    while (pmi->pcurrChunk->chunkType != MOVIE_CHUNK_END) {
+    while (AMTYPE(pmi->pcurrChunk) != MOVIE_CHUNK_END) {
         // Got audio chunk
-        if (pmi->pcurrChunk->chunkType == MOVIE_CHUNK_AUDIO) {
+        if (AMTYPE(pmi->pcurrChunk) == MOVIE_CHUNK_AUDIO) {
             // TRACE("%s: got audio chunk in 0x%08x offset", __FUNCTION__, pmi->pcurrChunk->offset);
             mfseek(paf->mf, pmi->pcurrChunk->offset);
             size = mfread(p, MOVIE_DEFAULT_BLOCKLEN, paf->mf);
@@ -419,7 +426,7 @@ int32_t AmovWriteBegin(Afile *paf) {
 
     paf->pspec = calloc(1, sizeof(AmovInfo));
     pmi = paf->pspec;
-    pmi->pmc = calloc(MAX_MOV_FRAMES, sizeof(MovieChunk));
+    pmi->pmc = calloc(MAX_MOV_FRAMES, sizeof(DMovieChunk));
 
     // Current chunk is first one
     pmi->pcurrChunk = pmi->pmc;
@@ -445,6 +452,7 @@ int32_t AmovWriteBegin(Afile *paf) {
 int32_t AmovWriteFrame(Afile *paf, grs_bitmap *pbm, int32_t bmlength, fix time) {
     AmovInfo *pmi;
     LGRect area;
+    ubyte cfp;
 
     pmi = paf->pspec;
 
@@ -456,9 +464,11 @@ int32_t AmovWriteFrame(Afile *paf, grs_bitmap *pbm, int32_t bmlength, fix time) 
     }
 
     // Set current chunk
-    pmi->pcurrChunk->time = time;
-    pmi->pcurrChunk->chunkType = MOVIE_CHUNK_VIDEO;
-    pmi->pcurrChunk->flags = pbm->type;
+    PBIT24(pmi->pcurrChunk->time, time);
+    cfp = (pbm->type & 15) << 3 | MOVIE_CHUNK_VIDEO;
+    //pmi->pcurrChunk->chunkType = MOVIE_CHUNK_VIDEO;
+    //pmi->pcurrChunk->flags = pbm->type;
+    pmi->cfp = cfp;
     pmi->pcurrChunk->offset = ftell(pmi->fpTemp);
 
     //	Write update area
@@ -484,7 +494,8 @@ int32_t AmovWriteClose(Afile *paf) {
     AmovInfo *pmi;
     int32_t nc, numBlocks, numExtra;
     int32_t i;
-    MovieChunk *pmc;
+    uint32_t t, t2;
+    DMovieChunk *pmc;
     uint8_t buff[2048];
 
     pmi = paf->pspec;
@@ -492,21 +503,26 @@ int32_t AmovWriteClose(Afile *paf) {
     // Set end chunk
     nc = pmi->pcurrChunk - pmi->pmc;
     if (nc == 0)
-        pmi->pcurrChunk->time = 0;
-    else if (nc == 1)
-        pmi->pcurrChunk->time = (pmi->pcurrChunk - 1)->time * 2;
-    else
-        pmi->pcurrChunk->time =
-            (pmi->pcurrChunk - 1)->time + ((pmi->pcurrChunk - 1)->time - (pmi->pcurrChunk - 2)->time);
-    pmi->pcurrChunk->chunkType = MOVIE_CHUNK_END;
-    pmi->pcurrChunk->flags = 0;
+        PBIT24(pmi->pcurrChunk->time, 0);
+    else if (nc == 1){
+    	t = GBIT24((pmi->pcurrChunk - 1)->time) * 2;
+        PBIT24(pmi->pcurrChunk->time, t);
+    }else{
+    	t = GBIT24((pmi->pcurrChunk - 1)->time);
+    	t2 = GBIT24((pmi->pcurrChunk - 2)->time);
+    	t += t - t2;
+        PBIT24(pmi->pcurrChunk->time, t);
+    }
+    //pmi->pcurrChunk->chunkType = MOVIE_CHUNK_END;
+    //pmi->pcurrChunk->flags = 0;
+    pmi->pcurrChunk->cfp = MOVIE_CHUNK_END;
     pmi->pcurrChunk->offset = ftell(pmi->fpTemp);
     pmi->pcurrChunk++;
 
     // Set movie header and write out
     pmi->movieHdr.magicId = MOVI_MAGIC_ID;
     pmi->movieHdr.numChunks = pmi->pcurrChunk - pmi->pmc;
-    pmi->movieHdr.sizeChunks = ((pmi->movieHdr.numChunks * sizeof(MovieChunk)) + 1023) & 0xFFFFFC00L;
+    pmi->movieHdr.sizeChunks = ((pmi->movieHdr.numChunks * sizeof(DMovieChunk)) + 1023) & 0xFFFFFC00L;
     if ((pmi->movieHdr.sizeChunks & 0x400) == 0)
         pmi->movieHdr.sizeChunks += 0x0400; // 1K, 3K, 5K, etc.
     pmi->movieHdr.sizeData = ftell(pmi->fpTemp);
@@ -525,7 +541,7 @@ int32_t AmovWriteClose(Afile *paf) {
     // Adjust offsets
     for (pmc = pmi->pmc;; pmc++) {
         pmc->offset += (sizeof(MovieHeader) + pmi->movieHdr.sizeChunks);
-        if (pmc->chunkType == MOVIE_CHUNK_END)
+        if (AMTYPE(pmc) == MOVIE_CHUNK_END)
             break;
     }
 

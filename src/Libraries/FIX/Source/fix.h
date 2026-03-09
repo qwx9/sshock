@@ -276,6 +276,8 @@ typedef uint16_t fixang;
 // makes a fixed point from a float.
 #define fix_from_float(n) ((fix)(65536.0 * (n)))
 
+#define	fix_to_fang(n) fix_frac(fix_mul((n), fix_from_float(0.159154943)))
+
 //========================================
 //
 // Multiplication and division.

@@ -26,15 +26,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "3d.h"
 
-void (*g3_tmap_func)() = (void (*)())g3_draw_tmap;
-void (*g3_lit_tmap_func)() = (void (*)())g3_light_tmap;
+int (*g3_tmap_func)(int, g3s_phandle *, grs_bitmap *) = (int (*)(int, g3s_phandle *, grs_bitmap *))g3_draw_tmap;
+int (*g3_lit_tmap_func)(void) = (int (*)(void))g3_light_tmap;
 
 void g3_set_tmaps_linear(void) {
-    g3_tmap_func = (void (*)())g3_draw_lmap;
-    g3_lit_tmap_func = (void (*)())g3_light_lmap;
+    g3_tmap_func = (int (*)(int, g3s_phandle *, grs_bitmap *))g3_draw_lmap;
+    g3_lit_tmap_func = (int (*)(void))g3_light_lmap;
 }
 
 void g3_reset_tmaps(void) {
-    g3_tmap_func = (void (*)())g3_draw_tmap;
-    g3_lit_tmap_func = (void (*)())g3_light_tmap;
+    g3_tmap_func = (int (*)(int, g3s_phandle *, grs_bitmap *))g3_draw_tmap;
+    g3_lit_tmap_func = (int (*)(void))g3_light_tmap;
 }

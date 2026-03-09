@@ -288,11 +288,11 @@ extern void gri_per_umap_hscan(grs_bitmap *bm, int n, grs_vertex **vpl, grs_per_
 extern void gri_per_umap_vscan(grs_bitmap *bm, int n, grs_vertex **vpl, grs_per_setup *ps);
 
 void gri_opaque_clut_per_umap_hscan_init(grs_bitmap *bm, grs_per_setup *ps) {
-    ps->shell_func = (void (*)())gri_per_umap_hscan;
-    ps->scanline_func = (void (*)())gri_opaque_clut_per_umap_hscan_scanline;
+    ps->shell_func = (void (*)(void))gri_per_umap_hscan;
+    ps->scanline_func = (void (*)(void))gri_opaque_clut_per_umap_hscan_scanline;
 }
 
 void gri_opaque_clut_per_umap_vscan_init(grs_bitmap *bm, grs_per_setup *ps) {
-    ps->shell_func = (void (*)())gri_per_umap_vscan;
-    ps->scanline_func = (void (*)())gri_opaque_clut_per_umap_vscan_scanline;
+    ps->shell_func = (void (*)(void))gri_per_umap_vscan;
+    ps->scanline_func = (void (*)(void))gri_opaque_clut_per_umap_vscan_scanline;
 }

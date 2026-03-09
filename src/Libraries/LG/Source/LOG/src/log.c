@@ -48,14 +48,14 @@ static const char *level_colors[] = {
 #endif
 
 
-static void lock(void)   {
+static void _lock(void)   {
   if (L.lock) {
     L.lock(L.udata, 1);
   }
 }
 
 
-static void unlock(void) {
+static void _unlock(void) {
   if (L.lock) {
     L.lock(L.udata, 0);
   }
@@ -93,7 +93,7 @@ void log_log(int level, const char *file, int line, const char *fmt, ...) {
   }
 
   /* Acquire lock */
-  lock();
+  _lock();
 
   /* Get current time */
   time_t t = time(NULL);
@@ -130,5 +130,5 @@ void log_log(int level, const char *file, int line, const char *fmt, ...) {
   }
 
   /* Release lock */
-  unlock();
+  _unlock();
 }

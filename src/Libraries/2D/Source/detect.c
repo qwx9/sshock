@@ -36,7 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "tabdat.h"
 
 // extern 
-extern void (**grd_device_table_list[])();
+extern void (**grd_device_table_list[])(void);
 
 // ======================================================================
 // Mac version of gr_detect
@@ -53,7 +53,7 @@ int gr_detect(grs_sys_info *info)
 	info->modes[4] = GRM_1024x768x8;
 
   grd_device_table = grd_device_table_list[info->id_maj];
-  grd_canvas_table_list[BMT_DEVICE] = (void (**)())grd_device_table[GRT_CANVAS_TABLE];
+  grd_canvas_table_list[BMT_DEVICE] = (void (**)(void))grd_device_table[GRT_CANVAS_TABLE];
 
 	return(0);
  }
@@ -147,7 +147,7 @@ int gr_detect(grs_sys_info *info)
    if (err==0) {
       grd_device_table = grd_device_table_list[info->id_maj];
       grd_canvas_table_list[BMT_DEVICE] =
-         (void (**)())grd_device_table[GRT_CANVAS_TABLE];
+         (void (**)(void))grd_device_table[GRT_CANVAS_TABLE];
    }
    return err;
 }

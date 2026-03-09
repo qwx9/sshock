@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __OBJAPP_H
 #define __OBJAPP_H
 
-#pragma pack(push,2)
+#pragma pack on	// 2
 
 /*
 ** $Header: r:/prj/cit/src/inc/RCS/objapp.h 1.25 1994/08/30 07:15:21 xemu Exp $
@@ -155,9 +155,9 @@ typedef struct {
 #define OBJ_LOC_FINE_X(oloc) ((ushort)((oloc).x & 0xFF00u))
 #define OBJ_LOC_FINE_Y(oloc) ((ushort)((oloc).y & 0xFF00u))
 #ifdef SAFE_FIX
-#define OBJ_LOC_VAL_TO_FIX(value) (fix_make((value >> 8), ((value & 0xFF00) << 8)))
+#define OBJ_LOC_VAL_TO_FIX(value) (fix_make(((value) >> 8), (((value) & 0xFF00) << 8)))
 #else
-#define OBJ_LOC_VAL_TO_FIX(value) (((fix)value) << 8)
+#define OBJ_LOC_VAL_TO_FIX(value) ((fix)(value) << 8)
 #endif
 
 typedef struct {
@@ -303,6 +303,6 @@ void ObjRefStateBinIteratorInit(void);
 
 uchar ObjRefStateBinIterator(ObjRefStateBin *bin);
 
-#pragma pack(pop)
+#pragma pack off
 
 #endif // OBJAPP_H

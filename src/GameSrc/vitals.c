@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
+#include "precompiled.h"
 #include "player.h"
 #include "status.h"
 #include "tools.h"
@@ -130,7 +131,7 @@ void draw_status_bar(ushort x0, ushort x1, ushort cutoff, ushort y);
 #define STATUS_ANGLE_SIZE 5
 grs_bitmap status_arrows[NUM_STATUS_ARROWS];
 
-void status_vitals_init() {
+void status_vitals_init(void) {
     // Draw the background map
     //   draw_res_bm(STATUS_RES_VITALSID, STATUS_VITALS_X, STATUS_VITALS_Y);
 
@@ -142,13 +143,13 @@ void status_vitals_init() {
     return;
 }
 
-void status_vitals_start() {
+void status_vitals_start(void) {
     // load in our bitmaps!
     for (int i = 0; i < NUM_STATUS_ARROWS; i++)
         simple_load_res_bitmap(&status_arrows[i], REF_IMG_bmStatusAngle1 + i);
 }
 
-void status_vitals_end() {
+void status_vitals_end(void) {
     int i;
     for (i = 0; i < NUM_STATUS_ARROWS; i++)
         free(status_arrows[i].bits);

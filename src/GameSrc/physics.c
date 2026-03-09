@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
+#include "precompiled.h"
 #include "ai.h"
 #include "combat.h"
 #include "criterr.h"
@@ -184,7 +185,7 @@ void add_edms_delete(int ph) {
     }
 }
 
-void edms_delete_go() {
+void edms_delete_go(void) {
     int i;
     for (i = 0; i < curr_edms_del; i++) {
         if (edms_delete_queue[i] != -1)
@@ -219,7 +220,7 @@ void get_phys_state(int ph, State *new_state, ObjID id) {
     }
 }
 
-void physics_zero_all_controls() { LG_memset(player_controls, 0, sizeof(player_controls)); }
+void physics_zero_all_controls(void) { LG_memset(player_controls, 0, sizeof(player_controls)); }
 
 errtype physics_set_player_controls(int bank, byte xvel, byte yvel, byte zvel, byte xyrot, byte yzrot, byte xzrot) {
     if (xvel != CONTROL_NO_CHANGE)
@@ -1182,7 +1183,7 @@ ubyte param_matters[MAP_TYPES] = {
 };
 #endif // NOT_YET
 
-errtype physics_init() {
+errtype physics_init(void) {
     EDMS_data init_data;
 
     // Start EDMS

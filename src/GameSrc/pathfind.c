@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <string.h>
 
+#include "precompiled.h"
 #include "pathfind.h"
 #include "player.h"
 #include "faketime.h"
@@ -231,7 +232,7 @@ errtype delete_path(char path_id) {
 
 // Resets appropriate secret pathfinding state not saved
 // in the save game
-errtype reset_pathfinding() {
+errtype reset_pathfinding(void) {
     last_pathfind_time = 0;
     return (OK);
 }

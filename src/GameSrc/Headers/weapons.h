@@ -108,7 +108,7 @@ uchar change_ammo_type(ubyte ammo_type);
 void change_selected_weapon(int new_weapon);
 
 // Called at a constant factor to blow off heat on energy weapons
-void cool_off_beam_weapons();
+void cool_off_beam_weapons(void);
 
 // This routine is used to jerk the cursor around, as a result of
 // poor accuracy, or ammo recoil

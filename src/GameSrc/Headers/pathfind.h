@@ -24,7 +24,7 @@ char next_step_on_path(char path_id, LGPoint *next, char *steps_left);
 errtype check_requests(uchar priority);
 errtype delete_path(char path_id);
 uchar check_path_cutting(LGPoint new_sq, char path_id);
-errtype reset_pathfinding();
+errtype reset_pathfinding(void);
 char compute_next_step(char path_id, LGPoint *pt, char step_num);
 uchar pf_check_doors(MapElem *pme, char dir, ObjID *open_door);
 uchar pf_obj_doors(MapElem *pme1, MapElem *pme2, char dir, ObjID *open_door);

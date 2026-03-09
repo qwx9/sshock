@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	Seamus, June 29, 1993...
 //	========================
 
-#include <iostream>
 //#include <conio.h>
 #include "edms_int.h" //This is the object type library. It is universal.
 #include "idof.h"
@@ -80,7 +79,7 @@ static Q checker, check0, check1, check2, V_wall0, V_wall1;
 
 static Q drug, butt;
 
-const Q wt_pos = 0.001, wt_neg = -wt_pos;
+const Q wt_pos = 0.001, wt_neg = -0.001;
 
 #pragma require_prototypes off
 
@@ -90,7 +89,7 @@ void robot_idof(int32_t object) {
 
     //	Call me instead of having special code everywhere...
     //	====================================================
-    extern void shall_we_dance(int object, Q &result0, Q &result1, Q &result2);
+    extern void shall_we_dance(int object, Q *result0, Q *result1, Q *result2);
 
     A00 = A[object][0][0]; // Dereference NOW!
     A10 = A[object][1][0];
@@ -117,9 +116,9 @@ void robot_idof(int32_t object) {
     //              Boy, will this be faster in the new order...
     //              ============================================
     Q w0, w1, w2, w3, w4;
-    w0.fix_to(terrain_info.wx);
-    w1.fix_to(terrain_info.wy);
-    w2.fix_to(terrain_info.wz);
+    w0 = terrain_info.wx;
+    w1 = terrain_info.wy;
+    w2 = terrain_info.wz;
 
     //		w3 = sqrt( w0*w0 + w1*w1 + w2*w2 );
     //		w4 = 2*( w3 - .5*I[object][22] );
@@ -142,9 +141,9 @@ void robot_idof(int32_t object) {
     else
         check2 = 0;
 
-    object0.fix_to(terrain_info.fx + terrain_info.cx);
-    object1.fix_to(terrain_info.fy + terrain_info.cy);
-    object2.fix_to(terrain_info.fz + terrain_info.cz);
+    object0 = terrain_info.fx + terrain_info.cx;
+    object1 = terrain_info.fy + terrain_info.cy;
+    object2 = terrain_info.fz + terrain_info.cz;
 
     object0 += w0;
     object1 += w1;
@@ -187,7 +186,7 @@ void robot_idof(int32_t object) {
     object10 = object11 = object12 = 0;
 
     if (I[object][5] == 0) {
-        shall_we_dance(object, object10, object11, object12);
+        shall_we_dance(object, &object10, &object11, &object12);
         object10 *= I[object][20] * check0; // More general than it was...
         object11 *= I[object][20] * check1;
         //  	object12 *= I[object][20]*check2;
@@ -208,7 +207,7 @@ void robot_idof(int32_t object) {
 
         //              The parameter should be the desired height....
         Q repul_height;
-        repul_height.fix_to(ss_edms_bcd_param);
+        repul_height = ss_edms_bcd_param;
 
         Q nearness_or_something = repul_height - A[object][2][0];
         if (abs(nearness_or_something) <= .333) {
@@ -351,7 +350,7 @@ void robot_idof(int32_t object) {
 //	==================================================================
 void robot_set_control(int32_t robot, Q thrust_lever, Q attitude_jet, Q jump) {
 
-    sincos(S[robot][3][0], &object0, &object1);
+    q_sincos(S[robot][3][0], &object0, &object1);
 
 #ifdef EDMS_SHIPPABLE
     if (I[robot][30] != ROBOT)
@@ -375,7 +374,7 @@ void robot_set_control(int32_t robot, Q thrust_lever, Q attitude_jet, Q jump) {
 
 //	Here is a separate control routine for robots under AI domination...
 //	====================================================================
-void robot_set_ai_control(int32_t robot, Q desired_heading, Q desired_speed, Q sidestep, Q urgency, Q &there_yet,
+void robot_set_ai_control(int32_t robot, Q desired_heading, Q desired_speed, Q sidestep, Q urgency, Q *there_yet,
                           Q distance) {
 
     const Q one_by_pi = 0.31830, pi = 3.14159, two_pi = 6.28318;
@@ -400,7 +399,7 @@ void robot_set_ai_control(int32_t robot, Q desired_heading, Q desired_speed, Q s
     Q speed = sqrt(S[robot][0][1] * S[robot][0][1] + S[robot][1][1] * S[robot][1][1]),
       direction = desired_heading - S[robot][3][0];
 
-    sincos(S[robot][3][0], &object0, &object1);
+    q_sincos(S[robot][3][0], &object0, &object1);
 
     //	Heading...
     //	----------
@@ -411,7 +410,7 @@ void robot_set_ai_control(int32_t robot, Q desired_heading, Q desired_speed, Q s
 
     //	Inform the caller if we're on course yet...
     //	-------------------------------------------
-    there_yet = one_by_pi * direction * (1 - 2 * (direction < 0));
+    *there_yet = one_by_pi * direction * (1 - 2 * (direction < 0));
 
     //	Set the control...
     //	------------------
@@ -419,7 +418,7 @@ void robot_set_ai_control(int32_t robot, Q desired_heading, Q desired_speed, Q s
 
     //	Speed...
     //	--------
-    I[robot][17] = urgency * (1 / (10 * there_yet + 5)) * (desired_speed - speed); // temporary...
+    I[robot][17] = urgency * (1 / (10 * *there_yet + 5)) * (desired_speed - speed); // temporary...
     if (I[robot][17] < 0)
         I[robot][17] = 0;
 
@@ -489,7 +488,7 @@ int32_t make_robot(Q init_state[6][3], Q params[10]) {
         I[object_number][IDOF_RADIUS] = I[object_number][IDOF_ROBOT_RADIUS];
         I[object_number][32] = I[object_number][33] = I[object_number][34] = I[object_number][35] = 0;
         I[object_number][36] = I[object_number][IDOF_ROBOT_MASS_RECIP]; // Shrugoff "mass"...
-        I[object_number][IDOF_COLLIDE] = -1;
+        I[object_number][IDOF_COLLIDE] = fix_make(-1,0);
         I[object_number][IDOF_AUTODESTRUCT] = 0; // No kill I...
 
         // Turn ON collisions for this robot...

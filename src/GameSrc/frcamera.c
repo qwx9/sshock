@@ -85,6 +85,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h> // for abs, of course
 
+#include "precompiled.h"
 #include "frcamera.h"
 #include "froslew.h" // has objects
 #include "map.h"

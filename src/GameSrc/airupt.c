@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdlib.h>
 
+#include "precompiled.h"
 #include "airupt.h"
 #include "musicai.h"
 #include "map.h"
@@ -127,7 +128,7 @@ uchar run_asynch_music_ai = FALSE;
 uchar mai_semaphor = FALSE;
 
 
-void music_ai() {
+void music_ai(void) {
     //   mlimbs_semaphore = TRUE;
     ai_cycle = TRUE;
     //   if ((run_asynch_music_ai) && (!mai_semaphor))

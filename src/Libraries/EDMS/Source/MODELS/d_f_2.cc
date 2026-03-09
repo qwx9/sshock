@@ -28,36 +28,42 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //	Utilities...
 //	============
-static Q n = 0, r = 0, e = 0, mag = 0, roll_delta = 0, kappa = 0, delta = 0, sin_wheel, cos_wheel;
+static fix n = 0, r = 0, e = 0, mag = 0, roll_delta = 0, kappa = 0, delta = 0, sin_wheel, cos_wheel;
 
-static Q X[3], XD[3], Z[3], FW[3], D[3];
+static fix X[3], XD[3], Z[3], FW[3], D[3];
 
 int32_t counter, dummy1, dummy2;
 
 //      Orientation...
 //      --------------
-static Q e0, e1, e2, e3, ed0, ed1, ed2, ed3;
+static fix e0, e1, e2, e3, ed0, ed1, ed2, ed3;
 
 //	Terrain returns...
 //	------------------
-static Q B_C_return[3];
-static Q BC_test = 0;
+static fix B_C_return[3];
+static fix BC_test = 0;
 
 //	Go for it, just go for it!
 //	==========================
-void dirac_mechanicals(int object, Q F[3], Q T[3]) {
+void dirac_mechanicals(int object, fix F[3], fix T[3]) {
 
-    void mech_globalize(Q &, Q &, Q &), mech_localize(Q &, Q &, Q &);
+    void mech_globalize(fix *, fix *, fix *), mech_localize(fix *, fix *, fix *);
 
-    void get_boundary_conditions(int32_t object, Q raduis, Q position[3], Q derivitaves[3]);
+    void get_boundary_conditions(int32_t object, fix raduis, fix position[3], fix derivitaves[3]);
 
-    Q kappa, delta, mechanical_drag;
+    fix t, kappa, delta, mechanical_drag;
 
-    Q *sc;
+    fix *sc;
 
     //	The points in question, note that the 4th column is steerage...
     //	===============================================================
-    Q structure[6][4] = {{0, 0, 0, 0}, {0, .1, 0, 0}, {-.1, 0, 0, 0}, {0, -.1, 0, 0}, {0, 0, .1, 0}, {0, 0, -.1, 0}};
+	fix structure[6][4];
+	memset(structure, 0, sizeof structure);
+	structure[1][1] = fix_from_float(.1);
+	structure[2][0] = fix_from_float(-.1);
+	structure[3][1] = fix_from_float(-.1);
+	structure[4][2] = fix_from_float(.1);
+	structure[5][2] = fix_from_float(-1.);
 
     //      Get the orientation...
     //      ----------------------
@@ -72,13 +78,16 @@ void dirac_mechanicals(int object, Q F[3], Q T[3]) {
 
     //	From the actual model...
     //	------------------------
-    Q beta_dot = 2 * (e0 * ed1 + e3 * ed2 - e2 * ed3 - e1 * ed0);
-    Q alpha_dot = 2 * (-e3 * ed1 + e0 * ed2 + e1 * ed3 - e2 * ed0);
-    Q gamma_dot = 2 * (e2 * ed1 - e1 * ed2 + e0 * ed3 - e3 * ed0);
+	t = fix_mul(e0, ed1) + fix_mul(e3, ed2) - fix_mul(e2, ed3) - fix_mul(e1, ed0);
+	fix beta_dot = fix_mul(fix_make(2, 0), t);
+	t = fix_mul(-e3, ed1) + fix_mul(e0, ed2) + fix_mul(e1, ed3) - fix_mul(e2, ed0);
+    fix alpha_dot = fix_mul(fix_make(2, 0), t);
+	t = fix_mul(e2, ed1) - fix_mul(e1, ed2) + fix_mul(e0, ed3) - fix_mul(e3, ed0);
+    fix gamma_dot = fix_mul(fix_make(2, 0), t);
 
     //      Steering...
     //      -----------
-    sincos(0 /*I[object][xxx]*/, &sin_wheel, &cos_wheel);
+    fix_sincos(0 /*I[object][xxx]*/, &sin_wheel, &cos_wheel);
 
     int32_t count = 0;
 
@@ -124,7 +133,7 @@ void dirac_mechanicals(int object, Q F[3], Q T[3]) {
     FW[1] = B_C_return[1];
     FW[2] = B_C_return[2];
 
-    mech_localize(FW[0], FW[1], FW[2]); // now local...
+    mech_localize(&FW[0], &FW[1], &FW[2]); // now local...
 
     //		Wheels or drag?
     //		---------------
@@ -134,7 +143,7 @@ void dirac_mechanicals(int object, Q F[3], Q T[3]) {
     D[1] = 0; // roll_delta*XD[1];
     D[2] = 0; // roll_delta*XD[2];		//Oleo damping...
 
-    mech_localize(D[0], D[1], D[2]);
+    mech_localize(&D[0], &D[1], &D[2]);
 
     //		Steerable...
     //		------------
@@ -168,31 +177,31 @@ void dirac_mechanicals(int object, Q F[3], Q T[3]) {
     if (!(ss_edms_bcd_flags & SS_BCD_CURR_ON)) {
         //              if ( (EDMS_BCD < 10) || (EDMS_BCD > 27) ) {
 
-        if (FW[0] > 10)
-            FW[0] = 10;
-        if (FW[1] > 10)
-            FW[1] = 10;
-        if (FW[0] < -10)
-            FW[0] = -10;
-        if (FW[1] < -10)
-            FW[1] = -10;
+        if (FW[0] > fix_make(10,0))
+            FW[0] = fix_make(10,0);
+        if (FW[1] > fix_make(10,0))
+            FW[1] = fix_make(10,0);
+        if (FW[0] < fix_make(-10,0))
+            FW[0] = fix_make(-10,0);
+        if (FW[1] < fix_make(-10,0))
+            FW[1] = fix_make(-10,0);
 
-        T[0] += .6 * FW[0];
-        T[0] *= 1 - 2 * (FW[2] <= 0);
+        T[0] += fix_mul(fix_from_float(.6), FW[0]);
+        T[0] *= FIX_UNIT - fix_mul(fix_make(2, 0), fix_make(FW[2] <= 0, 0));
 
-        T[1] += -.5 * FW[1];
-        T[1] *= 1 - 2 * (FW[2] <= 0);
+        T[1] += fix_mul(fix_from_float(-.5), FW[1]);
+        T[1] *= FIX_UNIT - fix_mul(fix_make(2, 0), fix_make(FW[2] <= 0, 0));
     }
 
     //	}
 
     //              Controls...
     //              -----------
-    F[0] += (1 - BC_test) * I[object][0]; // Control inputs...
+    F[0] += fix_mul(FIX_UNIT - BC_test, I[object][0]); // Control inputs...
 
     T[0] += I[object][1];                    //                            - .1*FW[1];
-    T[1] += -1.5 * gamma_dot + I[object][3]; //           + .1*FW[0];
-    T[2] += -.8 * I[object][2];
+    T[1] += fix_mul(fix_from_float(-1.5), gamma_dot) + I[object][3]; //           + .1*FW[0];
+    T[2] += fix_mul(fix_from_float(-.8), I[object][2]);
 
     //	So be it...
     //	===========
@@ -202,39 +211,69 @@ void dirac_mechanicals(int object, Q F[3], Q T[3]) {
 //	coordinaates, a simple rotation.  The order is left up to this routine
 //	which MODIFIES ITS ARGUMENTS...
 //	===============================
-void mech_globalize(Q &X, Q &Y, Q &Z) {
+void mech_globalize(fix *X, fix *Y, fix *Z) {
 
-    Q x = X, y = Y, z = Z;
+    fix x = *X, y = *Y, z = *Z, fx, fy, fz;
 
-    X = x * (e0 * e0 + e1 * e1 - e2 * e2 - e3 * e3) + y * (2 * (e1 * e2 - e0 * e3)) + z * (2 * (e1 * e3 + e0 * e2));
+    fx = fix_mul(e0, e0) + fix_mul(e1, e1) - fix_mul(e2, e2) - fix_mul(e3, e3);
+    fy = fix_mul(e1, e2) - fix_mul(e0, e3);
+    fy = fix_mul(fix_make(2, 0), fy);
+    fz = fix_mul(e1, e3) + fix_mul(e0, e2);
+    fz = fix_mul(fix_make(2, 0), fz);
+    *X = fix_mul(x, fx) + fix_mul(y, fy) + fix_mul(z, fz);
 
-    Y = x * (2 * (e1 * e2 + e0 * e3)) + y * (e0 * e0 - e1 * e1 + e2 * e2 - e3 * e3) + z * (2 * (e2 * e3 - e0 * e1));
+    fx = fix_mul(e1, e2) + fix_mul(e0, e3);
+    fx = fix_mul(fix_make(2, 0), fx);
+    fy = fix_mul(e0, e0) - fix_mul(e1, e1) + fix_mul(e2, e2) - fix_mul(e3, e3);
+    fz = fix_mul(e2, e3) - fix_mul(e0, e1);
+    fz = fix_mul(fix_make(2, 0), fz);
+    *Y = fix_mul(x, fx) + fix_mul(y, fy) + fix_mul(z, fz);
 
-    Z = x * (2 * (-e0 * e2 + e1 * e3)) + y * (2 * (e2 * e3 + e0 * e1)) + z * (e0 * e0 - e1 * e1 - e2 * e2 + e3 * e3);
+    fx = fix_mul(-e0, e2) + fix_mul(e1, e3);
+    fx = fix_mul(fix_make(2, 0), fx);
+    fy = fix_mul(e2, e3) + fix_mul(e0, e1);
+    fy = fix_mul(fix_make(2, 0), fy);
+    fz = fix_mul(e0, e0) - fix_mul(e1, e1) - fix_mul(e2, e2) + fix_mul(e3, e3);
+    *Z = fix_mul(x, fx) + fix_mul(y, fy) + fix_mul(z, fz);
 }
 
 //	We need to transform from local coordinates back to the global coordinates
 //	for the actual EDMS model...
 //	============================
-void mech_localize(Q &X, Q &Y, Q &Z) {
+void mech_localize(fix *X, fix *Y, fix *Z) {
 
-    Q x = X, y = Y, z = Z;
+    fix x = *X, y = *Y, z = *Z, fx, fy, fz;
 
-    X = x * (e0 * e0 + e1 * e1 - e2 * e2 - e3 * e3) + y * (2 * (e1 * e2 + e0 * e3)) + z * (2 * (e1 * e3 - e0 * e2));
+    fx = fix_mul(e0, e0) + fix_mul(e1, e1) - fix_mul(e2, e2) - fix_mul(e3, e3);
+    fy = fix_mul(e1, e2) + fix_mul(e0, e3);
+    fy = fix_mul(fix_make(2, 0), fy);
+    fz = fix_mul(e1, e3) - fix_mul(e0, e2);
+    fz = fix_mul(fix_make(2, 0), fz);
+    *X = fix_mul(x, fx) + fix_mul(y, fy) + fix_mul(z, fz);
 
-    Y = x * (2 * (e1 * e2 - e0 * e3)) + y * (e0 * e0 - e1 * e1 + e2 * e2 - e3 * e3) + z * (2 * (e2 * e3 + e0 * e1));
+    fx = fix_mul(e1, e2) - fix_mul(e0, e3);
+    fx = fix_mul(fix_make(2, 0), fx);
+    fy = fix_mul(e0, e0) - fix_mul(e1, e1) + fix_mul(e2, e2) - fix_mul(e3, e3);
+    fz = fix_mul(e2, e3) + fix_mul(e0, e1);
+    fz = fix_mul(fix_make(2, 0), fz);
+    *Y = fix_mul(x, fx) + fix_mul(y, fy) + fix_mul(z, fz);
 
-    Z = x * (2 * (e0 * e2 + e1 * e3)) + y * (2 * (e2 * e3 - e0 * e1)) + z * (e0 * e0 - e1 * e1 - e2 * e2 + e3 * e3);
+    fx = fix_mul(e0, e2) + fix_mul(e1, e3);
+    fx = fix_mul(fix_make(2, 0), fx);
+    fy = fix_mul(e2, e3) - fix_mul(e0, e1);
+    fy = fix_mul(fix_make(2, 0), fy);
+    fz = fix_mul(e0, e0) - fix_mul(e1, e1) - fix_mul(e2, e2) + fix_mul(e3, e3);
+    *Z = fix_mul(x, fx) + fix_mul(y, fy) + fix_mul(z, fz);
 }
 
 //      Get the Real story based on the novella (System shock version), returning
 //	the result in the B_C_return[3] and BC_test global variables...
 //      ==============================================================
-void get_boundary_conditions(int object, Q radius, Q position[3], Q derivatives[3]) {
+void get_boundary_conditions(int object, fix radius, fix position[3], fix derivatives[3]) {
 
     //	Schmeck...
     //	----------
-    Q vec0, vec1, vec2, mul, vv0, vv1, vv2, dmag, kmag;
+    fix vec0, vec1, vec2, mul, vv0, vv1, vv2, dmag, kmag;
 
     //        if (position[0] != A[object][0][0] ) mout << position[0] << " : " << A[object][0][0] << "\n";
     //        if (position[1] != A[object][0][1] ) mout << position[1] << " : " << A[object][1][0] << "\n";
@@ -251,15 +290,15 @@ void get_boundary_conditions(int object, Q radius, Q position[3], Q derivatives[
 
     //		Convert-a-tron...
     //		-----------------
-    vec0.fix_to(terrain_info.fx + terrain_info.cx + terrain_info.wx);
-    vec1.fix_to(terrain_info.fy + terrain_info.cy + terrain_info.wy);
-    vec2.fix_to(terrain_info.fz + terrain_info.cz + terrain_info.wz);
+    vec0 = terrain_info.fx + terrain_info.cx + terrain_info.wx;
+    vec1 = terrain_info.fy + terrain_info.cy + terrain_info.wy;
+    vec2 = terrain_info.fz + terrain_info.cz + terrain_info.wz;
 
-    BC_test = sqrt(vec0 * vec0 + vec1 * vec1 + vec2 * vec2);
+    BC_test = fix_sqrt(fix_mul(vec0, vec0) + fix_mul(vec1, vec1) + fix_mul(vec2, vec2));
 
     if (BC_test > EDMS_DIV_ZERO_TOLERANCE) {
-        mul = 1 / BC_test; // To get primitive...
-        BC_test = 1;
+        mul = fix_div(FIX_UNIT, BC_test); // To get primitive...
+        BC_test = FIX_UNIT;
     }
 
     else
@@ -267,26 +306,27 @@ void get_boundary_conditions(int object, Q radius, Q position[3], Q derivatives[
 
     //                mout << BC_test << "\n";
 
-    vv0 = mul * vec0; // The primitive V_n...
-    vv1 = mul * vec1;
-    vv2 = mul * vec2;
+    vv0 = fix_mul(mul, vec0); // The primitive V_n...
+    vv1 = fix_mul(mul, vec1);
+    vv2 = fix_mul(mul, vec2);
 
     //		"rate" magnitude to all you aero-astro guys...
     //		----------------------------------------------
-    dmag = I[object][24] * (derivatives[0] * vv0 // Delta_magnitude...
-                            + derivatives[1] * vv1 + derivatives[2] * vv2);
+    dmag = fix_mul(I[object][24], (fix_mul(derivatives[0], vv0) // Delta_magnitude...
+                            + fix_mul(derivatives[1], vv1)
+                            + fix_mul(derivatives[2], vv2)));
 
     //                PRINT3D( derivatives );
 
-    B_C_return[0] = -dmag * vv0; // Delta...
-    B_C_return[1] = -dmag * vv1;
-    B_C_return[2] = -dmag * vv2;
+    B_C_return[0] = -fix_mul(dmag, vv0); // Delta...
+    B_C_return[1] = -fix_mul(dmag, vv1);
+    B_C_return[2] = -fix_mul(dmag, vv2);
 
     kmag = I[object][23];
 
-    B_C_return[0] += kmag * vec0; // Kappa...
-    B_C_return[1] += kmag * vec1;
-    B_C_return[2] += kmag * vec2;
+    B_C_return[0] += fix_mul(kmag, vec0); // Kappa...
+    B_C_return[1] += fix_mul(kmag, vec1);
+    B_C_return[2] += fix_mul(kmag, vec2);
 
     //                PRINT3D( B_C_return )
 }

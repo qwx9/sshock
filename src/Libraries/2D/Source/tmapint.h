@@ -132,10 +132,10 @@ typedef struct {
      uchar solid;
    };
    int32_t *vtab;              /* for non power of 2 widths */
-   void (*scanline_func)();   /* function for individual scanline */
-   void (*loop_func)();       /* actually, chunk function */
-   union {void (*left_edge_func)(), (*top_edge_func)();};
-   union {void (*right_edge_func)(),(*bot_edge_func)();};
+   void (*scanline_func)(void);   /* function for individual scanline */
+   void (*loop_func)(void);       /* actually, chunk function */
+   union {void (*left_edge_func)(void), (*top_edge_func)(void);};
+   union {void (*right_edge_func)(void),(*bot_edge_func)(void);};
 } grs_tmap_loop_info;
 
 #define TMS_RIGHT 0

@@ -1,6 +1,6 @@
 /*
 
-Copyright (C) 2015-2018 Night Dive Studios, LLC.
+Copyright (C) 2019 Shockolate Project
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,6 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-//	This seems silly now, but later it will all make sense, sensei...
-//	=================================================================
-int32_t EDMS_cast_projectile(fix *X, fix D[3], fix kick, fix knock, fix size, fix range, int32_t exclude, physics_handle shooter);
+
+// This is autgenerated CMake file, don't edit it manually!
+
+#ifndef SHOCKOLATE_SRC_GAMESRC_HEADERS_SHOCOLATE_VERSION_H_
+#define SHOCKOLATE_SRC_GAMESRC_HEADERS_SHOCOLATE_VERSION_H_
+
+#define SHOCKOLATE_VERSION L"⑨Shockolate"
+
+#endif // SHOCKOLATE_SRC_GAMESRC_HEADERS_SHOCOLATE_VERSION_H_

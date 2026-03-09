@@ -50,7 +50,7 @@ void flat8_clear(long color) {
     int row;
     ushort short_val;
     double double_stack, doub_vl;
-    uint firstbytes, middoubles, lastbytes, fb, md, lb;
+    uint firstbytes = 0, middoubles, lastbytes, fb, md, lb;
     uchar *dst;
     double *dst_doub;
     uint temp;

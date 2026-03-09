@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
+#include "precompiled.h"
 #include "map.h"
 #include "player.h"
 #include "schedule.h"
@@ -112,24 +113,26 @@ int compare_events(void *e1, void *e2) {
 void stop_terrain_elevator_sound(short sem);
 
 uchar register_h_event(uchar x, uchar y, uchar floor, char *sem, char *key, uchar no_sfx) {
-    int i, fr;
+    int i, k, fr;
 
     fr = -1;
     for (i = 0; i < NUM_HEIGHT_SEMAPHORS; i++) {
         if (h_sems[i].inuse == 0)
             fr = i;
-        else if (h_sems[i].x == x && h_sems[i].y == y && h_sems[i].floor == floor) {
+        else if (h_sems[i].x == x && h_sems[i].y == y && THFLOOR(&h_sems[i]) == floor) {
 
             // conflict.  Take over the old semaphor.
 
 			stop_terrain_elevator_sound(i);
 
-            if (h_sems[i].key < MAX_HSEM_KEY)
-                h_sems[i].key++;
-            else
-                h_sems[i].key = 0;
+            if (THKEY(&h_sems[i]) < MAX_HSEM_KEY){
+            	k = THKEY(&h_sems[i]) + 1;
+                h_sems[i].floor_key &= 1;
+                h_sems[i].floor_key |= k << 1;
+            }else
+                h_sems[i].floor_key &= 1;
 
-            *key = h_sems[i].key;
+            *key = THKEY(&h_sems[i]);
             *sem = i;
             if (!no_sfx) {
                 h_sems[i].inuse = 2;
@@ -147,9 +150,8 @@ uchar register_h_event(uchar x, uchar y, uchar floor, char *sem, char *key, ucha
     } else {
         h_sems[fr].x = x;
         h_sems[fr].y = y;
-        h_sems[fr].floor = floor;
-        h_sems[fr].key = 0;
-        *key = h_sems[fr].key;
+        h_sems[fr].floor_key = floor;
+        *key = THKEY(&h_sems[fr]);
         *sem = fr;
         if (!no_sfx) {
             h_sems[fr].inuse = 2;
@@ -197,7 +199,7 @@ void height_event_handler(Schedule *s, SchedEvent *ev) {
     char ht, sign = (hse.steps_remaining > 0) ? 1 : -1;
 
     // has someone else claimed this square?
-    if (h_sems[hse.semaphor].key != hse.key) {
+    if (THKEY(&h_sems[hse.semaphor]) != hse.key) {
         return;
     }
     x = h_sems[hse.semaphor].x;

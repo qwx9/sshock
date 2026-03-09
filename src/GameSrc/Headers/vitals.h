@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef VITALS_H
 #define VITALS_H
 
-void status_vitals_start();
-void status_vitals_end();
+void status_vitals_start(void);
+void status_vitals_end(void);
 
 #endif

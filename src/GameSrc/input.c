@@ -32,6 +32,7 @@ static char sbcopy[] = "Spaceball Interface Copyright 1994 Spaceball Technologie
 #include <string.h>
 #include <limits.h>
 
+#include "precompiled.h"
 #include "Shock.h"
 #include "ShockBitmap.h"
 #include "InitMac.h"
@@ -2557,7 +2558,7 @@ void inp_weapon_button(uchar pull) {
 
 #define inp_weapon_junk() weap_time = 0
 
-void inp_use_sidestep_button() {
+void inp_use_sidestep_button(void) {
     if (use_but_time) { // if long enough, go to sidestep....
         if (*tmd_ticks > use_but_time + USE_UPPER_BOUND) {
             inp_sidestep = TRUE;
@@ -2572,7 +2573,7 @@ void inp_use_sidestep_button() {
 //  and if mouse moves cancelling but otherwise when joyclicking again with
 //  an obj already on cursor the put it in inventory
 
-void inp_use_sidestep_junk() {
+void inp_use_sidestep_junk(void) {
     if (use_but_time) {
         LGPoint pos;
 

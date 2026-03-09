@@ -34,5 +34,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef __CNVTAB_H
 #define __CNVTAB_H
-extern void (**grd_canvas_table_list[])();
+extern void (**grd_canvas_table_list[])(void);
 #endif /* !__CNVTAB_H */

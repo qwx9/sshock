@@ -57,7 +57,7 @@ ResFile resFile[MAX_RESFILENUM + 1];
 
 // Datapath gDatapath;
 
-int32_t ResFindFreeFilenum();
+int32_t ResFindFreeFilenum(void);
 
 void ResReadDirEntries(int32_t filenum, ResDirHeader *pDirHead);
 void ResProcDirEntry(ResDirEntry *pDirEntry, int32_t filenum, int32_t dataOffset);
@@ -68,6 +68,19 @@ void ResCreateEditInfo(ResFile *prf, int32_t filenum);
 void ResCreateDir(ResFile *prf);
 void ResWriteDir(int32_t filenum);
 void ResWriteHeader(int32_t filenum);
+
+ResDirEntry
+diskResDirEntry(ResDirEntry *p)
+{
+	ResDirEntry d;
+
+	d.id = p->id;
+	memcpy(d.size, p->size, sizeof d.size);
+	d.flags = p->flags;
+	memcpy(d.csize, p->csize, sizeof d.csize);
+	d.type = p->type;
+	return d;
+}
 
 //	---------------------------------------------------------
 //
@@ -102,7 +115,7 @@ void ResAddPath(char *path)
 
 int32_t ResOpenResFile(const char *fname, ResOpenMode mode, bool auxinfo) {
     int32_t filenum;
-    FILE *fd;
+    FILE *fd = NULL;
     ResFile *prf;
     ResFileHeader fileHead;
     ResDirHeader dirHead;
@@ -251,7 +264,7 @@ void ResCloseFile(int32_t filenum) {
 //
 //	ResFindFreeFilenum() finds free file number
 
-int32_t ResFindFreeFilenum() {
+int32_t ResFindFreeFilenum(void) {
     int32_t filenum;
 
     for (filenum = 1; filenum <= MAX_RESFILENUM; filenum++) {
@@ -297,7 +310,7 @@ void ResReadDirEntries(int32_t filenum, ResDirHeader *pDirHead) {
         ResProcDirEntry(pDirEntry, filenum, dataOffset);
 
         // Advance file offset and get next
-        dataOffset = RES_OFFSET_ALIGN(dataOffset + pDirEntry->csize);
+        dataOffset = RES_OFFSET_ALIGN(dataOffset + GBIT24(pDirEntry->csize));
         pDirEntry++;
     }
 }
@@ -320,7 +333,7 @@ void ResProcDirEntry(ResDirEntry *pDirEntry, int32_t filenum, int32_t dataOffset
     // Grow table if need to
     ResExtendDesc(pDirEntry->id);
 
-    //TRACE("id %x", pDirEntry->id);
+    TRACE("ResProcDirEntry id %x [%d %d]", pDirEntry->id, sizeof(ResDesc), sizeof(ResDesc2));
 
     // If already a resource at this id, warning
     prd = RESDESC(pDirEntry->id);
@@ -332,7 +345,7 @@ void ResProcDirEntry(ResDirEntry *pDirEntry, int32_t filenum, int32_t dataOffset
     
     // Fill in resource descriptor
     prd->ptr = NULL;
-    prd->fsize = pDirEntry->size;
+    prd->fsize = GBIT24(pDirEntry->size);
     prd->msize = 0; // not decoded yet
     prd->filenum = filenum;
     prd->lock = 0;
@@ -342,7 +355,7 @@ void ResProcDirEntry(ResDirEntry *pDirEntry, int32_t filenum, int32_t dataOffset
     prd->next = 0;
     prd->prev = 0;
 
-    //TRACE("Found id: %x of type %x", pDirEntry->id, pDirEntry->type);
+    TRACE("Found id: %x of type %x", pDirEntry->id, pDirEntry->type);
 
     // If loadonopen flag set, load resource
 
@@ -411,7 +424,7 @@ void ResReadDir(ResFile *prf, int32_t filenum) {
             pedit->flags |= RFF_NEEDSPACK;
         else
             ResProcDirEntry(pDirEntry, filenum, pedit->currDataOffset);
-        pedit->currDataOffset = RES_OFFSET_ALIGN(pedit->currDataOffset + pDirEntry->csize);
+        pedit->currDataOffset = RES_OFFSET_ALIGN(pedit->currDataOffset + GBIT24(pDirEntry->csize));
     }
 
     // Seek to current data location

@@ -34,6 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
+#include "precompiled.h"
 #include "game_screen.h" // for the root region
 #include "fullscrn.h"
 #include "invent.h"
@@ -115,7 +116,7 @@ void set_mfd_from_defaults(int mfd_id, uchar func, uchar slot);
 //
 // Initialize the MFD system (called from init_all() in init.c)
 
-void init_newmfd() {
+void init_newmfd(void) {
     ubyte i;
 
     // Set the default MFD function
@@ -156,7 +157,7 @@ void mfd_language_change(void) {
     load_string_array(REF_STR_MFDCursor, cursor_strings, cursor_strbuf, sizeof(cursor_strbuf), MFD_NUM_BTTNS);
 }
 
-void init_newmfd_button_cursors() {
+void init_newmfd_button_cursors(void) {
     int i;
     mfd_language_change();
     for (i = 0; i < NUM_MFDS; i++) {
@@ -168,12 +169,12 @@ void init_newmfd_button_cursors() {
 }
 
 // ---------------------------------------------------------------------------
-// screen_init_mfd_draw()
+// screen_init_mfd_draw(void)
 //
 // Basically, just draw the friggin' buttons and set mfd's to their
 // first slot. (called from screen_start() in screen.c)
 
-void screen_init_mfd_draw() {
+void screen_init_mfd_draw(void) {
     mfd_set_slot(MFD_LEFT, mfd_index(MFD_LEFT), TRUE);
     mfd_set_slot(MFD_RIGHT, mfd_index(MFD_RIGHT), TRUE);
 
@@ -189,7 +190,7 @@ void screen_init_mfd_draw() {
 #endif
 
 // ---------------------------------------------------------------------------
-// screen_init_mfd();
+// screen_init_mfd(void);
 //
 // Declare the appropriate regions for the MFD's and their button panels.
 // (called from screen_start() in screen.c)
@@ -297,7 +298,7 @@ void screen_init_mfd(uchar fullscrn) {
 }
 
 #ifdef SVGA_SUPPORT
-errtype mfd_update_screen_mode() {
+errtype mfd_update_screen_mode(void) {
     if (convert_use_mode == 0) {
         gr_init_canvas(&_offscreen_mfd, mfd_canvas_bits, BMT_FLAT8, MFD_VIEW_WID, MFD_VIEW_HGT);
         gr_init_canvas(&_fullscreen_mfd, mfd_background.bits, BMT_FLAT8, MFD_VIEW_WID, MFD_VIEW_HGT);
@@ -324,7 +325,7 @@ errtype mfd_update_screen_mode() {
     return (OK);
 }
 
-errtype mfd_clear_all() {
+errtype mfd_clear_all(void) {
     if (full_game_3d) {
         gr_push_canvas(&_offscreen_mfd);
         gr_clear(0);
@@ -365,7 +366,7 @@ void mfd_change_fullscreen(uchar on) {
 // Tell the function keys that they're supposed to map to our button panels.
 // (Called from init_input() in input.c)
 
-void keyboard_init_mfd() {
+void keyboard_init_mfd(void) {
     /* KLC leave out F-keys and char codes.
 
        hotkey_add(KEY_F1, DEMO_CONTEXT,mfd_button_callback_kb,0);
@@ -1006,7 +1007,7 @@ void mfd_select_button(int which_panel, int which_button) {
 //
 // This is what gets called from the main loop each frame.
 
-void mfd_update() {
+void mfd_update(void) {
     static uchar LastFlash = FALSE;
     ubyte steps_cache[NUM_MFDS] = {0, 0};
 
@@ -1128,7 +1129,7 @@ uchar mfd_update_current_slot(ubyte mfd_id, ubyte status, ubyte num_steps) {
 //
 // Forces a redraw of both the button panels and mfd slots
 
-void mfd_force_update() {
+void mfd_force_update(void) {
     ubyte i;
     for (i = 0; i < NUM_MFDS; i++) {
         mfd_force_update_single(i);

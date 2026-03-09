@@ -43,6 +43,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdlib.h>
 
+#include "precompiled.h"
 #include "gr2ss.h"
 #include "mfdgadg.h"
 

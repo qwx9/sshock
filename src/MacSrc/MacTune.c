@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdbool.h>
 
+#include "precompiled.h"
 #include "MacTune.h"
 #include "miscqvar.h"
 #include "Xmi.h"

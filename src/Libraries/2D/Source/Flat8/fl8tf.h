@@ -53,8 +53,8 @@ extern int gri_flat8_rsd8_bitmap(grs_bitmap *bm, short x_left, short y_top);
 /* inner loop initializers */
 /* normal fill: */
 extern void gri_trans_blend_clut_lin_umap_init(grs_tmap_loop_info *ti);
-extern void gri_opaque_true_lin_umap_init();
-extern void gri_opaque_clut_true_lin_umap_init();
+extern void gri_opaque_true_lin_umap_init(void);
+extern void gri_opaque_clut_true_lin_umap_init(void);
 
 extern void gri_opaque_lin_umap_init(grs_tmap_loop_info *tli);
 extern void gri_trans_lin_umap_init(grs_tmap_loop_info *tli);
@@ -129,8 +129,8 @@ extern int gri_trans_solid_scale_umap_init(grs_tmap_loop_info *tli, grs_vertex *
 /* translucent bitmaps */
 extern void gri_tluc8_opaque_lin_umap_init(grs_tmap_loop_info *tli);
 extern void gri_tluc8_trans_lin_umap_init(grs_tmap_loop_info *tli);
-extern void gri_tluc8_opaque_lit_lin_umap_init();
-extern void gri_tluc8_trans_lit_lin_umap_init();
+extern void gri_tluc8_opaque_lit_lin_umap_init(void);
+extern void gri_tluc8_trans_lit_lin_umap_init(void);
 extern void gri_tluc8_opaque_clut_lin_umap_init(grs_tmap_loop_info *tli);
 extern void gri_tluc8_trans_clut_lin_umap_init(grs_tmap_loop_info *tli);
 

@@ -137,7 +137,7 @@ uchar hotkey_list(char **item, int sort_type);
 // are more hotkeys to list out.  sort_type determines what sorting
 // method is used.
 
-errtype hotkey_list_clear();
+errtype hotkey_list_clear(void);
 // Starts hotkey listing at the beginning.
 #endif
 

@@ -14,14 +14,11 @@
 // PL_MFD_PUZZLE_SIZE that is set on entry.
 #define JOIN(x,y) x ## y
 #define STRUCTNAME(x,y) JOIN(x,y)
+#define	RESNAME	STRUCTNAME(PlayerLayout_M, PL_MFD_PUZZLE_SIZE)
+#define	RESFNAME	JOIN(RESNAME, f)
 
 // Describe the layout of the player in a resfile.
-const ResLayout STRUCTNAME(PlayerLayout_M, PL_MFD_PUZZLE_SIZE) =
-{
-  711 + PL_MFD_PUZZLE_SIZE + 654, // size on disc
-  sizeof(Player), // size in memory
-  0,              // flags
-  {
+const ResField RESFNAME[] = {
     { RFFT_BIN(20), offsetof(Player, name)               },  //char [20]
     { RFFT_UINT8,   offsetof(Player, realspace_level)    },  //char
     { RFFT_BIN(4),  offsetof(Player, difficulty)         },  //byte [4]
@@ -174,8 +171,16 @@ const ResLayout STRUCTNAME(PlayerLayout_M, PL_MFD_PUZZLE_SIZE) =
     { RFFT_BIN(9), offsetof(Player, pad)                },  //uchar [9]
 
     { RFFT_END, 0 }
-  }
+};
+const ResLayout RESNAME =
+{
+  711 + PL_MFD_PUZZLE_SIZE + 654, // size on disc
+  sizeof(Player), // size in memory
+  0,              // flags
+  RESFNAME
 };
 
 #undef JOIN
 #undef STRUCTNAME
+#undef RESNAME
+#undef RESFNAME

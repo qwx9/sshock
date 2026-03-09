@@ -79,7 +79,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "resformat.h"
 
-#pragma pack(push,2)
+#pragma pack on	// 2
 
 //	---------------------------------------------------------
 //		ID AND REF DEFINITIONS AND MACROS
@@ -202,8 +202,8 @@ typedef struct {
 } ResDesc;
 
 typedef struct {
-    uint16_t flags : 8; // misc flags (RDF_XXX, see below)
-    uint16_t type : 8;  // resource type (RTYPE_XXX, see restypes.h)
+    uint8_t flags; // misc flags (RDF_XXX, see below)
+    uint8_t type;  // resource type (RTYPE_XXX, see restypes.h)
 } ResDesc2;
 
 #define RESDESC(id) (&gResDesc[id])      // convert id to resource desc ptr
@@ -244,8 +244,8 @@ extern Id resDescMax; // max id in res desc
 //		RESOURCE MANAGER GENERAL ROUTINES  (res.c)
 //	------------------------------------------------------------
 
-void ResInit(); // init Res, allocate initial ResDesc[]
-void ResTerm(); // term Res (done auto via atexit)
+void ResInit(void); // init Res, allocate initial ResDesc[]
+void ResTerm(void); // term Res (done auto via atexit)
 
 //	------------------------------------------------------------
 //		RESOURCE FILE ACCESS (resfile.c)
@@ -334,12 +334,28 @@ typedef struct {
 
 typedef struct {
     Id id;               // resource id (if 0, entry is deleted)
+    /*
     uint32_t size : 24;  // uncompressed size (size in ram)
     uint32_t flags : 8;  // resource flags (RDF_XXX)
     uint32_t csize : 24; // compressed size (size on disk)
                          // (this size is valid disk size even if not comp.)
     uint32_t type : 8;   // resource type
+    */
+    uchar size[3];  // uncompressed size (size in ram)
+    uint8_t flags;  // resource flags (RDF_XXX)
+    uchar csize[3]; // compressed size (size on disk)
+                    // (this size is valid disk size even if not comp.)
+    uint8_t type;   // resource type
 } ResDirEntry;
+
+#define	GBIT8(p)	(((uchar*)(p))[0])
+#define	GBIT16(p)	(((uchar*)(p))[0]|(((uchar*)(p))[1]<<8))
+#define	GBIT24(p)	(((uchar*)(p))[0]|(((uchar*)(p))[1]<<8)|(((uchar*)(p))[2]<<16))
+#define	PBIT8(p,v)	do{(p)[0]=(v);}while(0)
+#define	PBIT16(p,v)	do{(p)[0]=(v);(p)[1]=(v)>>8;}while(0)
+#define	PBIT24(p,v)	do{(p)[0]=(v);(p)[1]=(v)>>8;(p)[2]=(v)>>16;}while(0)
+
+ResDirEntry	diskResDirEntry(ResDirEntry *);
 
 // Active resource file table
 
@@ -387,6 +403,6 @@ int32_t ResPack(int32_t filenum);                   // remove empty entries
 // DG: a case-insensitive fopen()-wrapper (see resfile.c)
 extern FILE *fopen_caseless(const char *path, const char *mode);
 
-#pragma pack(pop)
+#pragma pack off
 
 #endif

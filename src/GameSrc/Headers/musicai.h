@@ -118,15 +118,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Initialize the AI portion of the MLIMBS system.
 errtype mlimbs_AI_init(void);
 void music_ai(void);
-errtype musicai_shutdown();
+errtype musicai_shutdown(void);
 errtype musicai_reset(uchar runai);
 int gen_monster(int monster_num);
-void musicai_clear();
+void musicai_clear(void);
 errtype mai_monster_nearby(int monster_type);
-errtype mai_attack();
-errtype mai_intro();
-errtype mai_monster_defeated();
-errtype mai_player_death();
+errtype mai_attack(void);
+errtype mai_intro(void);
+errtype mai_monster_defeated(void);
+errtype mai_player_death(void);
 errtype mai_transition(int new_trans);
 
 errtype make_request(int chunk_num, int piece_ID);
@@ -135,10 +135,10 @@ errtype fade_into_location(int x, int y);
 errtype load_score_for_location(int x, int y);
 errtype load_score_from_cfg(char *filename);
 void load_score_guts(uint8_t score_playing);
-errtype music_init();
-errtype digifx_init();
-errtype stop_digi_fx();
-void clear_digi_fx();
+errtype music_init(void);
+errtype digifx_init(void);
+errtype stop_digi_fx(void);
+void clear_digi_fx(void);
 int play_digi_fx_master(int sfx_code, int num_loops, ObjID id, ushort x, ushort y);
 #define play_digi_fx(sfx_code, loops)               play_digi_fx_master(sfx_code, loops, OBJ_NULL, 0, 0)
 #define play_digi_fx_obj(sfx_code, num_loops, id)   play_digi_fx_master(sfx_code, num_loops, id, 0, 0)

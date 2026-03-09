@@ -31,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "cnvdrv.h"
 #include <stdlib.h>
 
-void (**grd_canvas_table_list[])() = {
+void (**grd_canvas_table_list[])(void) = {
    NULL,                /* device driver-initialized by gr_set_mode */
    NULL,                /* monochrome-not supported */
    flat8_canvas_table,  /* flat 8 canvas */

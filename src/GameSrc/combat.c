@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
+#include "precompiled.h"
 #include "combat.h"
 #include "objsim.h"
 #include "objprop.h"

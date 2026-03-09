@@ -26,7 +26,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 #include <SDL.h>
+#include <SDL2/SDL_audio.h>
 
+#include "precompiled.h"
 #include "MacTune.h"
 #include "afile.h"
 #include "movie.h"

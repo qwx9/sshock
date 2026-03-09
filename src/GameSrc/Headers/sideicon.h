@@ -72,13 +72,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Prototypes
 
 extern void init_side_icon(ubyte side_icon, int type, int num);
-extern void side_icon_expose_all();
+extern void side_icon_expose_all(void);
 extern void side_icon_expose(ubyte side_icon);
-extern void init_all_side_icons();
+extern void init_all_side_icons(void);
 void init_side_icon_popups(void);
 extern void screen_init_side_icons(LGRegion *root);
-errtype side_icon_load_bitmaps();
-errtype side_icon_free_bitmaps();
+errtype side_icon_load_bitmaps(void);
+errtype side_icon_free_bitmaps(void);
 void side_icon_language_change(void);
 
 void zoom_to_side_icon(LGPoint from, int icon);

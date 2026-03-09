@@ -63,13 +63,13 @@ int gri_scale_umap_loop_68K(grs_tmap_loop_info *tli);
 // ========================================================================
 // opaque solid polygon scaler
 int gri_opaque_solid_scale_umap_init(grs_tmap_loop_info *info, grs_vertex **vert) {
-    info->left_edge_func = (void (*)())gri_scale_edge;
-    info->right_edge_func = (void (*)())gr_null;
+    info->left_edge_func = (void (*)(void))gri_scale_edge;
+    info->right_edge_func = (void (*)(void))gr_null;
     info->bm.hlog = 0;
     info->bm.bits = info->clut;
-    info->loop_func = (void (*)())gri_poly_loop;
+    info->loop_func = (void (*)(void))gri_poly_loop;
     info->d = ((uchar *)((long)grd_canvas->bm.row * (long)info->y));
-    info->d += (long)grd_canvas->bm.bits;
+    info->d += (intptr_t)grd_canvas->bm.bits;
     return (0);
 }
 
@@ -80,9 +80,9 @@ int gri_opaque_solid_scale_umap_init(grs_tmap_loop_info *info, grs_vertex **vert
 // transparent solid polygon scaler
 int gri_trans_solid_scale_umap_init(grs_tmap_loop_info *tli, grs_vertex **vert) {
     tli->bm.hlog = GRL_TRANS | GRL_SOLID;
-    tli->loop_func = (void (*)())gri_scale_umap_loop_PPC;
+    tli->loop_func = (void (*)(void))gri_scale_umap_loop_PPC;
     tli->right_edge_func = gr_null;
-    tli->left_edge_func = (void (*)())gri_scale_edge;
+    tli->left_edge_func = (void (*)(void))gri_scale_edge;
     return (0);
 }
 
@@ -90,9 +90,9 @@ int gri_trans_solid_scale_umap_init(grs_tmap_loop_info *tli, grs_vertex **vert) 
 // transparent bitmap scaler
 int gri_trans_scale_umap_init(grs_tmap_loop_info *tli, grs_vertex **vert) {
     tli->bm.hlog = GRL_TRANS;
-    tli->loop_func = (void (*)())gri_scale_umap_loop_PPC;
+    tli->loop_func = (void (*)(void))gri_scale_umap_loop_PPC;
     tli->right_edge_func = gr_null;
-    tli->left_edge_func = (void (*)())gri_scale_edge;
+    tli->left_edge_func = (void (*)(void))gri_scale_edge;
     return (0);
 }
 
@@ -100,9 +100,9 @@ int gri_trans_scale_umap_init(grs_tmap_loop_info *tli, grs_vertex **vert) {
 // opaque bitmap scaler
 int gri_opaque_scale_umap_init(grs_tmap_loop_info *tli) {
     tli->bm.hlog = GRL_OPAQUE;
-    tli->loop_func = (void (*)())gri_scale_umap_loop_PPC;
+    tli->loop_func = (void (*)(void))gri_scale_umap_loop_PPC;
     tli->right_edge_func = gr_null;
-    tli->left_edge_func = (void (*)())gri_scale_edge;
+    tli->left_edge_func = (void (*)(void))gri_scale_edge;
     return (0);
 }
 
@@ -110,9 +110,9 @@ int gri_opaque_scale_umap_init(grs_tmap_loop_info *tli) {
 // transparent clut bitmap scaler
 int gri_trans_clut_scale_umap_init(grs_tmap_loop_info *tli) {
     tli->bm.hlog = GRL_TRANS | GRL_CLUT;
-    tli->loop_func = (void (*)())gri_scale_umap_loop_PPC;
+    tli->loop_func = (void (*)(void))gri_scale_umap_loop_PPC;
     tli->right_edge_func = gr_null;
-    tli->left_edge_func = (void (*)())gri_scale_edge;
+    tli->left_edge_func = (void (*)(void))gri_scale_edge;
     return (0);
 }
 
@@ -120,9 +120,9 @@ int gri_trans_clut_scale_umap_init(grs_tmap_loop_info *tli) {
 // opaque clut bitmap scaler
 int gri_opaque_clut_scale_umap_init(grs_tmap_loop_info *tli) {
     tli->bm.hlog = GRL_OPAQUE | GRL_CLUT;
-    tli->loop_func = (void (*)())gri_scale_umap_loop_PPC;
+    tli->loop_func = (void (*)(void))gri_scale_umap_loop_PPC;
     tli->right_edge_func = gr_null;
-    tli->left_edge_func = (void (*)())gri_scale_edge;
+    tli->left_edge_func = (void (*)(void))gri_scale_edge;
     return (0);
 }
 

@@ -123,6 +123,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdlib.h> // I HATE THIS
+#include "precompiled.h"
 
 #include "frcamera.h"
 #include "fr3d.h"
@@ -345,7 +346,7 @@ int fr_mod_cams(frc *fr, void *v_cam, int mod_fac) {
         _fr->viewer_zoom = 1;
     if ((unsigned long)_fr->viewer_zoom > 0x7fffffff)
         _fr->viewer_zoom = 0x7fffffff;
-    if ((long)cam != -1) {
+    if ((intptr)cam != -1) {
         if (cam == NULL)
             _fr->camptr = fr_camera_getdef();
         else
@@ -452,7 +453,7 @@ frc *fr_place_view(frc *view, void *v_cam, void *cnvs, int pflags, char axis, in
                 return NULL;
             }
             fr->realCanvasPtr = (char*)p;
-            gr_init_canvas(&fr->main_canvas, (uchar *)((ulong)(p + 31) & 0xFFFFFFE0), BMT_FLAT8, wid, hgt);
+            gr_init_canvas(&fr->main_canvas, (uchar *)((uintptr)(p + 31) & 0xFFFFFFE0), BMT_FLAT8, wid, hgt);
             fr->main_canvas.bm.row = rowbytes;
         } else {
             // lets pretend we are getting a bitmap instead, eh?

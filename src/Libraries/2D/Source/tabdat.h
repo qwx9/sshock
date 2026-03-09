@@ -37,8 +37,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef __TABDAT_H
 #define __TABDAT_H
-extern void (**grd_pixel_table)();
-extern void (**grd_device_table)();
-extern void (**grd_canvas_table)();
-extern void (**grd_function_table)();
+extern void (**grd_pixel_table)(void);
+extern void (**grd_device_table)(void);
+extern void (**grd_canvas_table)(void);
+extern void (**grd_function_table)(void);
 #endif /* !__TABDAT_H */

@@ -28,12 +28,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __LGSNDX_H
 #define __LGSNDX_H
 
-#include <SDL_mixer.h>
-
 //#include <QuickTimeComponents.h>
 //#include <Sound.h>
 
-//#include <SDL2/SDL.h>
+#include <SDL2/SDL.h>
+
+#include <SDL_mixer.h>
 
 #include "lg.h"
 

@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include "precompiled.h"
 #include "archiveformat.h"
 #include "effect.h"
 #include "lvldata.h"
@@ -33,27 +34,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "textmaps.h"
 #include "trigger.h"
 
-#define RES_FORMAT(layout) \
-    { ResDecode, ResEncode, (UserDecodeData)&layout, NULL }
+#ifdef RES_FORMAT	/* FIXME */
+#undef RES_FORMAT
+#endif
 
-const ResLayout U32Layout = {
-    4, sizeof(uint32_t), 0, {
+#define RES_FORMAT(layout) \
+    { ResDecode, ResEncode, (UserDecodeData)(&layout), NULL }
+
+const ResField U32Layoutf[] = {
 	{ RFFT_UINT32, 0 },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout U32Layout = {
+    4, sizeof(uint32_t), 0, U32Layoutf
 };
 const ResourceFormat U32Format = RES_FORMAT(U32Layout);
 
-const ResLayout U16Layout = {
-    2, sizeof(uint16_t), 0, {
+const ResField U16Layoutf[] = {
 	{ RFFT_UINT16, 0 },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout U16Layout = {
+    2, sizeof(uint16_t), 0, U16Layoutf
 };
 
 // Schedule layout.
-const ResLayout ScheduleLayout = {
-    22, sizeof(Schedule), 0, {
+const ResField ScheduleLayoutf[] = {
 	{ RFFT_UINT32, offsetof(Schedule, queue.size)     },
 	{ RFFT_UINT32, offsetof(Schedule, queue.fullness) },
 	{ RFFT_UINT32, offsetof(Schedule, queue.elemsize) },
@@ -62,30 +68,29 @@ const ResLayout ScheduleLayout = {
 	{ RFFT_PAD,    4 }, // pointer member
 	{ RFFT_PAD,    4 }, // pointer member
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout ScheduleLayout = {
+    22, sizeof(Schedule), 0, ScheduleLayoutf
 };
 const ResourceFormat ScheduleFormat = RES_FORMAT(ScheduleLayout);
 
 // Schedule queue element. This has several possible formats which I'm treating
 // as plain binary for the time being.
-const ResLayout ScheduleQueueLayout = {
-    8, sizeof(SchedEvent), LAYOUT_FLAG_ARRAY, {
+const ResField ScheduleQueueLayoutf[] = {
 	{ RFFT_UINT16, offsetof(SchedEvent, timestamp) },
 	{ RFFT_UINT16, offsetof(SchedEvent, type)      },
 	{ RFFT_BIN(SCHED_DATASIZ), offsetof(SchedEvent, data) },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout ScheduleQueueLayout = {
+    8, sizeof(SchedEvent), LAYOUT_FLAG_ARRAY, ScheduleQueueLayoutf
 };
 const ResourceFormat ScheduleQueueFormat = RES_FORMAT(ScheduleQueueLayout);
 
 // Describe the layout of the map info structure (FullMap). While technically
 // this ends in an array, in practice it only ever has a single entry so just
 // treat it as a flat structure.
-const ResLayout FullMapLayout = {
-    58,              // size on disc
-    sizeof(FullMap), // size in memory
-    0,               // flags
-    {
+const ResField FullMapLayoutf[] = {
 	{ RFFT_UINT32, offsetof(FullMap, x_size)                  },
 	{ RFFT_UINT32, offsetof(FullMap, y_size)                  },
 	{ RFFT_UINT32, offsetof(FullMap, x_shft)                  },
@@ -102,16 +107,17 @@ const ResLayout FullMapLayout = {
 	{ RFFT_UINT8,  offsetof(FullMap, sched[0].queue.grow)     },
 	{ RFFT_PAD,    12 /* 3 pointers at end */                 },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout FullMapLayout = {
+    58,              // size on disc
+    sizeof(FullMap), // size in memory
+    0,               // flags
+    FullMapLayoutf
 };
 const ResourceFormat FullMapFormat = RES_FORMAT(FullMapLayout);
 
 // Describe the layout of a map element (tile; MapElem).
-const ResLayout MapElemLayout = {
-    16,                // size on disc
-    sizeof(MapElem),   // size in memory
-    LAYOUT_FLAG_ARRAY, // flags
-    {
+const ResField MapElemLayoutf[] = {
 	{ RFFT_UINT8,  offsetof(MapElem, tiletype)     },
 	{ RFFT_UINT8,  offsetof(MapElem, flr_rotnhgt)  },
 	{ RFFT_UINT8,  offsetof(MapElem, ceil_rotnhgt) },
@@ -127,26 +133,28 @@ const ResLayout MapElemLayout = {
 	{ RFFT_UINT8,  offsetof(MapElem, flick_qclip)  },
 	{ RFFT_UINT8,  offsetof(MapElem, templight)    },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout MapElemLayout = {
+    16,                // size on disc
+    sizeof(MapElem),   // size in memory
+    LAYOUT_FLAG_ARRAY, // flags
+    MapElemLayoutf
 };
 
 // Describe the layout of level texture info (array of 16-bit texture IDs).
+const ResField TextureInfoLayoutf[] = {
+	{ RFFT_UINT16, 0 },
+	{ RFFT_END,    0 }
+};
 const ResLayout TextureInfoLayout = {
     2,                 // size on disc
     sizeof(short),     // size in memory
     LAYOUT_FLAG_ARRAY, // flags
-    {
-	{ RFFT_UINT16, 0 },
-	{ RFFT_END,    0 }
-    }
+    TextureInfoLayoutf
 };
 
 // Describe the layout of the objects table in a resfile. (27-byte PC record).
-const ResLayout ObjV11Layout = {
-    27,                // size on disc
-    sizeof(Obj),       // size in memory
-    LAYOUT_FLAG_ARRAY, // flags
-    {
+const ResField ObjV11Layoutf[] = {
 	{ RFFT_UINT8,  offsetof(Obj, active)              },
 	{ RFFT_UINT8,  offsetof(Obj, obclass)             },
 	{ RFFT_UINT8,  offsetof(Obj, subclass)            },
@@ -168,16 +176,17 @@ const ResLayout ObjV11Layout = {
 	{ RFFT_UINT8,  offsetof(Obj, info.time_remainder) },
 	{ RFFT_UINT8,  offsetof(Obj, info.inst_flags)     },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout ObjV11Layout = {
+    27,                // size on disc
+    sizeof(Obj),       // size in memory
+    LAYOUT_FLAG_ARRAY, // flags
+    ObjV11Layoutf
 };
 
 // Describe the layout of the objects table in a resfile. ("Easysaves" v12
 // record; has an extra byte of padding due to 16-bit alignment on Mac).
-const ResLayout ObjV12Layout = {
-    28,                // size on disc
-    sizeof(Obj),       // size in memory
-    LAYOUT_FLAG_ARRAY, // flags
-    {
+const ResField ObjV12Layoutf[] = {
 	{ RFFT_UINT8,  offsetof(Obj, active)              },
 	{ RFFT_UINT8,  offsetof(Obj, obclass)             },
 	{ RFFT_UINT8,  offsetof(Obj, subclass)            },
@@ -200,58 +209,62 @@ const ResLayout ObjV12Layout = {
 	{ RFFT_UINT8,  offsetof(Obj, info.time_remainder) },
 	{ RFFT_UINT8,  offsetof(Obj, info.inst_flags)     },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout ObjV12Layout = {
+    28,                // size on disc
+    sizeof(Obj),       // size in memory
+    LAYOUT_FLAG_ARRAY, // flags
+    ObjV12Layoutf
 };
 
 // Describe the layout of the object cross-refs table in a resfile.
-const ResLayout ObjRefLayout = {
-    10,                // size on disc
-    sizeof(ObjRef),    // size in memory
-    LAYOUT_FLAG_ARRAY, // flags
-    {
+const ResField ObjRefLayoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjRef, state.bin.sq.x) },
 	{ RFFT_UINT16, offsetof(ObjRef, state.bin.sq.y) },
 	{ RFFT_UINT16, offsetof(ObjRef, obj)            },
 	{ RFFT_UINT16, offsetof(ObjRef, next)           },
 	{ RFFT_UINT16, offsetof(ObjRef, nextref)        },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout ObjRefLayout = {
+    10,                // size on disc
+    sizeof(ObjRef),    // size in memory
+    LAYOUT_FLAG_ARRAY, // flags
+    ObjRefLayoutf,
 };
 
 // Describe the layout of the gun class info in a resfile.
-const ResLayout GunLayout = {
-    8,                 // size on disc
-    sizeof(ObjGun),    // size in memory
-    LAYOUT_FLAG_ARRAY, // flags
-    {
+const ResField GunLayoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjGun, id)         },
 	{ RFFT_UINT16, offsetof(ObjGun, next)       },
 	{ RFFT_UINT16, offsetof(ObjGun, prev)       },
 	{ RFFT_UINT8,  offsetof(ObjGun, ammo_type)  },
 	{ RFFT_UINT8,  offsetof(ObjGun, ammo_count) },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout GunLayout = {
+    8,                 // size on disc
+    sizeof(ObjGun),    // size in memory
+    LAYOUT_FLAG_ARRAY, // flags
+    GunLayoutf
 };
 
 // Describe the layout of the ammo class info in a resfile.
-const ResLayout AmmoLayout = {
-    6,                 // size on disc
-    sizeof(ObjAmmo),   // size in memory
-    LAYOUT_FLAG_ARRAY, // flags
-    {
+const ResField AmmoLayoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjAmmo, id)   },
 	{ RFFT_UINT16, offsetof(ObjAmmo, next) },
 	{ RFFT_UINT16, offsetof(ObjAmmo, prev) },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout AmmoLayout = {
+    6,                 // size on disc
+    sizeof(ObjAmmo),   // size in memory
+    LAYOUT_FLAG_ARRAY, // flags
+    AmmoLayoutf
 };
 
 // Describe the layout of the physics object class info in a resfile.
-const ResLayout PhysicsLayout = {
-    40,                 // size on disc
-    sizeof(ObjPhysics), // size in memory
-    LAYOUT_FLAG_ARRAY,  // flags
-    {
+const ResField PhysicsLayoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjPhysics, id)            },
 	{ RFFT_UINT16, offsetof(ObjPhysics, next)          },
 	{ RFFT_UINT16, offsetof(ObjPhysics, prev)          },
@@ -277,15 +290,16 @@ const ResLayout PhysicsLayout = {
 	{ RFFT_UINT8,  offsetof(ObjPhysics, p3.h)          },
 	{ RFFT_UINT8,  offsetof(ObjPhysics, p3.b)          },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout PhysicsLayout = {
+    40,                 // size on disc
+    sizeof(ObjPhysics), // size in memory
+    LAYOUT_FLAG_ARRAY,  // flags
+    PhysicsLayoutf
 };
 
 // Describe the layout of the grenade class info in a resfile.
-const ResLayout GrenadeLayout = {
-    12,                 // size on disc
-    sizeof(ObjGrenade), // size in memory
-    LAYOUT_FLAG_ARRAY,  // flags
-    {
+const ResField GrenadeLayoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjGrenade, id)            },
 	{ RFFT_UINT16, offsetof(ObjGrenade, next)          },
 	{ RFFT_UINT16, offsetof(ObjGrenade, prev)          },
@@ -294,76 +308,81 @@ const ResLayout GrenadeLayout = {
 	{ RFFT_UINT16, offsetof(ObjGrenade, flags)         },
 	{ RFFT_UINT16, offsetof(ObjGrenade, timestamp)     },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout GrenadeLayout = {
+    12,                 // size on disc
+    sizeof(ObjGrenade), // size in memory
+    LAYOUT_FLAG_ARRAY,  // flags
+    GrenadeLayoutf
 };
 
 // Describe the layout of the drug class info in a resfile.
-const ResLayout DrugLayout = {
-    6,                 // size on disc
-    sizeof(ObjDrug),   // size in memory
-    LAYOUT_FLAG_ARRAY, // flags
-    {
+const ResField DrugLayoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjDrug, id)   },
 	{ RFFT_UINT16, offsetof(ObjDrug, next) },
 	{ RFFT_UINT16, offsetof(ObjDrug, prev) },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout DrugLayout = {
+    6,                 // size on disc
+    sizeof(ObjDrug),   // size in memory
+    LAYOUT_FLAG_ARRAY, // flags
+    DrugLayoutf
 };
 
 // Describe the layout of the hardware class info in a resfile (original 7-byte
 // v11 struct).
+const ResField HardwareV11Layoutf[] = {
+	{ RFFT_UINT16, offsetof(ObjHardware, id)      },
+	{ RFFT_UINT16, offsetof(ObjHardware, next)    },
+	{ RFFT_UINT16, offsetof(ObjHardware, prev)    },
+	{ RFFT_UINT8,  offsetof(ObjHardware, version) },
+	{ RFFT_END,    0 }
+};
 const ResLayout HardwareV11Layout = {
     7,                   // size on disc
     sizeof(ObjHardware), // size in memory
     LAYOUT_FLAG_ARRAY,   // flags
-    {
-	{ RFFT_UINT16, offsetof(ObjHardware, id)      },
-	{ RFFT_UINT16, offsetof(ObjHardware, next)    },
-	{ RFFT_UINT16, offsetof(ObjHardware, prev)    },
-	{ RFFT_UINT8,  offsetof(ObjHardware, version) },
-	{ RFFT_END,    0 }
-    }
+    HardwareV11Layoutf
 };
 
 // Describe the layout of the hardware class info in a resfile ("easysaves"
 // 8-byte v12 struct).
-const ResLayout HardwareV12Layout = {
-    8,                   // size on disc
-    sizeof(ObjHardware), // size in memory
-    LAYOUT_FLAG_ARRAY,   // flags
-    {
+const ResField HardwareV12Layoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjHardware, id)      },
 	{ RFFT_UINT16, offsetof(ObjHardware, next)    },
 	{ RFFT_UINT16, offsetof(ObjHardware, prev)    },
 	{ RFFT_UINT8,  offsetof(ObjHardware, version) },
 	{ RFFT_PAD,    1 }, // alignment
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout HardwareV12Layout = {
+    8,                   // size on disc
+    sizeof(ObjHardware), // size in memory
+    LAYOUT_FLAG_ARRAY,   // flags
+    HardwareV12Layoutf
 };
 
 // Describe the layout of the software class info in a resfile (original 9-byte
 // v11 struct).
-const ResLayout SoftwareV11Layout = {
-    9,                   // size on disc
-    sizeof(ObjSoftware), // size in memory
-    LAYOUT_FLAG_ARRAY,   // flags
-    {
+const ResField SoftwareV11Layoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjSoftware, id)         },
 	{ RFFT_UINT16, offsetof(ObjSoftware, next)       },
 	{ RFFT_UINT16, offsetof(ObjSoftware, prev)       },
 	{ RFFT_UINT8,  offsetof(ObjSoftware, version)    },
 	{ RFFT_UINT16, offsetof(ObjSoftware, data_munge) },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout SoftwareV11Layout = {
+    9,                   // size on disc
+    sizeof(ObjSoftware), // size in memory
+    LAYOUT_FLAG_ARRAY,   // flags
+    SoftwareV11Layoutf
 };
 
 // Describe the layout of the software class info in a resfile (10-byte v12
 // struct).
-const ResLayout SoftwareV12Layout = {
-    10,                  // size on disc
-    sizeof(ObjSoftware), // size in memory
-    LAYOUT_FLAG_ARRAY,   // flags
-    {
+const ResField SoftwareV12Layoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjSoftware, id)         },
 	{ RFFT_UINT16, offsetof(ObjSoftware, next)       },
 	{ RFFT_UINT16, offsetof(ObjSoftware, prev)       },
@@ -371,15 +390,16 @@ const ResLayout SoftwareV12Layout = {
 	{ RFFT_PAD,    1 }, // alignment
 	{ RFFT_UINT16, offsetof(ObjSoftware, data_munge) },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout SoftwareV12Layout = {
+    10,                  // size on disc
+    sizeof(ObjSoftware), // size in memory
+    LAYOUT_FLAG_ARRAY,   // flags
+    SoftwareV12Layoutf
 };
 
 // Describe the layout of the "bigstuff" class info in a resfile.
-const ResLayout BigStuffLayout = {
-    16,                  // size on disc
-    sizeof(ObjBigstuff), // size in memory
-    LAYOUT_FLAG_ARRAY,   // flags
-    {
+const ResField BigStuffLayoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjBigstuff, id)             },
 	{ RFFT_UINT16, offsetof(ObjBigstuff, next)           },
 	{ RFFT_UINT16, offsetof(ObjBigstuff, prev)           },
@@ -387,15 +407,16 @@ const ResLayout BigStuffLayout = {
 	{ RFFT_UINT32, offsetof(ObjBigstuff, data1)          },
 	{ RFFT_UINT32, offsetof(ObjBigstuff, data2)          },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout BigStuffLayout = {
+    16,                  // size on disc
+    sizeof(ObjBigstuff), // size in memory
+    LAYOUT_FLAG_ARRAY,   // flags
+    BigStuffLayoutf
 };
 
 // Describe the layout of the "smallstuff" class info in a resfile.
-const ResLayout SmallStuffLayout = {
-    16,                    // size on disc
-    sizeof(ObjSmallstuff), // size in memory
-    LAYOUT_FLAG_ARRAY,     // flags
-    {
+const ResField SmallStuffLayoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjSmallstuff, id)             },
 	{ RFFT_UINT16, offsetof(ObjSmallstuff, next)           },
 	{ RFFT_UINT16, offsetof(ObjSmallstuff, prev)           },
@@ -403,15 +424,16 @@ const ResLayout SmallStuffLayout = {
 	{ RFFT_UINT32, offsetof(ObjSmallstuff, data1)          },
 	{ RFFT_UINT32, offsetof(ObjSmallstuff, data2)          },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout SmallStuffLayout = {
+    16,                    // size on disc
+    sizeof(ObjSmallstuff), // size in memory
+    LAYOUT_FLAG_ARRAY,     // flags
+    SmallStuffLayoutf
 };
 
 // Describe the layout of the fixture class info in a resfile.
-const ResLayout FixtureLayout = {
-    30,                 // size on disc
-    sizeof(ObjFixture), // size in memory
-    LAYOUT_FLAG_ARRAY,  // flags
-    {
+const ResField FixtureLayoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjFixture, id)             },
 	{ RFFT_UINT16, offsetof(ObjFixture, next)           },
 	{ RFFT_UINT16, offsetof(ObjFixture, prev)           },
@@ -424,15 +446,16 @@ const ResLayout FixtureLayout = {
 	{ RFFT_UINT32, offsetof(ObjFixture, p4)             },
 	{ RFFT_UINT16, offsetof(ObjFixture, access_level)   },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout FixtureLayout = {
+    30,                 // size on disc
+    sizeof(ObjFixture), // size in memory
+    LAYOUT_FLAG_ARRAY,  // flags
+    FixtureLayoutf
 };
 
 // Describe the layout of the door class info in a resfile.
-const ResLayout DoorLayout = {
-    14,                // size on disc
-    sizeof(ObjDoor),   // size in memory
-    LAYOUT_FLAG_ARRAY, // flags
-    {
+const ResField DoorLayoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjDoor, id)             },
 	{ RFFT_UINT16, offsetof(ObjDoor, next)           },
 	{ RFFT_UINT16, offsetof(ObjDoor, prev)           },
@@ -443,15 +466,16 @@ const ResLayout DoorLayout = {
 	{ RFFT_UINT8,  offsetof(ObjDoor, autoclose_time) },
 	{ RFFT_UINT16, offsetof(ObjDoor, other_half)     },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout DoorLayout = {
+    14,                // size on disc
+    sizeof(ObjDoor),   // size in memory
+    LAYOUT_FLAG_ARRAY, // flags
+    DoorLayoutf
 };
 
 // Describe the layout of the animating class info in a resfile.
-const ResLayout AnimatingLayout = {
-    10,                   // size on disc
-    sizeof(ObjAnimating), // size in memory
-    LAYOUT_FLAG_ARRAY,    // flags
-    {
+const ResField AnimatingLayoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjAnimating, id)             },
 	{ RFFT_UINT16, offsetof(ObjAnimating, next)           },
 	{ RFFT_UINT16, offsetof(ObjAnimating, prev)           },
@@ -459,15 +483,16 @@ const ResLayout AnimatingLayout = {
 	{ RFFT_UINT8,  offsetof(ObjAnimating, end_frame)      },
 	{ RFFT_UINT16, offsetof(ObjAnimating, owner)          },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout AnimatingLayout = {
+    10,                   // size on disc
+    sizeof(ObjAnimating), // size in memory
+    LAYOUT_FLAG_ARRAY,    // flags
+    AnimatingLayoutf
 };
 
 // Describe the layout of the trap class info in a resfile.
-const ResLayout TrapLayout = {
-    28,                // size on disc
-    sizeof(ObjTrap),   // size in memory
-    LAYOUT_FLAG_ARRAY, // flags
-    {
+const ResField TrapLayoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjTrap, id)             },
 	{ RFFT_UINT16, offsetof(ObjTrap, next)           },
 	{ RFFT_UINT16, offsetof(ObjTrap, prev)           },
@@ -479,16 +504,17 @@ const ResLayout TrapLayout = {
 	{ RFFT_UINT32, offsetof(ObjTrap, p3)             },
 	{ RFFT_UINT32, offsetof(ObjTrap, p4)             },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout TrapLayout = {
+    28,                // size on disc
+    sizeof(ObjTrap),   // size in memory
+    LAYOUT_FLAG_ARRAY, // flags
+    TrapLayoutf
 };
 
 // Describe the layout of the container class info in a resfile (original 21-
 // byte struct).
-const ResLayout ContainerV11Layout = {
-    21,                   // size on disc
-    sizeof(ObjContainer), // size in memory
-    LAYOUT_FLAG_ARRAY,    // flags
-    {
+const ResField ContainerV11Layoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjContainer, id)          },
 	{ RFFT_UINT16, offsetof(ObjContainer, next)        },
 	{ RFFT_UINT16, offsetof(ObjContainer, prev)        },
@@ -499,16 +525,17 @@ const ResLayout ContainerV11Layout = {
 	{ RFFT_UINT8,  offsetof(ObjContainer, dim_z)       },
 	{ RFFT_UINT32, offsetof(ObjContainer, data1)       },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout ContainerV11Layout = {
+    21,                   // size on disc
+    sizeof(ObjContainer), // size in memory
+    LAYOUT_FLAG_ARRAY,    // flags
+    ContainerV11Layoutf
 };
 
 // Describe the layout of the container class info in a resfile (22-byte v12
 // struct).
-const ResLayout ContainerV12Layout = {
-    22,                   // size on disc
-    sizeof(ObjContainer), // size in memory
-    LAYOUT_FLAG_ARRAY,    // flags
-    {
+const ResField ContainerV12Layoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjContainer, id)          },
 	{ RFFT_UINT16, offsetof(ObjContainer, next)        },
 	{ RFFT_UINT16, offsetof(ObjContainer, prev)        },
@@ -520,15 +547,16 @@ const ResLayout ContainerV12Layout = {
 	{ RFFT_PAD,    1 }, // alignment
 	{ RFFT_UINT32, offsetof(ObjContainer, data1)       },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout ContainerV12Layout = {
+    22,                   // size on disc
+    sizeof(ObjContainer), // size in memory
+    LAYOUT_FLAG_ARRAY,    // flags
+    ContainerV12Layoutf
 };
 
 // Describe the layout of the critter class info in a resfile.
-const ResLayout CritterLayout = {
-    46,                 // size on disc
-    sizeof(ObjCritter), // size in memory
-    LAYOUT_FLAG_ARRAY,  // flags
-    {
+const ResField CritterLayoutf[] = {
 	{ RFFT_UINT16, offsetof(ObjCritter, id)              },
 	{ RFFT_UINT16, offsetof(ObjCritter, next)            },
 	{ RFFT_UINT16, offsetof(ObjCritter, prev)            },
@@ -554,30 +582,32 @@ const ResLayout CritterLayout = {
 	{ RFFT_UINT16, offsetof(ObjCritter, loot2)           },
 	{ RFFT_UINT32, offsetof(ObjCritter, sidestep)        },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout CritterLayout = {
+    46,                 // size on disc
+    sizeof(ObjCritter), // size in memory
+    LAYOUT_FLAG_ARRAY,  // flags
+    CritterLayoutf
 };
 
 // Describe the layout of animation textures in a resfile (7-byte v11 struct).
-const ResLayout AnimTextureV11Layout = {
-    7,                       // size on disc
-    sizeof(AnimTextureData), // size in memory
-    LAYOUT_FLAG_ARRAY,       // flags
-    {
+const ResField AnimTextureV11Layoutf[] = {
 	{ RFFT_UINT16, offsetof(AnimTextureData, anim_speed)     },
 	{ RFFT_UINT16, offsetof(AnimTextureData, time_remainder) },
 	{ RFFT_UINT8,  offsetof(AnimTextureData, current_frame)  },
 	{ RFFT_UINT8,  offsetof(AnimTextureData, num_frames)     },
 	{ RFFT_UINT8,  offsetof(AnimTextureData, flags)          },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout AnimTextureV11Layout = {
+    7,                       // size on disc
+    sizeof(AnimTextureData), // size in memory
+    LAYOUT_FLAG_ARRAY,       // flags
+    AnimTextureV11Layoutf
 };
 
 // Describe the layout of animation textures in a resfile (8-byte v12 struct).
-const ResLayout AnimTextureV12Layout = {
-    8,                       // size on disc
-    sizeof(AnimTextureData), // size in memory
-    LAYOUT_FLAG_ARRAY,       // flags
-    {
+const ResField AnimTextureV12Layoutf[] = {
 	{ RFFT_UINT16, offsetof(AnimTextureData, anim_speed)     },
 	{ RFFT_UINT16, offsetof(AnimTextureData, time_remainder) },
 	{ RFFT_UINT8,  offsetof(AnimTextureData, current_frame)  },
@@ -585,29 +615,31 @@ const ResLayout AnimTextureV12Layout = {
 	{ RFFT_UINT8,  offsetof(AnimTextureData, flags)          },
 	{ RFFT_PAD,    1 }, // alignment
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout AnimTextureV12Layout = {
+    8,                       // size on disc
+    sizeof(AnimTextureData), // size in memory
+    LAYOUT_FLAG_ARRAY,       // flags
+    AnimTextureV12Layoutf
 };
 
 // Describes the layout of the hack cameras / hack surrogates tables. (Each is
 // just an array of 16-bit ObjIDs.)
+const ResField HackCameraLayoutf[] = {
+	{ RFFT_UINT16, 0 },
+	{ RFFT_END,    0 }
+};
 const ResLayout HackCameraLayout = {
     2,                 // size on disc
     sizeof(ObjID),     // size in memory
     LAYOUT_FLAG_ARRAY, // flags
-    {
-	{ RFFT_UINT16, 0 },
-	{ RFFT_END,    0 }
-    }
+    HackCameraLayoutf
 };
 
 // Describe the layout of the level data in a resfile.
 // FIXME explicitly copies the 3 automap info structs. Should support sub-
 // arrays somehow in the layout table.
-const ResLayout LevelDataV11Layout = {
-    94,                // size on disc
-    sizeof(LevelData), // size in memory
-    0,                 // flags
-    {
+const ResField LevelDataV11Layoutf[] = {
 	{ RFFT_UINT16, offsetof(LevelData, size)                       },
 	{ RFFT_UINT8,  offsetof(LevelData, mist)                       },
 	{ RFFT_UINT8,  offsetof(LevelData, gravity)                    },
@@ -657,17 +689,18 @@ const ResLayout LevelDataV11Layout = {
 	{ RFFT_UINT8,  offsetof(LevelData, auto_maps[2].version_id)    },
 	{ RFFT_UINT16, offsetof(LevelData, auto_maps[2].sensor_rad)    },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout LevelDataV11Layout = {
+    94,                // size on disc
+    sizeof(LevelData), // size in memory
+    0,                 // flags
+    LevelDataV11Layoutf
 };
 
 // Describe the layout of the level data in a resfile (v12 data structure).
 // FIXME explicitly copies the 3 automap info structs. Should support sub-
 // arrays somehow in the layout table.
-const ResLayout LevelDataV12Layout = {
-    98,                // size on disc
-    sizeof(LevelData), // size in memory
-    0,                 // flags
-    {
+const ResField LevelDataV12Layoutf[] = {
 	{ RFFT_UINT16, offsetof(LevelData, size)                       },
 	{ RFFT_UINT8,  offsetof(LevelData, mist)                       },
 	{ RFFT_UINT8,  offsetof(LevelData, gravity)                    },
@@ -721,15 +754,16 @@ const ResLayout LevelDataV12Layout = {
 	{ RFFT_PAD,    1 }, // alignment
 	{ RFFT_UINT16, offsetof(LevelData, auto_maps[2].sensor_rad)    },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout LevelDataV12Layout = {
+    98,                // size on disc
+    sizeof(LevelData), // size in memory
+    0,                 // flags
+    LevelDataV12Layoutf
 };
 
 // Describe the layout of a path.
-const ResLayout PathLayout = {
-    28,                // size on disc
-    sizeof(Path),      // size in memory
-    LAYOUT_FLAG_ARRAY, // flags
-    {
+const ResField PathLayoutf[] = {
 	{ RFFT_UINT16, offsetof(Path, source.x)                       },
 	{ RFFT_UINT16, offsetof(Path, source.y)                       },
 	{ RFFT_UINT16, offsetof(Path, dest.x)                         },
@@ -740,16 +774,17 @@ const ResLayout PathLayout = {
 	{ RFFT_UINT8,  offsetof(Path, curr_step)                      },
 	{ RFFT_BIN(NUM_PATH_STEPS / 4), offsetof(Path, moves)         },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout PathLayout = {
+    28,                // size on disc
+    sizeof(Path),      // size in memory
+    LAYOUT_FLAG_ARRAY, // flags
+    PathLayoutf
 };
 
 // Describe the layout of the anims table in a resfile (15-byte version 11
 // structure).
-const ResLayout AnimV11Layout = {
-    15,                  // size on disc
-    sizeof(AnimListing), // size in memory
-    LAYOUT_FLAG_ARRAY,   // flags
-    {
+const ResField AnimV11Layoutf[] = {
 	{ RFFT_UINT16, offsetof(AnimListing, id)        },
 	{ RFFT_UINT8,  offsetof(AnimListing, flags)     },
 	{ RFFT_UINT16, offsetof(AnimListing, cbtype)    },
@@ -757,18 +792,19 @@ const ResLayout AnimV11Layout = {
 	{ RFFT_INTPTR, offsetof(AnimListing, user_data) },
 	{ RFFT_UINT16, offsetof(AnimListing, speed)     },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout AnimV11Layout = {
+    15,                  // size on disc
+    sizeof(AnimListing), // size in memory
+    LAYOUT_FLAG_ARRAY,   // flags
+    AnimV11Layoutf
 };
 
 // Describe the layout of the anims table in a resfile (16-byte version 12
 // structure).
 // The AnimListing struct wasn't given a specific packing. This is my best
 // guess at a 32-bit one. Savefile compatibility may be a bit dodgy.
-const ResLayout AnimV12Layout = {
-    20,                  // size on disc
-    sizeof(AnimListing), // size in memory
-    LAYOUT_FLAG_ARRAY,   // flags
-    {
+const ResField AnimV12Layoutf[] = {
 	{ RFFT_UINT16, offsetof(AnimListing, id)        },
 	{ RFFT_UINT8,  offsetof(AnimListing, flags)     },
 	{ RFFT_PAD,    1 }, // alignment
@@ -779,21 +815,27 @@ const ResLayout AnimV12Layout = {
 	{ RFFT_UINT16, offsetof(AnimListing, speed)     },
 	{ RFFT_PAD,    2 }, // alignment
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout AnimV12Layout = {
+    20,                  // size on disc
+    sizeof(AnimListing), // size in memory
+    LAYOUT_FLAG_ARRAY,   // flags
+    AnimV12Layoutf
 };
 
 // Describe the layout of the height semaphores table in a resfile.
-const ResLayout HeightSemaphoreLayout = {
-    4,                       // size on disc
-    sizeof(height_semaphor), // size in memory
-    LAYOUT_FLAG_ARRAY,       // flags
-    {
+const ResField HeightSemaphoreLayoutf[] = {
 	{ RFFT_UINT8,  offsetof(height_semaphor, x)         },
 	{ RFFT_UINT8,  offsetof(height_semaphor, y)         },
 	{ RFFT_UINT8,  offsetof(height_semaphor, floor_key) },
 	{ RFFT_UINT8,  offsetof(height_semaphor, inuse)     },
 	{ RFFT_END,    0 }
-    }
+};
+const ResLayout HeightSemaphoreLayout = {
+    4,                       // size on disc
+    sizeof(height_semaphor), // size in memory
+    LAYOUT_FLAG_ARRAY,       // flags
+    HeightSemaphoreLayoutf
 };
 
 // Version 11 level archives table.

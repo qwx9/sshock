@@ -28,8 +28,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //  Includes
 //--------------------
 #include <math.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
+#include <pool.h>
 
+#include "precompiled.h"
 #include "InitMac.h"
 #include "Modding.h"
 #include "OpenGL.h"
@@ -82,6 +84,9 @@ extern void LoadMoveKeybinds(void);
 //------------------------------------------------------------------------------------
 int main(int argc, char **argv) {
     // Save the arguments for later
+
+	//mainmem->flags |= POOL_PARANOIA | POOL_ANTAGONISM;
+	setfcr(getfcr() & ~(FPOVFL|FPUNFL|FPINVAL|FPZDIV));	/* FIXME */
 
     num_args = argc;
     arg_values = argv;
@@ -159,12 +164,13 @@ bool CheckArgument(char *arg) {
     return false;
 }
 
-void InitSDL() {
+void InitSDL(void) {
     SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) < 0) {
         DEBUG("%s: Init failed", __FUNCTION__);
     }
+    SDL_StartTextInput();
 
     // TODO: figure out some universal set of settings that work...
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -277,7 +283,7 @@ void SetSDLPalette(int index, int count, uchar *pal) {
         opengl_change_palette();
 }
 
-void SDLDraw() {
+void SDLDraw(void) {
     if (should_opengl_swap()) {
         // We want the UI background to be transparent!
         sdlPalette->colors[255].a = 0x00;

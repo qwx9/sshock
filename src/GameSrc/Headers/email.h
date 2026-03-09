@@ -28,7 +28,7 @@ char *email_name_func(void *dp, int num, char *buf);
 void read_email(Id new_base, int num);
 void select_email(int num, uchar scr);
 void set_email_flags(int n);
-void update_email_ware();
+void update_email_ware(void);
 void email_page_exit(void);
 void mfd_emailmug_expose(MFD *mfd, ubyte control);
 uchar mfd_emailmug_handler(MFD *m, uiEvent *ev);

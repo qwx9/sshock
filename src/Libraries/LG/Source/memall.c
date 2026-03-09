@@ -140,7 +140,7 @@ int MemPushAllocator(void *(*fm)(size_t size),
 //
 //	Returns: 0 if successful, -1 if allocations stack underflow
 
-int MemPopAllocator()
+int MemPopAllocator(void)
 {
 	MemAllocSet *pmas;
 

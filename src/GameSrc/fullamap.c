@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
+#include "precompiled.h"
 #include "tools.h"
 #include "game_screen.h"
 #include "input.h"
@@ -77,7 +78,7 @@ errtype amap_init(void) {
 // amap_start()
 // This gets called when we actually enter into the amap loop
 
-void amap_start() {
+void amap_start(void) {
 #ifdef GADGET
     _current_root = NULL; /* got rid of pointer type mismatch
                            * since one was a region and the other a gadget
@@ -102,7 +103,7 @@ void amap_start() {
 // amap_exit()
 // This gets called when we leave amap mode
 
-void amap_exit() {
+void amap_exit(void) {
     fsmap_free();
     uiHideMouse(NULL);
     gr_set_screen(cit_screen);

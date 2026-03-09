@@ -113,8 +113,10 @@ enum TEMP_STR_ {
     REF_STR_MousInv,
 
     REF_STR_Seqer    = 0x20000000,
-    REF_STR_ADLMIDI,
     REF_STR_NativeMI,
+#ifdef USE_ADLMIDI
+    REF_STR_ADLMIDI,
+#endif
 #ifdef USE_FLUIDSYNTH
     REF_STR_FluidSyn,
 #endif // USE_FLUIDSYNTH

@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 
+#include "precompiled.h"
 #include "wares.h"
 #include "hud.h"
 #include "player.h"
@@ -149,7 +150,7 @@ int energy_cost(int warenum) {
 void use_ware(int waretype, int num) {
     ubyte *player_wares, *player_status;
     WARE *wares;
-    int n, ecost;
+    int n, ecost = 0;
     int ware_sfx = SFX_NONE, hnd;
 
     //   int   i;
@@ -344,7 +345,7 @@ uchar hw_hotkey_callback(ushort keycode, uint32_t context, intptr_t data) {
 // Called from the main loop, this routine cycles through all active wares
 // and sees if any need attention.
 
-void wares_update() {
+void wares_update(void) {
     ubyte *player_status, *player_wares;
     WARE *wares;
     int i, j, n;
@@ -392,7 +393,7 @@ void wares_update() {
 //
 // Sets the static values for all wares.
 
-void wares_init() { }
+void wares_init(void) { }
 
 // CALLBACKS
 // =========

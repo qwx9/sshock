@@ -73,7 +73,7 @@ typedef uchar (*TravCallback)(LGRegion *reg, void *data);
 
 // Initialize the region system.  Note that this gets called automatically
 // the first time you try to create a region, if you haven't done so already.
-errtype region_init();
+errtype region_init(void);
 
 // Register a region with the UI manager, geometry described by r, and as a 
 // subregion of the parent region.  When the passed
@@ -155,7 +155,7 @@ int foreign_region_obscured(LGRegion *reg, LGRect *obs_rect);
 // While a sequence is active, it captures all the expose events, and saves them until the
 // sequence has ended, a which point it lets the exposes get through, after filtering out 
 // all the duplicate exposes.
-errtype region_begin_sequence();
+errtype region_begin_sequence(void);
 errtype region_end_sequence(uchar replay);
 
 

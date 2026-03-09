@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 
+#include "precompiled.h"
 #include "frprotox.h"
 #include "frcamera.h"
 #include "frflags.h"
@@ -106,7 +107,7 @@ void view360_setup_mode(uchar mode) {
     }
 }
 
-void view360_restore_inventory() {
+void view360_restore_inventory(void) {
     if (_current_loop == GAME_LOOP) {
         chg_set_flg(INVENTORY_UPDATE);
         inv_change_fullscreen(full_game_3d);
@@ -200,7 +201,7 @@ void view360_shutdown(void) {
     }
 }
 
-void view360_update_screen_mode() {
+void view360_update_screen_mode(void) {
     view360_shutdown();
     view360_init();
 }
@@ -339,7 +340,7 @@ void view360_turnoff(uchar visible, uchar real_stop) {
     view360_render_on = view360_message_obscured = FALSE;
 }
 
-bool view360_check() {
+bool view360_check(void) {
     extern uchar hack_takeover;
     if (hack_takeover)
         return false;

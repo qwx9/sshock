@@ -255,9 +255,9 @@ void gri_trans_lin_umap_init(grs_tmap_loop_info *tli) {
         tli->vtab = gr_make_vtab(&(tli->bm));
         tli->bm.hlog = GRL_TRANS;
     }
-    tli->loop_func = (void (*)())gri_lin_umap_loop;
-    tli->right_edge_func = (void (*)())gri_uvx_edge;
-    tli->left_edge_func = (void (*)())gri_uvx_edge;
+    tli->loop_func = (void (*)(void))gri_lin_umap_loop;
+    tli->right_edge_func = (void (*)(void))gri_uvx_edge;
+    tli->left_edge_func = (void (*)(void))gri_uvx_edge;
 }
 
 void gri_opaque_lin_umap_init(grs_tmap_loop_info *tli) {
@@ -268,9 +268,9 @@ void gri_opaque_lin_umap_init(grs_tmap_loop_info *tli) {
         tli->vtab = gr_make_vtab(&(tli->bm));
         tli->bm.hlog = GRL_OPAQUE;
     }
-    tli->loop_func = (void (*)())gri_lin_umap_loop;
-    tli->right_edge_func = (void (*)())gri_uvx_edge;
-    tli->left_edge_func = (void (*)())gri_uvx_edge;
+    tli->loop_func = (void (*)(void))gri_lin_umap_loop;
+    tli->right_edge_func = (void (*)(void))gri_uvx_edge;
+    tli->left_edge_func = (void (*)(void))gri_uvx_edge;
 }
 
 void gri_trans_clut_lin_umap_init(grs_tmap_loop_info *tli) {
@@ -281,9 +281,9 @@ void gri_trans_clut_lin_umap_init(grs_tmap_loop_info *tli) {
         tli->vtab = gr_make_vtab(&(tli->bm));
         tli->bm.hlog = GRL_TRANS | GRL_CLUT;
     }
-    tli->loop_func = (void (*)())gri_lin_umap_loop;
-    tli->right_edge_func = (void (*)())gri_uvx_edge;
-    tli->left_edge_func = (void (*)())gri_uvx_edge;
+    tli->loop_func = (void (*)(void))gri_lin_umap_loop;
+    tli->right_edge_func = (void (*)(void))gri_uvx_edge;
+    tli->left_edge_func = (void (*)(void))gri_uvx_edge;
 }
 
 void gri_opaque_clut_lin_umap_init(grs_tmap_loop_info *tli) {
@@ -294,7 +294,7 @@ void gri_opaque_clut_lin_umap_init(grs_tmap_loop_info *tli) {
         tli->vtab = gr_make_vtab(&(tli->bm));
         tli->bm.hlog = GRL_OPAQUE | GRL_CLUT;
     }
-    tli->loop_func = (void (*)())gri_lin_umap_loop;
-    tli->right_edge_func = (void (*)())gri_uvx_edge;
-    tli->left_edge_func = (void (*)())gri_uvx_edge;
+    tli->loop_func = (void (*)(void))gri_lin_umap_loop;
+    tli->right_edge_func = (void (*)(void))gri_uvx_edge;
+    tli->left_edge_func = (void (*)(void))gri_uvx_edge;
 }

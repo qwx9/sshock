@@ -79,7 +79,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
    of sync when the interrupt tries to restore the canvas. */
 // implementation of gri_set_fill_globals is in PixFill.c
 extern void gri_set_fill_globals(long *fill_type_ptr, long fill_type,
-                          void (***function_table_ptr)(), void (**function_table)(),
+                          void (***function_table_ptr)(void), void (**function_table)(void),
                           grt_uline_fill **line_vector_ptr, grt_uline_fill *line_vector);
 /*
 #pragma aux gri_set_fill_globals = \

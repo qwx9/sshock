@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdlib.h>
 
+#include "precompiled.h"
 #include "Shock.h"
 
 #include "effect.h"
@@ -79,7 +80,7 @@ int random_bell_modifier(uchar attack_on_player);
 int randomize_damage(int damage, uchar attack_on_player);
 int armor_absorption(int raw_damage, int obj_triple, ubyte penetrate);
 int shield_absorb_damage(int damage, ubyte dtype, byte shield_absorb, ubyte shield_threshold);
-void player_dies();
+void player_dies(void);
 ubyte damage_player(int damage, ubyte dtype, ubyte flags);
 void critter_hit_effect(ObjID target, ubyte effect, Combat_Pt location, int damage, int max_damage);
 
@@ -475,9 +476,9 @@ ulong player_death_time = 0;
 
 // Something has caused the player to become a fatality
 // typically this is damage, but can be delayed-death due to craze
-void player_dies() {
-    extern void physics_zero_all_controls();
-    extern void clear_digi_fx();
+void player_dies(void) {
+    extern void physics_zero_all_controls(void);
+    extern void clear_digi_fx(void);
     extern short inventory_page;
 #ifdef AUDIOLOGS
     extern char secret_pending_hack;

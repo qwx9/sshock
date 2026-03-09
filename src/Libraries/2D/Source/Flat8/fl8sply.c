@@ -109,17 +109,17 @@ int gri_spoly_loop(grs_tmap_loop_info *ti) {
 void gri_spoly_init(grs_tmap_loop_info *ti) {
     ti->bm.hlog = GRL_OPAQUE;
     ti->d = ti->y * grd_bm.row + grd_bm.bits;
-    ti->loop_func = (void (*)())gri_spoly_loop;
-    ti->top_edge_func = (void (*)())gri_ix_edge;
-    ti->bot_edge_func = (void (*)())gri_ix_edge;
+    ti->loop_func = (void (*)(void))gri_spoly_loop;
+    ti->top_edge_func = (void (*)(void))gri_ix_edge;
+    ti->bot_edge_func = (void (*)(void))gri_ix_edge;
 }
 
 void gri_clut_spoly_init(grs_tmap_loop_info *ti) {
     ti->bm.hlog = GRL_CLUT;
     ti->d = ti->y * grd_bm.row + grd_bm.bits;
-    ti->loop_func = (void (*)())gri_spoly_loop;
-    ti->top_edge_func = (void (*)())gri_ix_edge;
-    ti->bot_edge_func = (void (*)())gri_ix_edge;
+    ti->loop_func = (void (*)(void))gri_spoly_loop;
+    ti->top_edge_func = (void (*)(void))gri_ix_edge;
+    ti->bot_edge_func = (void (*)(void))gri_ix_edge;
 }
 
 void gri_stpoly_init(grs_tmap_loop_info *ti) {
@@ -128,9 +128,9 @@ void gri_stpoly_init(grs_tmap_loop_info *ti) {
     else
         ti->bm.hlog = GRL_OPAQUE;
     ti->d = ti->y * grd_bm.row + grd_bm.bits;
-    ti->loop_func = (void (*)())gri_spoly_loop;
-    ti->top_edge_func = (void (*)())gri_ix_edge;
-    ti->bot_edge_func = (void (*)())gri_ix_edge;
+    ti->loop_func = (void (*)(void))gri_spoly_loop;
+    ti->top_edge_func = (void (*)(void))gri_ix_edge;
+    ti->bot_edge_func = (void (*)(void))gri_ix_edge;
 }
 
 void gri_clut_stpoly_init(grs_tmap_loop_info *ti) {
@@ -139,7 +139,7 @@ void gri_clut_stpoly_init(grs_tmap_loop_info *ti) {
     else
         ti->bm.hlog = GRL_CLUT;
     ti->d = ti->y * grd_bm.row + grd_bm.bits;
-    ti->loop_func = (void (*)())gri_spoly_loop;
-    ti->top_edge_func = (void (*)())gri_ix_edge;
-    ti->bot_edge_func = (void (*)())gri_ix_edge;
+    ti->loop_func = (void (*)(void))gri_spoly_loop;
+    ti->top_edge_func = (void (*)(void))gri_ix_edge;
+    ti->bot_edge_func = (void (*)(void))gri_ix_edge;
 }

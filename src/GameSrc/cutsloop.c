@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <SDL.h>
 
+#include "precompiled.h"
 #include "Shock.h"
 #include "cutsloop.h"
 #include "mainloop.h"
@@ -38,8 +39,7 @@ SDL_AudioStream *cutscene_audiostream = NULL;
 
 static uint8_t *cutscene_audiobuffer = NULL;
 static uint8_t *cutscene_audiobuffer_pos = NULL;
-static int cutscene_audiobuffer_size; //in blocks of MOVIE_DEFAULT_BLOCKLEN
-
+static int cutscene_audiobuffer_size;
 
 
 static int cutscene_filehandle;
@@ -51,6 +51,7 @@ static Afile *amovie = NULL;
 static Apalette cutscene_pal;
 static grs_bitmap movie_bitmap;
 static long next_time;
+static int ablk;
 
 static bool is_first_frame;
 static bool done_playing_movie;
@@ -177,6 +178,7 @@ void cutscene_exit(void)
 
 void cutscene_loop(void)
 {
+  int n;
   fix time;
   long cur_time = SDL_GetTicks();
 
@@ -190,9 +192,11 @@ void cutscene_loop(void)
     {
       // === adjust volume in buffer here ===
 
-      SDL_AudioStreamPut(cutscene_audiostream, cutscene_audiobuffer_pos, MOVIE_DEFAULT_BLOCKLEN);
-      cutscene_audiobuffer_pos += MOVIE_DEFAULT_BLOCKLEN;
-      cutscene_audiobuffer_size--;
+	  if(cutscene_audiobuffer_size < ablk)
+	    ablk = cutscene_audiobuffer_size;
+      SDL_AudioStreamPut(cutscene_audiostream, cutscene_audiobuffer_pos, ablk);
+      cutscene_audiobuffer_pos += ablk;
+      cutscene_audiobuffer_size -= ablk;
     }
   }
 
@@ -318,7 +322,8 @@ short play_cutscene(int id, bool show_credits)
   }
 
   cutscene_audiobuffer_size = AfileAudioLength(amovie);
-  cutscene_audiobuffer = (uint8_t *)malloc(cutscene_audiobuffer_size * MOVIE_DEFAULT_BLOCKLEN);
+  cutscene_audiobuffer_size *= MOVIE_DEFAULT_BLOCKLEN;
+  cutscene_audiobuffer = (uint8_t *)malloc(cutscene_audiobuffer_size);
   AfileGetAudio(amovie, cutscene_audiobuffer);
 
   AfileReadReset(amovie);
@@ -329,7 +334,7 @@ short play_cutscene(int id, bool show_credits)
     SDL_Delay(1);
 
     cutscene_audiostream = SDL_NewAudioStream(AUDIO_U8, 1, fix_int(amovie->a.sampleRate), AUDIO_S16SYS, 2, 48000);
-
+    ablk = (int)(fix_int(amovie->a.sampleRate) / (1000. / 16)) + 3 & ~3;
     cutscene_audiobuffer_pos = cutscene_audiobuffer;
   }
 

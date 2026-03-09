@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * $Date: 1994/10/18 19:50:51 $
  */
 
+#include "precompiled.h"
 #include <stdlib.h>
 
 #include "ai.h"

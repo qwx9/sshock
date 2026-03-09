@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdio.h>
 
+#include "precompiled.h"
 #include "Shock.h"
 #include "InitMac.h"
 #include "ShockBitmap.h"
@@ -121,15 +122,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //void DrawSplashScreen(short id, Boolean fadeIn);
 void PreloadGameResources(void);
-errtype init_gamesys();
+errtype init_gamesys(void);
 errtype free_gamesys(void);
-errtype init_load_resources();
-errtype init_3d_objects();
-errtype obj_3d_shutdown();
-void init_popups();
+errtype init_load_resources(void);
+errtype init_3d_objects(void);
+errtype obj_3d_shutdown(void);
+void init_popups(void);
 uchar pause_for_input(ulong wait_time);
 
-errtype init_pal_fx();
+errtype init_pal_fx(void);
 void byebyemessage(void);
 /*
 errtype init_kb();
@@ -329,7 +330,7 @@ void init_all(void) {
 
     // Initialize animation callbacks
     {
-        extern void init_animlist();
+        extern void init_animlist(void);
         init_animlist();
     }
 
@@ -596,7 +597,7 @@ errtype object_data_load(void) {
 
 #ifdef DUMMY ///Â¥
 
-errtype init_kb() {
+errtype init_kb(void) {
     // Keyboard frobbing
     if (config_get_raw(CHAINING_VAR, NULL, 0))
         kb_set_flags(kb_get_flags() | KBF_CHAIN);
@@ -630,7 +631,7 @@ errtype load_da_palette(void) {
     return (OK);
 }
 
-errtype init_pal_fx() {
+errtype init_pal_fx(void) {
     int i;
     FILE *ipalHdl;
 
@@ -705,7 +706,7 @@ errtype init_pal_fx() {
     return (OK);
 }
 
-void shock_alloc_ipal() {
+void shock_alloc_ipal(void) {
 
     // CC: Make sure we always allocate an ipal first
     gr_alloc_ipal();
@@ -720,7 +721,7 @@ void shock_alloc_ipal() {
     // return(temp);
 }
 
-errtype init_gamesys() {
+errtype init_gamesys(void) {
     // Load data for weapons, drugs, wares
     drugs_init();
     init_all_side_icons();
@@ -742,17 +743,17 @@ errtype free_gamesys(void) {
 
 #define MAX_CUSTOMS 30
 
-errtype init_3d_objects() {
+errtype init_3d_objects(void) {
     vx_init(16);
     return (OK);
 }
 
-errtype obj_3d_shutdown() {
+errtype obj_3d_shutdown(void) {
     vx_close();
     return (OK);
 }
 
-errtype init_load_resources() {
+errtype init_load_resources(void) {
     // Open the screen resource stuff
     if (ResOpenFile("res/data/gamescr.res") < 0)
         critical_error(CRITERR_RES | 1);
@@ -781,12 +782,12 @@ errtype init_load_resources() {
 
 #ifdef DUMMY // later
 
-errtype init_debug() {
+errtype init_debug(void) {
     errtype retval = OK;
     return (retval);
 }
 
-errtype init_editor_gadgets() { return (OK); }
+errtype init_editor_gadgets(void) { return (OK); }
 
 void free_all(void) {
     extern void shutdown_config(void);

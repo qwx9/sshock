@@ -203,10 +203,10 @@ void status_bio_set(short bio_mode);
 void status_bio_init(void);
 void status_bio_start(void);
 void status_bio_end(void);
-void status_bio_update_screenmode();
+void status_bio_update_screenmode(void);
 
 void status_bio_draw(void);
-extern void status_vitals_init();
+extern void status_vitals_init(void);
 
 // Add a variable to be tracked by the biorhythm monitor.
 // Track the NULL pointer to clear out a track slot.

@@ -27,7 +27,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //	Get on with it then...
 //	======================
-#include <iostream>
 #include "edms_int.h" //Object types, END conventions, etc.
 #include "idof.h"
 
@@ -40,23 +39,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	INTERNAL STUFF
 //	==============
 
-void snobby_soliton_lite(Q timestep, int32_t object);
+void snobby_soliton_lite(fix timestep, int32_t object);
 
 extern void (*idof_functions[MAX_OBJ])(int), // Pointers to the appropriate places...
     (*equation_of_motion[MAX_OBJ][7])(int);  // The integer is the object number...
 
 //	Courtesy of C++ and inline fixpoint and such...
 //	===============================================
-static Q one_sixth = .1666666666667, // Overboard?
-    point_five = .5, point_one_two_five = .125, two = 2., point_1 = 0.1;
+static fix one_sixth = fix_from_float(.1666666666667), // Overboard?
+    point_five = fix_from_float(.5), point_one_two_five = fix_from_float(.125), two = fix_from_float(2.), point_1 = fix_from_float(0.1);
 
 //	Here is a routine that should help in the placement of EDMS objects.  3D+ only!
 //	===============================================================================
 int32_t settle_object(int32_t object) {
     int return_value = -1; // Failure...
 
-    Q nrg = 1000., nrg_min = .1,
-      pass_time = .01; // Not meta-stable!
+    fix nrg = fix_from_float(1000.), nrg_min = fix_from_float(.1),
+      pass_time = fix_from_float(.01); // Not meta-stable!
 
     int32_t count = 0, max_count = 1000;
 
@@ -69,9 +68,9 @@ int32_t settle_object(int32_t object) {
 
             snobby_soliton_lite(pass_time, object);
 
-            nrg = S[object][DOF_X][1] * S[object][DOF_X][1] +
-                  S[object][DOF_Y][1] * S[object][DOF_Y][1]    // Too dangerous for assumptions...
-                  + S[object][DOF_Z][1] * S[object][DOF_Z][1]; // Forget the others...
+            nrg = fix_mul(S[object][DOF_X][1], S[object][DOF_X][1]) +
+                  fix_mul(S[object][DOF_Y][1], S[object][DOF_Y][1])    // Too dangerous for assumptions...
+                  + fix_mul(S[object][DOF_Z][1], S[object][DOF_Z][1]); // Forget the others...
 
             count += 1;
         }
@@ -93,7 +92,7 @@ int32_t settle_object(int32_t object) {
 //	Here is a version of soliton_lite which runs on only one object.  This should be useful for
 //	settling objects at level starts, placing things exactly on the ground, etc...
 //	==============================================================================
-void snobby_soliton_lite(Q timestep, int32_t object) {
+void snobby_soliton_lite(fix timestep, int32_t object) {
     int32_t coord;
 
     //	Copy the state vector initially into the argument vector...
@@ -110,29 +109,29 @@ void snobby_soliton_lite(Q timestep, int32_t object) {
     (*idof_functions[object])(object);
 
     for (coord = 0; coord < DOF && S[object][coord][0] > END; coord++) {
-        k[0][object][coord] = timestep * S[object][coord][2];
+        k[0][object][coord] = fix_mul(timestep, S[object][coord][2]);
     }
 
     //	Here is a frobbed term...
     //	-------------------------
     for (coord = 0; coord < DOF && S[object][coord][0] > END; coord++) {
-        A[object][coord][0] = S[object][coord][0] + timestep * S[object][coord][1];
+        A[object][coord][0] = S[object][coord][0] + fix_mul(timestep, S[object][coord][1]);
         A[object][coord][1] = S[object][coord][1] + k[0][object][coord];
     }
 
     (*idof_functions[object])(object);
 
     for (coord = 0; coord < DOF && S[object][coord][0] > END; coord++) {
-        k[1][object][coord] = timestep * S[object][coord][2];
+        k[1][object][coord] = fix_mul(timestep, S[object][coord][2]);
     }
 
     //	Hey! We're already able to assemble the solution!  Wasn't that better than soliton?
     //	===--------=======-----------------------------------------------------------------
     for (coord = 0; coord < DOF && S[object][coord][0] > END; coord++) {
-        S[object][coord][0] = S[object][coord][0] + timestep * S[object][coord][1] +
-                              point_five * (timestep * timestep * k[0][object][coord]);
+        S[object][coord][0] = S[object][coord][0] + fix_mul(timestep, S[object][coord][1]) +
+                              fix_mul(point_five, fix_mul(fix_mul(timestep, timestep), k[0][object][coord]));
 
-        S[object][coord][1] = S[object][coord][1] + point_five * (k[0][object][coord] + k[1][object][coord]);
+        S[object][coord][1] = S[object][coord][1] + fix_mul(point_five, k[0][object][coord] + k[1][object][coord]);
     }
 
     state_write_object(object); // Put it back in. Note that IT saw EVERYONE else, but they only see IT now!
@@ -191,7 +190,7 @@ void inventory_and_statistics(int32_t show_sleepers) {
 //	This is EDMS' sanity checker.  Call it to see what's wrong.  Problems
 //	will return a nonzero result...
 //	===============================
-int sanity_check() {
+int sanity_check(void) {
     //	The idof functions...
     //	=====================
     // extern void	biped_idof( int ),
@@ -293,8 +292,8 @@ int sanity_check() {
 
 //	Get the Euler angles we need from the stuff in the state...
 //	===========================================================
-void EDMS_get_Euler_angles(Q &alpha, Q &beta, Q &gamma, int32_t object) {
-    Q e0, e1, e2, e3;
+void EDMS_get_Euler_angles(fix *alpha, fix *beta, fix *gamma, int32_t object) {
+    fix e0, e1, e2, e3;
 
     e0 = S[object][DOF_ALPHA][0];
     e1 = S[object][DOF_BETA][0];
@@ -303,30 +302,28 @@ void EDMS_get_Euler_angles(Q &alpha, Q &beta, Q &gamma, int32_t object) {
 
     //      Get the trig information we need...
     //      ===================================
-    alpha = asin(2 * (e0 * e2 - e1 * e3));
-    Q cos_alpha = cos(alpha);
+    *alpha = fix_asin(fix_to_fang(fix_mul(fix_make(2,0), fix_mul(e0, e2) - fix_mul(e1, e3))));
+    fix cos_alpha = fix_cos(fix_to_fang(*alpha));
 
-#define EDMS_EULER_CONVERSION_TRIG_ZERO .0001
+#define EDMS_EULER_CONVERSION_TRIG_ZERO fix_from_float(.0001)
 
     if (cos_alpha > 0 && cos_alpha < EDMS_EULER_CONVERSION_TRIG_ZERO)
         cos_alpha = EDMS_EULER_CONVERSION_TRIG_ZERO;
     if (cos_alpha < 0 && cos_alpha > -EDMS_EULER_CONVERSION_TRIG_ZERO)
         cos_alpha = -EDMS_EULER_CONVERSION_TRIG_ZERO;
 
-    gamma = acos((e0 * e0 + e1 * e1 - e2 * e2 - e3 * e3) / cos_alpha);
-    if ((e1 * e2 + e0 * e3) < 0)
-        gamma *= -1; // sgn...
+    *gamma = fix_acos(fix_to_fang(fix_div(fix_mul(e0, e0) + fix_mul(e1, e1) - fix_mul(e2, e2) - fix_mul(e3, e3), cos_alpha)));
+    if (fix_mul(e1, e2) + fix_mul(e0, e3) < 0)
+        *gamma = fix_mul(*gamma, fix_make(-1,0)); // sgn...
 
-    beta = acos((e0 * e0 - e1 * e1 - e2 * e2 + e3 * e3) / cos_alpha);
-    if (e2 * e3 + e0 * e1 < 0)
-        beta *= -1;
+    *beta = fix_acos(fix_to_fang(fix_div(fix_mul(e0, e0) - fix_mul(e1, e1) - fix_mul(e2, e2) + fix_mul(e3, e3), cos_alpha)));
+    if (fix_mul(e2, e3) + fix_mul(e0, e1) < 0)
+        *beta = fix_mul(*beta, fix_make(-1,0));
 
-    alpha *= -1;
-    beta *= -1;
-    gamma *= -1;
+    *alpha = fix_mul(*alpha, fix_make(-1,0));
+    *beta = fix_mul(*beta, fix_make(-1,0));
+    *gamma = fix_mul(*gamma, fix_make(-1,0));
 }
-
-extern "C" {
 
 #pragma require_prototypes off
 
@@ -355,5 +352,3 @@ void EDMS_crystal_meth(physics_handle ph) {
 }
 
 #pragma require_prototypes on
-
-} // End of "Extern "C""...

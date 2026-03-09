@@ -37,10 +37,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // so its not here.
 //
 
-typedef void (**ptr_type)();
+typedef void (**ptr_type)(void);
 
 // Mac device function table
-void (**mac_device_table[])() = {
+void (**mac_device_table[])(void) = {
     (ptr_type)gr_null,       // init device
     (ptr_type)gr_null,       // close device
     (ptr_type)mac_set_mode,  // set mode

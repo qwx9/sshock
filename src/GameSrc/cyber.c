@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <string.h>
 
+#include "precompiled.h"
 #include "player.h"
 #include "objsim.h"
 #include "objects.h"
@@ -62,7 +63,7 @@ void (*cspace_effect_turnoff[])(uchar visible, uchar real) = {turbo_turnoff, dec
 uchar cyber_nodie = FALSE;
 // FILE *gCyberHdl;
 
-errtype check_cspace_death() {
+errtype check_cspace_death(void) {
     if (global_fullmap->cyber) {
         if (player_struct.cspace_hp == 1)
             hud_set(HUD_CYBERDANGER);
@@ -180,7 +181,7 @@ errtype enter_cyberspace_stuff(char dest_lev) {
     return (OK);
 }
 
-errtype early_exit_cyberspace_stuff() {
+errtype early_exit_cyberspace_stuff(void) {
     // Delete the shodan_object, if there is one.
     if (shodan_avatar_id != OBJ_NULL) {
         obj_destroy(shodan_avatar_id);
@@ -189,7 +190,7 @@ errtype early_exit_cyberspace_stuff() {
     return (OK);
 }
 
-errtype exit_cyberspace_stuff() {
+errtype exit_cyberspace_stuff(void) {
     int i;
 
     // Blast away the cspace MFD

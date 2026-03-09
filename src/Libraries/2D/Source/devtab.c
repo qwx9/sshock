@@ -35,7 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MacDev.h"
 
-typedef void (**ptr_type)();
+typedef void (**ptr_type)(void);
 
-void (**grd_device_table_list[])() = {(ptr_type) mac_device_table};
+void (**grd_device_table_list[])(void) = {(ptr_type) mac_device_table};
 

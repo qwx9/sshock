@@ -42,7 +42,7 @@ typedef struct {
     size_t dsize;        // size of resource on disc
     size_t msize;        // size of resource in memory
     uint32_t flags;      // misc. info.
-    ResField fields[];
+    ResField *fields;
 } ResLayout;
 
 // Indicates that multiple records exist within a resource, each of 'dsize'

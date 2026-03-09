@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <SDL.h>
 
+#include "precompiled.h"
 #include "Shock.h"
 #include "palfx.h"
 #include "sdl_events.h"
@@ -68,7 +69,7 @@ void finish_pal_effect(byte id) {
 }
 
 //-------------------------------------
-void palfx_fade_down() {
+void palfx_fade_down(void) {
     byte id;
     static uchar blackp[768];
     static uchar savep[768];
@@ -112,7 +113,7 @@ void palfx_fade_up(uchar do_now) {
 }
 
 //-------------------------------------
-void palfx_init() {
+void palfx_init(void) {
     palette_initialize(8); // 1 time unit per frame, 8 effects max
     palette_set_rate(1);
 

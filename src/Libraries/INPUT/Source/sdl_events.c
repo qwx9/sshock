@@ -34,7 +34,7 @@ extern SDL_Renderer *renderer;
 
 bool fullscreenActive = false;
 
-static void toggleFullScreen() {
+static void toggleFullScreen(void) {
     fullscreenActive = !fullscreenActive;
     SDL_SetWindowFullscreen(window, fullscreenActive ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 
@@ -477,6 +477,8 @@ uchar Ascii2Code[95] = {
     0x32  // ~
 };
 
+extern bool gPlayingGame;
+
 void pump_events(void) {
     SDL_Event ev;
 
@@ -484,7 +486,8 @@ void pump_events(void) {
         switch (ev.type) {
         case SDL_QUIT:
             // a bit hacky at this place, but this would allow exiting the game via the window's [x] button
-            exit(0); // TODO: I guess there is a better way.
+            //exit(0); // TODO: I guess there is a better way.
+            gPlayingGame = false;
             break;
 
         // TODO: really also handle key up here? the mac code apparently didn't, but where else do
@@ -736,8 +739,8 @@ void pump_events(void) {
                     opengl_resize(ev.window.data1, ev.window.data2);
                 break;
 
+            //case SDL_WINDOWEVENT_RESIZED:
             case SDL_WINDOWEVENT_MOVED:
-            case SDL_WINDOWEVENT_RESIZED:
                 break;
 
             case SDL_WINDOWEVENT_FOCUS_GAINED:

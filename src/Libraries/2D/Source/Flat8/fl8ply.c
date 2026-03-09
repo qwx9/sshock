@@ -93,26 +93,26 @@ void gri_solid_poly_init(grs_tmap_loop_info *ti) {
     ti->bm.bits = ti->clut; /* set fill_parm */
     ti->bm.hlog = GRL_OPAQUE;
     ti->d = ti->y * grd_bm.row + grd_bm.bits;
-    ti->loop_func = (void (*)())gri_poly_loop;
-    ti->top_edge_func = (void (*)())gri_x_edge;
-    ti->bot_edge_func = (void (*)())gri_x_edge;
+    ti->loop_func = (void (*)(void))gri_poly_loop;
+    ti->top_edge_func = (void (*)(void))gri_x_edge;
+    ti->bot_edge_func = (void (*)(void))gri_x_edge;
 }
 
 void gri_poly_init(grs_tmap_loop_info *ti) {
     ti->bm.hlog = GRL_OPAQUE;
     ti->d = ti->y * grd_bm.row + grd_bm.bits;
-    ti->loop_func = (void (*)())gri_poly_loop;
-    ti->top_edge_func = (void (*)())gri_x_edge;
-    ti->bot_edge_func = (void (*)())gri_x_edge;
+    ti->loop_func = (void (*)(void))gri_poly_loop;
+    ti->top_edge_func = (void (*)(void))gri_x_edge;
+    ti->bot_edge_func = (void (*)(void))gri_x_edge;
 }
 
 void gri_clut_poly_init(grs_tmap_loop_info *ti) {
     ti->bm.bits = (uchar *)(intptr_t)ti->clut[(intptr_t)ti->bm.bits];
     ti->bm.hlog = GRL_OPAQUE;
     ti->d = ti->y * grd_bm.row + grd_bm.bits;
-    ti->loop_func = (void (*)())gri_poly_loop;
-    ti->top_edge_func = (void (*)())gri_x_edge;
-    ti->bot_edge_func = (void (*)())gri_x_edge;
+    ti->loop_func = (void (*)(void))gri_poly_loop;
+    ti->top_edge_func = (void (*)(void))gri_x_edge;
+    ti->bot_edge_func = (void (*)(void))gri_x_edge;
 }
 
 void gri_tpoly_init(grs_tmap_loop_info *ti) {
@@ -123,9 +123,9 @@ void gri_tpoly_init(grs_tmap_loop_info *ti) {
         ti->bm.hlog = GRL_OPAQUE;
     }
     ti->d = ti->y * grd_bm.row + grd_bm.bits;
-    ti->loop_func = (void (*)())gri_poly_loop;
-    ti->top_edge_func = (void (*)())gri_x_edge;
-    ti->bot_edge_func = (void (*)())gri_x_edge;
+    ti->loop_func = (void (*)(void))gri_poly_loop;
+    ti->top_edge_func = (void (*)(void))gri_x_edge;
+    ti->bot_edge_func = (void (*)(void))gri_x_edge;
 }
 
 void gri_clut_tpoly_init(grs_tmap_loop_info *ti) {
@@ -138,7 +138,7 @@ void gri_clut_tpoly_init(grs_tmap_loop_info *ti) {
         ti->bm.hlog = GRL_OPAQUE;
     }
     ti->d = ti->y * grd_bm.row + grd_bm.bits;
-    ti->loop_func = (void (*)())gri_poly_loop;
-    ti->top_edge_func = (void (*)())gri_x_edge;
-    ti->bot_edge_func = (void (*)())gri_x_edge;
+    ti->loop_func = (void (*)(void))gri_poly_loop;
+    ti->top_edge_func = (void (*)(void))gri_x_edge;
+    ti->bot_edge_func = (void (*)(void))gri_x_edge;
 }

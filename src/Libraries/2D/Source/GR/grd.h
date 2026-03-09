@@ -56,7 +56,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 extern grs_sys_info grd_info;
 extern grs_drvcap *grd_cap;
 extern grs_drvcap grd_mode_cap;
-extern void (**grd_driver_list[])();
+extern void (**grd_driver_list[])(void);
 extern int grd_mode;
 
 /* support old-syle dr_ naming for now. */

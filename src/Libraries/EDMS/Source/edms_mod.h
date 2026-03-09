@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //	A girl's gotta have some standards.
 //	===================================
-#define EDMS_DIV_ZERO_TOLERANCE .0005
+#define EDMS_DIV_ZERO_TOLERANCE fix_from_float(.0005)
 
 #include <stdint.h>
 #include "fix.h"
@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	State and args...
 //	=================
 extern EDMS_Argblock_Pointer A;
-extern Q S[MAX_OBJ][7][4], I[MAX_OBJ][DOF_MAX];
+extern fix S[MAX_OBJ][7][4], I[MAX_OBJ][DOF_MAX];
 
 //	Functions...
 //	============

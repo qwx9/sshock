@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <string.h>
+#include "precompiled.h"
 #include <SDL.h>
 
 // TODO: extract this into a compatibility header
@@ -109,15 +110,15 @@ static uchar direct_into_cutscene = FALSE;
 extern char which_lang;
 extern uchar clear_player_data;
 extern char current_cutscene;
-extern char curr_vol_lev;
-extern char curr_sfx_vol;
+extern uchar curr_vol_lev;
+extern uchar curr_sfx_vol;
 extern uchar fullscrn_vitals;
 extern uchar fullscrn_icons;
 extern uchar map_notes_on;
 extern uchar audiolog_setting;
 extern uchar mouseLefty;
 #ifdef AUDIOLOGS
-extern char curr_alog_vol;
+extern uchar curr_alog_vol;
 #endif
 
 errtype draw_difficulty_char(int char_num);
@@ -777,7 +778,7 @@ char curr_sg = 0;
 
 errtype draw_sg_slot(int slot_num) {
     char temp[64];
-    short sz, x, y;
+    short sz = 0, x, y;
 
     uiHideMouse(NULL);
 

@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdlib.h>
 
+#include "precompiled.h"
 #include "tools.h"
 
 #include "cyber.h"
@@ -477,7 +478,7 @@ void draw_single_static_line(uchar *line_base, int lx, int rx, int c_base) {
 #else
         if (our_seed & 0x300) {
             *cur_pix = c_base + (our_seed & 0x7);
-            our_seed += (long)cur_pix;
+            our_seed += (intptr)cur_pix;
             our_seed = ((our_seed >> 5) & 0x07ffffff) | (our_seed << 27); //ror by 5
         } else {
             *cur_pix = 0;

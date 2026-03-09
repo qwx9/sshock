@@ -44,14 +44,14 @@ extern int32_t EDMS_integrating;
 extern int32_t alarm_clock[MAX_OBJ];
 
 physics_handle object_check(uint32_t data_word, Q size, Q range, int32_t exclude, int32_t steps,
-                            Q &dist); // Checks for hits...
+                            Q *dist); // Checks for hits...
 
 //	Here is the high velocity weapon primitive...
 //	=============================================
 physics_handle EDMS_cast_projectile(Q *X, Q D[3], Q kick, Q knock, Q size, Q range, int32_t exclude, int32_t shooter) {
     extern Q PELVIS;
     int32_t stepper = 0,
-        max_step = (2 * range / size).to_int(), // samples per meter...
+        max_step = q_to_int(2 * range / size), // samples per meter...
         victim_on = 0, shooter_on = 0, object_pointer = 0, i = 0;
 
     uint32_t must_check_objects[MAX_OBJ];
@@ -177,7 +177,7 @@ physics_handle EDMS_cast_projectile(Q *X, Q D[3], Q kick, Q knock, Q size, Q ran
         // Now we're done following the ray.
 
         for (i = 0; i < object_pointer; i++) {
-            victim = object_check(must_check_objects[i], size, range, exclude, stepper, dist);
+            victim = object_check(must_check_objects[i], size, range, exclude, stepper, &dist);
 
             if (victim != -1) {
                 // We hit someone!
@@ -282,7 +282,7 @@ physics_handle EDMS_cast_projectile(Q *X, Q D[3], Q kick, Q knock, Q size, Q ran
 //	Here, since we know the line segment we're interested in, we check to make sure that we
 //	didn't hit any objects, and return the one we did...
 //	====================================================
-physics_handle object_check(uint32_t data_word, Q size, Q range, int32_t exclude, int32_t stepper, Q &dist) {
+physics_handle object_check(uint32_t data_word, Q size, Q range, int32_t exclude, int32_t stepper, Q *dist) {
     //		General purpose...
     //		==================
     int32_t object;
@@ -321,7 +321,7 @@ physics_handle object_check(uint32_t data_word, Q size, Q range, int32_t exclude
                         if ((kzdist < .5 * size * stepper) && (kzdist < kzdisto)) {
                             victim = on2ph[object];
                             kzdisto = kzdist;
-                            dist = kzdist - I[object][31];
+                            *dist = kzdist - I[object][31];
 
                             //	   			      X[0] = S[object][0][0];	//Provide hit location, naive for
                             //now... 	   			      X[1] = S[object][1][0]; 	   			      X[2] = S[object][2][0];
@@ -342,7 +342,7 @@ physics_handle object_check(uint32_t data_word, Q size, Q range, int32_t exclude
 
                         Q final_x = 0, final_y = 0;
 
-                        sincos(-S[object][3][0], &sin_alpha, &cos_alpha);
+                        q_sincos(-S[object][3][0], &sin_alpha, &cos_alpha);
                         final_x = cos_alpha * offset_x + sin_alpha * offset_y;
                         final_y = -sin_alpha * offset_x + cos_alpha * offset_y;
 
@@ -373,7 +373,7 @@ physics_handle object_check(uint32_t data_word, Q size, Q range, int32_t exclude
                             if ((kzdist < .5 * size * stepper) && (kzdist < kzdisto)) {
                                 victim = on2ph[object];
                                 kzdisto = kzdist;
-                                dist = kzdist - I[object][31];
+                                *dist = kzdist - I[object][31];
                             }
                         }
 

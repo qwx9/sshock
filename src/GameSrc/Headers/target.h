@@ -55,7 +55,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 void select_current_target(ObjID id, uchar force_mfd);
 void mfd_target_expose(MFD *m, ubyte control);
 uchar mfd_target_handler(MFD *m, uiEvent *e);
-void toggle_current_target();
+void toggle_current_target(void);
 
 void mfd_targetware_expose(MFD *mfd, ubyte control);
 uchar mfd_targetware_handler(MFD *m, uiEvent *e);

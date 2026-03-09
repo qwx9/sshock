@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "fixpp.h"
 
-Q END = -9999., VACUUM = 0., MARBLE = 1., FIELD_POINT = 2., ROBOT = 3, BIPED = 4, PELVIS = 5, DEATH = 6, D_FRAME = 7;
+fix END = fix_from_float(-9999.), VACUUM = fix_from_float(0.), MARBLE = fix_from_float(1.), FIELD_POINT = fix_from_float(2.), ROBOT = fix_make(3,0), BIPED = fix_make(4,0), PELVIS = fix_make(5,0), DEATH = fix_make(6,0), D_FRAME = fix_make(7,0);
 
 int32_t min_physics_handle = 0;
 

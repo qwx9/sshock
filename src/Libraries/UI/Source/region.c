@@ -51,7 +51,7 @@ int region_convert_tochild(LGRegion *from_reg, LGRect *orig, LGRect *conv);
 int region_convert_toparent(LGRegion *from_reg, LGRect *orig, LGRect *conv);
 uchar is_child(LGRegion *poss_parent, LGRegion *child);
 uchar region_obscured_callback(LGRegion *reg, LGRect *r, void *data);
-Region_Sequence_Element *get_rse_from_pool();
+Region_Sequence_Element *get_rse_from_pool(void);
 errtype return_rse_to_pool(Region_Sequence_Element *rse);
 errtype region_add_sequence_expose(LGRegion *reg, LGRect exp_rect);
 
@@ -64,9 +64,9 @@ LGRegion *obsc_region, *current_expose_region;
 
 /* API FUNCTIONS */
 
-errtype init_rse_pool();
+errtype init_rse_pool(void);
 
-errtype region_init()
+errtype region_init(void)
 {
    region_system_init = TRUE;
    slist_init(&sequence_header);
@@ -827,7 +827,7 @@ errtype region_begin_sequence()
 #define RSE_POOL_SIZE   40
 Region_Sequence_Element rse_pool[RSE_POOL_SIZE];
 
-Region_Sequence_Element *get_rse_from_pool()
+Region_Sequence_Element *get_rse_from_pool(void)
 {
    int i = 0;
    while ((i < RSE_POOL_SIZE) && (rse_pool[i].reg != NULL))
@@ -851,7 +851,7 @@ errtype return_rse_to_pool(Region_Sequence_Element *rse)
    return(ERR_NOEFFECT);
 }
 
-errtype init_rse_pool()
+errtype init_rse_pool(void)
 {
    int i;
    for (i=0; i < RSE_POOL_SIZE; i++)

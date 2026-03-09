@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 
+#include "precompiled.h"
 #include "Shock.h"
 #include "Prefs.h"
 
@@ -38,7 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "tickcount.h"
 #include "tools.h"
 
-#include "adlmidi.h"
+//#include "adlmidi.h"
 #include "Xmi.h"
 
 #ifdef AUDIOLOGS
@@ -121,7 +122,7 @@ char mlimbs_machine = 0;
 //  INTERNAL PROTOTYPES
 //------------------
 
-errtype musicai_shutdown() {
+errtype musicai_shutdown(void) {
     int i;
     for (i = 0; i < MLIMBS_MAX_SEQUENCES - 1; i++)
         current_request[i].pieceID = 255;
@@ -138,13 +139,13 @@ errtype musicai_reset(uchar runai) {
     return (OK);
 }
 
-void musicai_clear() {
+void musicai_clear(void) {
     mai_damage_sum = 0;
     last_damage_sum = 0;
     mlimbs_combat = 0;
 }
 
-void mlimbs_do_ai() {
+void mlimbs_do_ai(void) {
     // extern uchar mlimbs_semaphore;
     extern ObjID damage_sound_id;
     extern char damage_sound_fx;
@@ -258,7 +259,7 @@ void mlimbs_do_ai() {
 
 #ifdef NOT_YET //
 
-void mlimbs_do_credits_ai() {
+void mlimbs_do_credits_ai(void) {
     extern uchar mlimbs_semaphore;
     if (ai_cycle) {
         ai_cycle = 0;
@@ -270,14 +271,14 @@ void mlimbs_do_credits_ai() {
 
 #endif // NOT_YET
 
-errtype mai_attack() {
+errtype mai_attack(void) {
     if (music_on) {
         mlimbs_combat = player_struct.game_time + mai_combat_length;
     }
     return (OK);
 }
 
-errtype mai_intro() {
+errtype mai_intro(void) {
     if (music_on) {
         if (transition_table[TRANS_INTRO] != 255)
             mai_transition(TRANS_INTRO);
@@ -298,14 +299,14 @@ errtype mai_monster_nearby(int monster_type) {
     return (OK);
 }
 
-errtype mai_monster_defeated() {
+errtype mai_monster_defeated(void) {
     if (music_on) {
         mlimbs_combat = 0;
     }
     return (OK);
 }
 
-errtype mai_player_death() {
+errtype mai_player_death(void) {
     if (music_on) {
         mai_transition(TRANS_DEATH);
         mlimbs_peril = DEFAULT_PERIL_MIN;
@@ -592,7 +593,7 @@ void secret_closedown(void) {
 //  For Mac version, the vast majority of the config mess just goes away.  But we do check for
 //  the presence of QuickTime Musical Instruments.
 //----------------------------------------------------------------------
-errtype music_init() {
+errtype music_init(void) {
     /* put in later
        int i,j;
        uchar gm=FALSE;
@@ -600,7 +601,7 @@ errtype music_init() {
        char s[64],path[64];
        audio_card card_info;
        extern uchar curr_sfx_vol;
-       extern char curr_vol_lev;
+       extern uchar curr_vol_lev;
 
     #ifdef SECRET_SUPPORT
        if ((secret_fp=fopen("secret.ddb","wt"))!=NULL)

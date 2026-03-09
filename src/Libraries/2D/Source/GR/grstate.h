@@ -43,9 +43,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "tabdat.h"
 
 #define gr_push_state \
-   ((int (*)())grd_pixel_table[PUSH_STATE])
+   ((int (*)(void))grd_pixel_table[PUSH_STATE])
 #define gr_pop_state \
-   ((int (*)())grd_pixel_table[POP_STATE])
+   ((int (*)(void))grd_pixel_table[POP_STATE])
 
 #endif
 

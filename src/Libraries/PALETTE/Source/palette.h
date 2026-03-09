@@ -87,7 +87,7 @@ typedef struct {
 
 extern void palette_initialize(short table_size);
 extern void palette_set_rate(short time_units_per_step);
-extern void palette_shutdown();
+extern void palette_shutdown(void);
 extern void palette_init_smap(short first, short last, uchar *from, uchar *to,
                               short num_steps);
 
@@ -109,7 +109,7 @@ extern PAL_STATUS palette_query_effect(byte id);
 extern void palette_change_delay(byte id, short delay);
 extern void palette_swap_shadow(int s, int n, int d);
 
-extern void palette_print_table();
+extern void palette_print_table(void);
 
 extern byte num_installed_shifts;
 

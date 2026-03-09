@@ -4,6 +4,15 @@ Based on the source code for PowerPC released by Night Dive Studios, Incorporate
 
 [![Build Status TravisCI](https://travis-ci.org/Interrupt/systemshock.svg?branch=master)](https://travis-ci.org/Interrupt/systemshock) [![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/5fmcswq8n7ni0o9j/branch/master?svg=true)](https://ci.appveyor.com/project/Interrupt/systemshock)
 
+9front
+======
+
+Requires [npe](http://shithub.us/moody/npe/HEAD/info.html).
+Run with data files in current working directory.
+Missing: MIDI, sound effects.
+Broken: lots of stuff.
+
+
 GENERAL NOTES
 =============
 

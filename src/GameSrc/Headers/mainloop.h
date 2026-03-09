@@ -62,7 +62,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 void mainloop(int argc, char *argv[]);
 void loopmode_switch(short *cmode);
-errtype static_change_copy();
+errtype static_change_copy(void);
 void loopmode_exit(short loopmode);
 void loopmode_enter(short loopmode);
 

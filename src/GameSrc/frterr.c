@@ -32,6 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include "precompiled.h"
 #include "map.h"
 #include "mapflags.h"
 #include "frintern.h"
@@ -74,12 +75,12 @@ int _fdt_x, _fdt_y, _fdt_mask; // implicit parameters to draw tile
 MapElem *_fdt_mptr;            // more implicit parameters
 
 // texture mapping function pointers.
-void (*_fr_lit_floor_func)(int, g3s_phandle *, grs_bitmap *);
-void (*_fr_floor_func)(int, g3s_phandle *, grs_bitmap *);
-void (*_fr_lit_wall_func)(int, g3s_phandle *, grs_bitmap *);
-void (*_fr_wall_func)(int, g3s_phandle *, grs_bitmap *);
-void (*_fr_lit_per_func)(int, g3s_phandle *, grs_bitmap *);
-void (*_fr_per_func)(int, g3s_phandle *, grs_bitmap *);
+int (*_fr_lit_floor_func)(int, g3s_phandle *, grs_bitmap *);
+int (*_fr_floor_func)(int, g3s_phandle *, grs_bitmap *);
+int (*_fr_lit_wall_func)(int, g3s_phandle *, grs_bitmap *);
+int (*_fr_wall_func)(int, g3s_phandle *, grs_bitmap *);
+int (*_fr_lit_per_func)(int, g3s_phandle *, grs_bitmap *);
+int (*_fr_per_func)(int, g3s_phandle *, grs_bitmap *);
 
 #if _fr_defdbg(CURSOR)
 int _fr_cursorx, _fr_cursory;
@@ -162,7 +163,7 @@ int fr_get_ext_gap(fix *face_l, uchar in_fo, uchar *hgts, uchar *mmptr);
 int _fr_get_anti_gap(fix *face_l, uchar in_fo, uchar *hgts, uchar *mmptr);
 void _render_3d_walls(int which, int cnt);
 int merge_walls(fix *dst_wall, fix *i_wall, int i_cnt, fix *o_wall, int o_cnt);
-void parse_clip_tile();
+void parse_clip_tile(void);
 void fr_terr_cspace_pick(uchar do_wall);
 int _fr_tfunc_flr_normal(fix *vec, int *lflg, int fnorm_entry);
 int _fr_tfunc_ceil_normal(fix *vec, int *lflg, int fnorm_entry);
@@ -1316,7 +1317,7 @@ static int last_ocnt = -1;
 static void _fr_parse_wall(int which) {
     int icnt, fcnt, ocnt, useocnt, are_solid;
     MapElem *oth_mptr;
-    uchar oth_hgts[3], oth_fo;
+    uchar oth_hgts[3], oth_fo = 0;
 
     oth_mptr = _fdt_mptr + wall_adds[which];
 
@@ -1412,7 +1413,7 @@ static void _fr_parse_wall(int which) {
 }
 
 // take the mptr, decode it's clip vectors, and set initial wall masks for the tile
-void parse_clip_tile() {}
+void parse_clip_tile(void) {}
 
     // so, ahh, should have wall bits for floor and ceiling, so we can start clipping
 

@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <limits.h>
 
+#include "precompiled.h"
 #include "newmfd.h"
 #include "wrapper.h"
 #include "tools.h"
@@ -355,7 +356,9 @@ static char *_get_temp_string(int num) {
         case REF_STR_MousInv:  return "Inverted";
 
         case REF_STR_Seqer:    return "Midi Player";
+#ifdef USE_ADLMIDI
         case REF_STR_ADLMIDI:  return "ADLMIDI";
+#endif
         case REF_STR_NativeMI: return "Native MIDI";
 #ifdef USE_FLUIDSYNTH
         case REF_STR_FluidSyn: return "FluidSynth";
@@ -1066,7 +1069,7 @@ uchar opanel_kb_handler(uiEvent *ev, LGRegion *r, intptr_t user_data) {
 }
 #pragma enable_message(202)
 
-void clear_obuttons() {
+void clear_obuttons(void) {
     uiCursorStack *cs;
     extern uiSlab *uiCurrentSlab;
 
@@ -1180,7 +1183,7 @@ errtype wrapper_panel_close(uchar clear_message) {
 
 extern uchar game_paused;
 
-uchar can_save() {
+uchar can_save(void) {
     uchar gp = game_paused;
     if (global_fullmap->cyber) {
         // spoof the game as not being paused so that the message won't go to the
@@ -1423,7 +1426,7 @@ static void midi_output_dealfunc(short val) {
 #pragma enable_message(202)
 
 #define SLIDER_OFFSET_3 0
-void soundopt_screen_init() {
+void soundopt_screen_init(void) {
     LGRect r;
     char retkey;
     int i = 0;
@@ -1451,7 +1454,11 @@ void soundopt_screen_init() {
 #endif
 
     standard_button_rect(&r, i, 2, 2, 5);
+#ifdef USE_ADLMIDI
     multi_init(i, 'p', REF_STR_Seqer, REF_STR_ADLMIDI, ID_NULL,
+#else
+    multi_init(i, 'p', REF_STR_Seqer, REF_STR_NativeMI, ID_NULL,
+#endif
                sizeof(gShockPrefs.soMidiBackend), &gShockPrefs.soMidiBackend, OPT_SEQ_Max, seqer_dealfunc, &r);
     i++;
 /* standard button is too narrow, so use a slider instead

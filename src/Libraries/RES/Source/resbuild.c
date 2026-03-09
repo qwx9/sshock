@@ -145,7 +145,7 @@ int32_t ResWrite(Id id) {
     prd2 = RESDESC2(id);
     pDirEntry->flags = prd2->flags;
     pDirEntry->type = prd2->type;
-    pDirEntry->size = size;
+    PBIT24(pDirEntry->size, size);
 
     TRACE("%s: writing $%x\n", __FUNCTION__, id);
 
@@ -171,7 +171,7 @@ int32_t ResWrite(Id id) {
         if (compsize < 0) {
             pDirEntry->flags &= ~RDF_LZW;
         } else {
-            pDirEntry->csize = sizeTable + compsize;
+            PBIT24(pDirEntry->csize, sizeTable + compsize);
             fwrite(pcompbuff, compsize, 1, prf->fd);
         }
         free(pcompbuff);
@@ -179,12 +179,12 @@ int32_t ResWrite(Id id) {
 
     // If no compress (or failed to compress well), just write out
     if (!(pDirEntry->flags & RDF_LZW)) {
-        pDirEntry->csize = size;
+        PBIT24(pDirEntry->csize, size);
         fwrite(body, size, 1, prf->fd);
     }
 
     // Pad to align on data boundary
-    padBytes = RES_OFFSET_PADBYTES(pDirEntry->csize);
+    padBytes = RES_OFFSET_PADBYTES(GBIT24(pDirEntry->csize));
     if (padBytes)
         fwrite(pad, padBytes, 1, prf->fd);
 
@@ -198,7 +198,7 @@ int32_t ResWrite(Id id) {
     }
     // Advance dir num entries, current data offset
     prf->pedit->pdir->numEntries++;
-    prf->pedit->currDataOffset = RES_OFFSET_ALIGN(prf->pedit->currDataOffset + pDirEntry->csize);
+    prf->pedit->currDataOffset = RES_OFFSET_ALIGN(prf->pedit->currDataOffset + GBIT24(pDirEntry->csize));
 
     return 0;
 }
@@ -274,15 +274,15 @@ int32_t ResPack(int32_t filenum) {
     for (i = 0; i < prf->pedit->pdir->numEntries; i++) {
         if (pDirEntry->id == 0) {
             numReclaimed++;
-            sizeReclaimed += pDirEntry->csize;
+            sizeReclaimed += GBIT24(pDirEntry->csize);
         } else {
             if (gResDesc[pDirEntry->id].offset > RES_OFFSET_PENDING)
                 gResDesc[pDirEntry->id].offset = RES_OFFSET_REAL2DESC(dataWrite);
             if (dataRead != dataWrite)
-                ResCopyBytes(prf->fd, dataWrite, dataRead, pDirEntry->csize);
-            dataWrite = RES_OFFSET_ALIGN(dataWrite + pDirEntry->csize);
+                ResCopyBytes(prf->fd, dataWrite, dataRead, GBIT24(pDirEntry->csize));
+            dataWrite = RES_OFFSET_ALIGN(dataWrite + GBIT24(pDirEntry->csize));
         }
-        dataRead = RES_OFFSET_ALIGN(dataRead + pDirEntry->csize);
+        dataRead = RES_OFFSET_ALIGN(dataRead + GBIT24(pDirEntry->csize));
         pDirEntry++;
     }
 

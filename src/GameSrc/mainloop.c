@@ -41,6 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 
+#include "precompiled.h"
 #include "InitMac.h"
 #include "Shock.h"
 #include "amaploop.h"
@@ -163,7 +164,7 @@ void mainloop(int argc, char *argv[]) {
     // hit them atexit's
 }
 
-errtype static_change_copy() {
+errtype static_change_copy(void) {
     if (always_render)
         chg_set_sta(_current_3d_flag);
     else

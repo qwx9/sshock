@@ -293,7 +293,7 @@ void DbgDoSpew(char *msg, ...);
 
 //	Set debug config screen to use function for getting keys
 
-extern int (*f_getch)();
+extern int (*f_getch)(void);
 #define DbgInstallGetch(f) (f_getch = (f))
 
 //	All logfiles are written to the same directory, which defaults to
@@ -310,7 +310,7 @@ uchar DbgSetLogFile(ulong src, char *name);
 //	These are really internal things
 
 uchar DbgOpenLogFile(int index);
-void DbgCloseLogFiles();
+void DbgCloseLogFiles(void);
 void DbgHandle(int reportType, ulong src, char *buff);
 extern char *dbgTags[];
 
@@ -328,8 +328,8 @@ void DbgSetReportRoutine(ReportRoutine *);
 
 //	Allows user to configure debug system
 
-void DbgInit();							// auto-loads settings from "debug.dbg"
-void DbgMonoConfig();					// let operator config on mono screen
+void DbgInit(void);							// auto-loads settings from "debug.dbg"
+void DbgMonoConfig(void);					// let operator config on mono screen
 uchar DbgAddConfigPath(char *path);	// add path for finding config files
 int DbgLoadConfig(char *fname);		// load config file
 int DbgSaveConfig(char *fname);		// save config file
@@ -391,7 +391,7 @@ void DbgSetReportRoutine(ReportRoutine *);
 
 void Exit(int errcode, char *msg);	// shut down with msg
 #define AtExit(func) atexit(func);	// add func to atexit list
-void PrintExitMsg();						// prints exit message
+void PrintExitMsg(void);						// prints exit message
 
 #define SetExitMsg(str) pExitMsg=str
 extern char *pExitMsg;
