@@ -31,6 +31,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Includes
 #include "objclass.h"
 
+#pragma pack on
+
 // Instance Data
 typedef struct {
     //   COMMON_OBJSPEC_FIELDS;
@@ -251,6 +253,8 @@ typedef struct _TimedGrenadeProp {
     ubyte max_time_set;
     ubyte timing_deviation;
 } TimedGrenadeProp;
+
+#pragma pack off
 
 // Gun
 #define NUM_PISTOL_GUN     5
