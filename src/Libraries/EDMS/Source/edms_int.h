@@ -39,7 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //	Cool math universe...
 //	---------------------
-#include "fixpp.h"
+#include "fix.h"
 
 // Physics handle typedef
 // ======================
@@ -114,8 +114,8 @@ typedef struct {
 //	=======================================
 typedef int32_t object_number;
 
-#define physics_handle_to_object_number(ph) (ph2on[ph])
-#define object_number_to_physics_handle(on) (on2ph[on])
+#define physics_handle_to_object_number(ph) ((ph) >= 0 && (ph) < nelem(ph2on) ? ph2on[ph] : (fprint(2, "ph: %d >= %d\n", (ph), nelem(ph2on)), abort(), 1))
+#define object_number_to_physics_handle(on) ((on) >= 0 && (on) < nelem(on2ph) ? on2ph[on] : (fprint(2, "on: %d >= %d\n", (on), nelem(on2ph)), abort(), 1))
 
 void EDMS_init_handles(void);
 physics_handle EDMS_bind_object_number(object_number on);

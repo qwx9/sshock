@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	=============================================================================
 
 ////#include <conio.h>
-#include "fixpp.h"
+#include "fix.h"
 #include "edms_int.h"
 #include "idof.h"
 //#ifdef EDMS_SHIPPABLE

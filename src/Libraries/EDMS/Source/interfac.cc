@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	State information and utilities...
 //	========================
 
-#include "fixpp.h"
+#include "fix.h"
 #include "edms_int.h"
 #include "idof.h"
 
@@ -311,13 +311,11 @@ void EDMS_mouselook(physics_handle ph, int32_t xlook) {
     int32_t on;
     State current_state;
 
-	fprintf(stderr, "EDMS_mouselook %d %d → ", fix_int(S[on][3][0]), fix_int(S[on][3][1]));
     on = physics_handle_to_object_number(ph);
     EDMS_get_state(ph, &current_state);
 
     S[on][3][0] = current_state.alpha + fix_make(xlook, 0);
     S[on][3][1] = fix_zero;
- 	fprintf(stderr, "%d %d\n", fix_int(S[on][3][0]), fix_int(S[on][3][1]));
 }
 
 //	Here we exclude objects from hitting each specific others...

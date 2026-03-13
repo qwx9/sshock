@@ -130,6 +130,10 @@ void generic_delete_object(int32_t object, EDMS_Argblock_Pointer state) {
         //	End of slowness, and inform the world that something stinks in Denmark...
         //	-------------------------------------------------------------------------
         //        mout << "collide2...\n";
+        if(object < 0 || object >= nelem(on2ph)){
+        	fprint(2, "on %d >= %d\n", object, nelem(on2ph));
+        	abort();
+        }
         EDMS_off_playfield(on2ph[object]);
         //      Spew (DSRC_EDMS_Collide, ("Bounds on %d ph %d hash [%d %d]\n", object, on2ph[object], hash_x, hash_y));
         //      Spew (DSRC_EDMS_Collide, ("state x = %8x y = %8x\n", state[object][DOF_X][0], state[object][DOF_Y][0]));
@@ -173,7 +177,7 @@ void reset_collisions(int32_t object) {
     //	Are we really inactivated?
     //	--------------------------
     if (I[object][IDOF_COLLIDE] > fix_make(-1,0)) {
-        I[q_to_int(I[object][IDOF_COLLIDE])][IDOF_COLLIDE] = fix_make(-1,0);
+        I[fix_int(I[object][IDOF_COLLIDE])][IDOF_COLLIDE] = fix_make(-1,0);
         I[object][IDOF_COLLIDE] = fix_make(-1,0);
     }
 }

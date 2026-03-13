@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	Here is the bridge routine for maintenance and upkeep of the FTL models...
 //	==========================================================================
 
-#include "fixpp.h"
+#include "fix.h"
 #include "edms_int.h"
 
 //#ifdef EDMS_SHIPPABLE

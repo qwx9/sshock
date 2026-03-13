@@ -55,7 +55,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 
-#include "fixpp.h"
+#include "fix.h"
 
 // state of each object
 extern fix S[MAX_OBJ][DOF][DOF_DERIVS];

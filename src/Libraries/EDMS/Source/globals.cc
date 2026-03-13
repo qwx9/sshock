@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	This is the GLOBALS file for EDMS.  It's a girl?!
 //	=================================================
 
-#include "fixpp.h"
+#include "fix.h"
 
 fix END = fix_from_float(-9999.), VACUUM = fix_from_float(0.), MARBLE = fix_from_float(1.), FIELD_POINT = fix_from_float(2.), ROBOT = fix_make(3,0), BIPED = fix_make(4,0), PELVIS = fix_make(5,0), DEATH = fix_make(6,0), D_FRAME = fix_make(7,0);
 

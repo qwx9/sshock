@@ -602,7 +602,7 @@ void do_climbing(int32_t object) {
     //      ===============================================================
     else if ((ss_edms_bcd_flags & SS_BCD_MISC_STAIR) /*&& (i_object[17] == 0) (io17==0) */) {
         if ((checker > 0) && (fix_abs(i_object[18]) + fix_abs(i_object[19]) > fix_from_float(.01))) {
-            Q ratio = fix_mul(i_object[18] + A[object][0][1], object0) + fix_mul(i_object[19] + A[object][1][1], object1);
+            fix ratio = fix_mul(i_object[18] + A[object][0][1], object0) + fix_mul(i_object[19] + A[object][1][1], object1);
 
             if (ratio <= 0) {
                 io17 = fix_from_float(.5);
@@ -623,7 +623,7 @@ void do_climbing(int32_t object) {
 
 //	We might for now want to set some external forces on the pelvis...
 //	==================================================================
-void pelvis_set_control(int32_t pelvis, Q forward, Q turn, Q sidestep, Q lean, Q jump, int32_t crouch) {
+void pelvis_set_control(int32_t pelvis, fix forward, fix turn, fix sidestep, fix lean, fix jump, int32_t crouch) {
     const fix pi_by_two = fix_from_float(1.5707); // Yea, flixpoint...
 
     fix_sincos(fix_to_fang(S[pelvis][3][0]), &object0, &object1);
@@ -674,7 +674,7 @@ void pelvis_set_control(int32_t pelvis, Q forward, Q turn, Q sidestep, Q lean, Q
 //	init_state[][] and EDMS motion parameters params[] into soliton. Returns the
 //	object number, or else a negative error code (see Soliton.CPP for error handling and codes).
 //	============================================================================================
-int32_t make_pelvis(Q init_state[6][3], Q params[10]) {
+int32_t make_pelvis(fix init_state[6][3], fix params[10]) {
     //	Have some variables...
     //	======================
     int32_t object_number = -1, // Three guesses...
@@ -713,9 +713,9 @@ int32_t make_pelvis(Q init_state[6][3], Q params[10]) {
         // We need some information that won't fit in the usual areas...
         // =============================================================
         // I[object_number][0] =                                           //For reference...
-        I[object_number][6] = .5 * I[object_number][IDOF_PELVIS_RADIUS];
-        I[object_number][1] = 20 * I[object_number][IDOF_PELVIS_MOI];
-        I[object_number][2] = 4 * sqrt(I[object_number][IDOF_PELVIS_MOI] * I[object_number][1]);
+        I[object_number][6] = fix_mul(fix_from_float(.5), I[object_number][IDOF_PELVIS_RADIUS]);
+        I[object_number][1] = fix_mul(fix_make(20,0), I[object_number][IDOF_PELVIS_MOI]);
+        I[object_number][2] = fix_mul(fix_make(4,0), fix_sqrt(fix_mul(I[object_number][IDOF_PELVIS_MOI], I[object_number][1])));
 
         // Put in the collision information...
         // ===================================

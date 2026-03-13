@@ -120,6 +120,10 @@ void soliton_lite(fix timestep) {
     // Copy the state vector initially into the argument vector...
     // ===========================================================
     for (object = 0; S[object][0][0] > END; object++) {
+        if(object >= nelem(no_no_not_me)){
+        	fprint(2, "soliton: %d >= %d\n", object, nelem(no_no_not_me));
+        	abort();
+        }
         if (no_no_not_me[object] == 1) {
             S_Object = (fix *)S[object];
 
@@ -572,7 +576,7 @@ int32_t EDMS_kill(int32_t deadguy) {
             // Fix the excluded collision information...
             // =========================================
             if (I[(object - 1)][IDOF_COLLIDE] > fix_make(-1,0))
-                I[q_to_int(I[(object - 1)][IDOF_COLLIDE])][IDOF_COLLIDE] = object - 1;
+                I[fix_int(I[(object - 1)][IDOF_COLLIDE])][IDOF_COLLIDE] = object - 1;
 
             // Utility pointers also need fixing...
             // ====================================
@@ -715,7 +719,7 @@ void collision_wakeup(int32_t object) {
     // Fix the excluded collision information...
     // =========================================
     if (I[new_object][IDOF_COLLIDE] > fix_make(-1,0))
-        I[q_to_int(I[new_object][IDOF_COLLIDE])][IDOF_COLLIDE] = new_object;
+        I[fix_int(I[new_object][IDOF_COLLIDE])][IDOF_COLLIDE] = new_object;
 }
 
 #pragma require_prototypes off

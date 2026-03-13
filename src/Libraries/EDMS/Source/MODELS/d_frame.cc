@@ -26,16 +26,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "edms_int.h" //This is the model type library. It is universal.
 #include "edms_mod.h"
 
-#define EDMS_CYBER_CURRENT_ALIGN .06
+#define EDMS_CYBER_CURRENT_ALIGN fix_from_float(.06)
 
 //	Super secret Church-Blackley Boundary Condition Descriptor (BCD)...
 //	===================================================================
 #include "idof.h"
 #include "ss_flet.h"
 
-extern Q EDMS_CYBER_FLOW1X;
-extern Q EDMS_CYBER_FLOW2X;
-extern Q EDMS_CYBER_FLOW3X;
+extern fix EDMS_CYBER_FLOW1X;
+extern fix EDMS_CYBER_FLOW2X;
+extern fix EDMS_CYBER_FLOW3X;
 
 extern int32_t EDMS_BCD;
 
@@ -46,21 +46,21 @@ void dirac_frame_idof(int32_t object) {
 
     //      Here's the real work...
     //      -----------------------
-    extern void dirac_mechanicals(int32_t object, Q F[3], Q T[3]);
-    extern void shall_we_dance(int32_t object, Q *result0, Q *result1, Q *result2);
+    extern void dirac_mechanicals(int32_t object, fix F[3], fix T[3]);
+    extern void shall_we_dance(int32_t object, fix *result0, fix *result1, fix *result2);
 
     //      For alignment...
     //      ----------------
-    extern void mech_localize(Q *X, Q *Y, Q *Z);
-    extern void mech_globalize(Q *X, Q *Y, Q *Z);
-    Q F_T[3];
+    extern void mech_localize(fix *X, fix *Y, fix *Z);
+    extern void mech_globalize(fix *X, fix *Y, fix *Z);
+    fix F_T[3];
 
-    Q e0, e1, e2, e3, // For speed plus beauty!
+    fix e0, e1, e2, e3, // For speed plus beauty!
         ed0, ed1, ed2, ed3;
 
-    Q collide_x, collide_y, collide_z;
+    fix collide_x, collide_y, collide_z;
 
-    Q T[3], F[3];
+    fix T[3], F[3];
 
     //	Now deal with the quaternion (2nd order) bullshit...
     //	====================================================
@@ -73,9 +73,9 @@ void dirac_frame_idof(int32_t object) {
     ed2 = A[object][5][1];
     ed3 = A[object][6][1];
 
-    Q beta_dot = 2 * (e0 * ed1 + e3 * ed2 - e2 * ed3 - e1 * ed0);
-    Q alpha_dot = 2 * (-e3 * ed1 + e0 * ed2 + e1 * ed3 - e2 * ed0);
-    Q gamma_dot = 2 * (e2 * ed1 - e1 * ed2 + e0 * ed3 - e3 * ed0);
+    fix beta_dot = fix_mul(fix_make(2,0), fix_mul(e0, ed1) + fix_mul(e3, ed2) - fix_mul(e2, ed3) - fix_mul(e1, ed0));
+    fix alpha_dot = fix_mul(fix_make(2,0), fix_mul(-e3, ed1) + fix_mul(e0, ed2) + fix_mul(e1, ed3) - fix_mul(e2, ed0));
+    fix gamma_dot = fix_mul(fix_make(2,0), fix_mul(e2, ed1) - fix_mul(e1, ed2) + fix_mul(e0, ed3) - fix_mul(e3, ed0));
 
     //	Zero the results...
     //	===================
@@ -84,9 +84,9 @@ void dirac_frame_idof(int32_t object) {
     //	Are we hitting anything yet?
     //	----------------------------
     shall_we_dance(object, &collide_x, &collide_y, &collide_z);
-    F[0] += collide_x * I[object][23];
-    F[1] += collide_y * I[object][23];
-    F[2] += collide_z * I[object][23];
+    F[0] += fix_mul(collide_x, I[object][23]);
+    F[1] += fix_mul(collide_y, I[object][23]);
+    F[2] += fix_mul(collide_z, I[object][23]);
 
     //	CyberSpace BCD information...
     //	-----------------------------
@@ -97,7 +97,7 @@ void dirac_frame_idof(int32_t object) {
 
         F_T[0] = F_T[1] = F_T[2] = 0;
 
-        Q current_strength = EDMS_CYBER_FLOW1X;
+        fix current_strength = EDMS_CYBER_FLOW1X;
         if ((ss_edms_bcd_flags & SS_BCD_CURR_SPD) == SS_BCD_CURR_MID)
             current_strength = EDMS_CYBER_FLOW2X;
         if ((ss_edms_bcd_flags & SS_BCD_CURR_SPD) == SS_BCD_CURR_HIGH)
@@ -123,9 +123,9 @@ void dirac_frame_idof(int32_t object) {
         //              -----------------
         mech_localize(&F_T[0], &F_T[1], &F_T[2]);
         if (I[object][2] == 0)
-            T[2] += EDMS_CYBER_CURRENT_ALIGN * F_T[1];
+            T[2] += fix_mul(EDMS_CYBER_CURRENT_ALIGN, F_T[1]);
         if (I[object][1] == 0)
-            T[1] += EDMS_CYBER_CURRENT_ALIGN * F_T[2];
+            T[1] += fix_mul(EDMS_CYBER_CURRENT_ALIGN, F_T[2]);
 
         F[0] += F_T[0]; // Note that these are locals...
         //                F[1] += F_T[1];
@@ -144,25 +144,25 @@ void dirac_frame_idof(int32_t object) {
 
     //	For now, just pop them in...
     //	============================
-    S[object][0][2] = I[object][21] * F[0] - .5 * I[object][25] * A[object][0][1];
-    S[object][1][2] = I[object][21] * F[1] - .5 * I[object][25] * A[object][1][1];
-    S[object][2][2] = I[object][21] * F[2] - .5 * I[object][25] * A[object][2][1] - I[object][27];
+    S[object][0][2] = fix_mul(I[object][21], F[0]) - fix_mul(fix_mul(fix_from_float(.5), I[object][25]), A[object][0][1]);
+    S[object][1][2] = fix_mul(I[object][21], F[1]) - fix_mul(fix_mul(fix_from_float(.5), I[object][25]), A[object][1][1]);
+    S[object][2][2] = fix_mul(I[object][21], F[2]) - fix_mul(fix_mul(fix_from_float(.5), I[object][25]), A[object][2][1]) - I[object][27];
 
-    Q T_alpha_temp = T[0] * I[object][22] - 5 * alpha_dot;
-    Q T_beta_temp = T[1] * I[object][22] - 5 * beta_dot;
-    Q T_gamma_temp = T[2] * I[object][22] - 5 * gamma_dot;
+    fix T_alpha_temp = fix_make(T[0], I[object][22]) - fix_mul(fix_make(5,0), alpha_dot);
+    fix T_beta_temp = fix_make(T[1], I[object][22]) - fix_mul(fix_make(5,0), beta_dot);
+    fix T_gamma_temp = fix_make(T[2], I[object][22]) - fix_mul(fix_make(5,0), gamma_dot);
 
-    S[object][3][2] = -.5 * (e1 * T_beta_temp + e2 * T_alpha_temp + e3 * T_gamma_temp + ed1 * beta_dot +
-                             ed2 * alpha_dot + ed3 * gamma_dot);
+    S[object][3][2] = fix_mul(fix_from_float(-.5), fix_mul(e1, T_beta_temp) + fix_mul(e2, T_alpha_temp) + fix_mul(e3, T_gamma_temp) + fix_mul(ed1, beta_dot) +
+                             fix_mul(ed2, alpha_dot) + fix_mul(ed3, gamma_dot));
 
-    S[object][4][2] = .5 * (e0 * T_beta_temp + e2 * T_gamma_temp - e3 * T_alpha_temp + ed0 * beta_dot +
-                            ed2 * gamma_dot - ed3 * alpha_dot);
+    S[object][4][2] = fix_mul(fix_from_float(.5), fix_mul(e0, T_beta_temp) + fix_mul(e2, T_gamma_temp) - fix_mul(e3, T_alpha_temp) + fix_mul(ed0, beta_dot) +
+                            fix_mul(ed2, gamma_dot) - fix_mul(ed3, alpha_dot));
 
-    S[object][5][2] = .5 * (e0 * T_alpha_temp + e3 * T_beta_temp - e1 * T_gamma_temp + ed0 * alpha_dot +
-                            ed3 * beta_dot - ed1 * gamma_dot);
+    S[object][5][2] = fix_mul(fix_from_float(.5), fix_mul(e0, T_alpha_temp) + fix_mul(e3, T_beta_temp) - fix_mul(e1, T_gamma_temp) + fix_mul(ed0, alpha_dot) +
+                            fix_mul(ed3, beta_dot) - fix_mul(ed1, gamma_dot));
 
-    S[object][6][2] = .5 * (e1 * T_alpha_temp - e2 * T_beta_temp + e0 * T_gamma_temp + ed0 * gamma_dot +
-                            ed1 * alpha_dot - ed2 * beta_dot);
+    S[object][6][2] = fix_mul(fix_from_float(.5), fix_mul(e1, T_alpha_temp) - fix_mul(e2, T_beta_temp) + fix_mul(e0, T_gamma_temp) + fix_mul(ed0, gamma_dot) +
+                            fix_mul(ed1, alpha_dot) - fix_mul(ed2, beta_dot));
 
     //      mout << "Inside dframe2\n";
 
@@ -172,8 +172,8 @@ void dirac_frame_idof(int32_t object) {
 
 //      Control dirac_frame...
 //      ======================
-void control_dirac_frame(int32_t object, Q forward, Q pitch, Q yaw, Q roll) {
-    I[object][0] = 3 * forward;
+void control_dirac_frame(int32_t object, fix forward, fix pitch, fix yaw, fix roll) {
+    I[object][0] = fix_mul(fix_make(3,0), forward);
     I[object][1] = pitch;
     I[object][2] = yaw;
     I[object][3] = roll;
@@ -183,7 +183,7 @@ void control_dirac_frame(int32_t object, Q forward, Q pitch, Q yaw, Q roll) {
 //	of angles to spinors and such.  Probably should have an external utility for
 //	resetting these...
 //	==================
-int32_t make_Dirac_frame(Q init_state[6][3], Q params[10]) {
+int32_t make_Dirac_frame(fix init_state[6][3], fix params[10]) {
 
     //	Have some variables...
     //	======================
@@ -194,7 +194,7 @@ int32_t make_Dirac_frame(Q init_state[6][3], Q params[10]) {
     //	================================
     extern void null_function(int32_t);
 
-    Q sin_alpha = 0, cos_alpha = 0, sin_beta = 0, cos_beta = 0, sin_gamma = 0, cos_gamma = 0;
+    fix sin_alpha = 0, cos_alpha = 0, sin_beta = 0, cos_beta = 0, sin_gamma = 0, cos_gamma = 0;
 
     //        mout << "Making dframe1\n";
 
@@ -222,39 +222,39 @@ int32_t make_Dirac_frame(Q init_state[6][3], Q params[10]) {
 
         //		Zeros...
         //		--------
-        q_sincos(.5 * init_state[3][0], &sin_alpha, &cos_alpha);
-        q_sincos(.5 * init_state[4][0], &sin_beta, &cos_beta);
-        q_sincos(.5 * init_state[5][0], &sin_gamma, &cos_gamma);
+        fix_sincos(fix_to_fang(fix_mul(fix_from_float(.5), init_state[3][0])), &sin_alpha, &cos_alpha);
+        fix_sincos(fix_to_fang(fix_mul(fix_from_float(.5), init_state[4][0])), &sin_beta, &cos_beta);
+        fix_sincos(fix_to_fang(fix_mul(fix_from_float(.5), init_state[5][0])), &sin_gamma, &cos_gamma);
 
         S[object_number][3][0] = A[object_number][3][0] =
-            cos_gamma * cos_alpha * cos_beta + sin_gamma * sin_alpha * sin_beta;
+            fix_mul(fix_mul(cos_gamma, cos_alpha), cos_beta) + fix_mul(fix_mul(sin_gamma, sin_alpha), sin_beta);
 
         S[object_number][4][0] = A[object_number][4][0] =
-            cos_gamma * cos_alpha * sin_beta - sin_gamma * sin_alpha * cos_beta;
+            fix_mul(fix_mul(cos_gamma, cos_alpha), sin_beta) - fix_mul(fix_mul(sin_gamma, sin_alpha), cos_beta);
 
         S[object_number][5][0] = A[object_number][5][0] =
-            cos_gamma * sin_alpha * cos_beta + sin_gamma * cos_alpha * sin_beta;
+            fix_mul(fix_mul(cos_gamma, sin_alpha), cos_beta )+ fix_mul(fix_mul(sin_gamma, cos_alpha), sin_beta);
 
         S[object_number][6][0] = A[object_number][6][0] =
-            -cos_gamma * sin_alpha * sin_beta + sin_gamma * cos_alpha * cos_beta;
+            fix_mul(fix_mul(-cos_gamma, sin_alpha), sin_beta) + fix_mul(fix_mul(sin_gamma, cos_alpha), cos_beta);
 
         //		Firsts...
         //		---------
         S[object_number][3][1] =
-            -.5 * (S[object_number][4][0] * init_state[4][1] + S[object_number][5][0] * init_state[3][1] +
-                   S[object_number][6][0] * init_state[5][1]);
+            fix_mul(fix_from_float(-.5), fix_mul(S[object_number][4][0], init_state[4][1]) + fix_mul(S[object_number][5][0], init_state[3][1]) +
+                   fix_mul(S[object_number][6][0], init_state[5][1]));
 
         S[object_number][4][1] =
-            .5 * (S[object_number][3][0] * init_state[4][1] + S[object_number][5][0] * init_state[5][1] -
-                  S[object_number][6][0] * init_state[3][1]);
+            fix_mul(fix_from_float(.5), fix_mul(S[object_number][3][0], init_state[4][1]) + fix_mul(S[object_number][5][0], init_state[5][1]) -
+                  fix_mul(S[object_number][6][0], init_state[3][1]));
 
         S[object_number][5][1] =
-            .5 * (S[object_number][3][0] * init_state[3][1] + S[object_number][6][0] * init_state[4][1] -
-                  S[object_number][4][0] * init_state[5][1]);
+            fix_mul(fix_from_float(.5), fix_mul(S[object_number][3][0], init_state[3][1]) + fix_mul(S[object_number][6][0], init_state[4][1]) -
+                  fix_mul(S[object_number][4][0], init_state[5][1]));
 
         S[object_number][6][1] =
-            .5 * (S[object_number][3][0] * init_state[5][1] + S[object_number][4][0] * init_state[3][1] -
-                  S[object_number][5][0] * init_state[4][1]);
+            fix_mul(fix_from_float(.5), fix_mul(S[object_number][3][0], init_state[5][1]) + fix_mul(S[object_number][4][0], init_state[3][1]) -
+                  fix_mul(S[object_number][5][0], init_state[4][1]));
 
         // mout << "AA: " << S[object_number][3][1] << "\n";
         // mout << "BB: " << S[object_number][4][1] << "\n";

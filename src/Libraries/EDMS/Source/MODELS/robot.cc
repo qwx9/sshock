@@ -41,7 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	State information and utilities...
 //	==================================
 extern EDMS_Argblock_Pointer A;
-extern Q S[MAX_OBJ][7][4], I[MAX_OBJ][DOF_MAX];
+extern fix S[MAX_OBJ][7][4], I[MAX_OBJ][DOF_MAX];
 extern int32_t no_no_not_me[MAX_OBJ];
 
 #define SOLITION_FRAME_CNT
@@ -59,11 +59,11 @@ extern void (*EDMS_object_collision)(physics_handle caller, physics_handle victi
 // extern int	are_you_there( int );			//Collisions...
 // extern int	check_for_hit( int );
 
-static Q fix_one = 1., point_five = .5, two_pi = 6.283185;
+static fix fix_one = fix_from_float(1.), point_five = fix_from_float(.5), two_pi = fix_from_float(6.283185);
 
 //	Just a thought...
 //	=================
-static Q object0, object1, object2, object3, object4, // Howzat??
+static fix object0, object1, object2, object3, object4, // Howzat??
     object5, object6, object7, object8, object9, object10, object11, object12, object13, object14, object15, object16,
     object17, object18, object19;
 
@@ -73,13 +73,13 @@ int32_t EDMS_robot_global_badness_indicator = 0;
 
 //	Variables that are NOT on the stack...
 //	======================================
-static Q A00, A10, A20, A30, A01, A11, A21, A31;
+static fix A00, A10, A20, A30, A01, A11, A21, A31;
 
-static Q checker, check0, check1, check2, V_wall0, V_wall1;
+static fix checker, check0, check1, check2, V_wall0, V_wall1;
 
-static Q drug, butt;
+static fix drug, butt;
 
-const Q wt_pos = 0.001, wt_neg = -0.001;
+const fix wt_pos = fix_from_float(0.001), wt_neg = fix_from_float(-0.001);
 
 #pragma require_prototypes off
 
@@ -89,7 +89,7 @@ void robot_idof(int32_t object) {
 
     //	Call me instead of having special code everywhere...
     //	====================================================
-    extern void shall_we_dance(int object, Q *result0, Q *result1, Q *result2);
+    extern void shall_we_dance(int object, fix *result0, fix *result1, fix *result2);
 
     A00 = A[object][0][0]; // Dereference NOW!
     A10 = A[object][1][0];
@@ -115,7 +115,7 @@ void robot_idof(int32_t object) {
 
     //              Boy, will this be faster in the new order...
     //              ============================================
-    Q w0, w1, w2, w3, w4;
+    fix w0, w1, w2, w3, w4;
     w0 = terrain_info.wx;
     w1 = terrain_info.wy;
     w2 = terrain_info.wz;
@@ -127,17 +127,17 @@ void robot_idof(int32_t object) {
     //		w0 *= w4;       w1 *= w4;       w2 *= w4;
 
     if (w0 == 0)
-        check0 = 1;
+        check0 = FIX_UNIT;
     else
         check0 = 0;
 
     if (w1 == 0)
-        check1 = 1;
+        check1 = FIX_UNIT;
     else
         check1 = 0;
 
     if ((terrain_info.fz == 0) && (terrain_info.cz == 0))
-        check2 = 1;
+        check2 = FIX_UNIT;
     else
         check2 = 0;
 
@@ -149,37 +149,37 @@ void robot_idof(int32_t object) {
     object1 += w1;
     object2 += w2;
 
-    checker = sqrt(object0 * object0 + object1 * object1 + object2 * object2);
+    checker = fix_sqrt(fix_mul(object0, object0) + fix_mul(object1, object1) + fix_mul(object2, object2));
 
-    if (checker > .0005) {
-        object3 = fix_one / checker; // To get primitive...
+    if (checker > fix_from_float(.0005)) {
+        object3 = fix_div(fix_one, checker); // To get primitive...
         //                                               mout << "NZero!!  " << checker << "\n";
     } else
         checker = object3 = 0;
 
-    object4 = object3 * object0; // The primitive V_n...
-    object5 = object3 * object1;
-    object6 = object3 * object2;
+    object4 = fix_mul(object3, object0); // The primitive V_n...
+    object5 = fix_mul(object3, object1);
+    object6 = fix_mul(object3, object2);
 
-    object7 = .75 * I[object][21] *
-              (A01 * object4 // Delta_magnitude...
-               + A11 * object5 + A21 * object6);
+    object7 = fix_mul(fix_mul(fix_from_float(.75), I[object][21]),
+              fix_mul(A01, object4) // Delta_magnitude...
+               + fix_mul(A11, object5) + fix_mul(A21, object6));
 
     object8 = I[object][20]; // Omega_magnitude...
     //		if( I[object][10]<0 ) object7 *= 4;
     //		if( I[object][10]<0 ) object8 *= 2;
 
     //              mout << "o7: " << object7 << "\n";
-    object4 = object7 * object4; // Delta...
-    object5 = object7 * object5;
-    object6 = object7 * object6;
+    object4 = fix_mul(object7, object4); // Delta...
+    object5 = fix_mul(object7, object5);
+    object6 = fix_mul(object7, object6);
 
-    object9 = ((checker > .001) || (I[object][10] > 0)); // Are we in the rub???
+    object9 = ((checker > fix_from_float(.001)) || (I[object][10] > 0)); // Are we in the rub???
 
     //		Let's not power through the walls anymore...
     //		--------------------------------------------
-    I[object][18] *= check0;
-    I[object][19] *= check1;
+    I[object][18] = fix_mul(I[object][18], check0);
+    I[object][19] = fix_mul(I[object][19], check1);
 
     //      Here are collisions with other objects...
     //      =========================================
@@ -187,8 +187,8 @@ void robot_idof(int32_t object) {
 
     if (I[object][5] == 0) {
         shall_we_dance(object, &object10, &object11, &object12);
-        object10 *= I[object][20] * check0; // More general than it was...
-        object11 *= I[object][20] * check1;
+        object10 = fix_mul(object10, fix_mul(I[object][20], check0)); // More general than it was...
+        object11 = fix_mul(object11, fix_mul(I[object][20], check1));
         //  	object12 *= I[object][20]*check2;
     }
 
@@ -197,26 +197,26 @@ void robot_idof(int32_t object) {
     if (ss_edms_bcd_flags & SS_BCD_REPUL_ON) {
 
         //              Get the speed...
-        Q repulsor_speed = 21;
+        fix repulsor_speed = fix_make(21,0);
         if ((ss_edms_bcd_flags & SS_BCD_REPUL_SPD) == SS_BCD_REPUL_NORM)
-            repulsor_speed = 7;
+            repulsor_speed = fix_make(7,0);
 
         //              Assume we're going up, unless...
         if ((ss_edms_bcd_flags & SS_BCD_REPUL_TYPE) == SS_BCD_REPUL_DOWN)
-            repulsor_speed *= -.5;
+            repulsor_speed = fix_mul(repulsor_speed, fix_from_float(-.5));
 
         //              The parameter should be the desired height....
-        Q repul_height;
+        fix repul_height;
         repul_height = ss_edms_bcd_param;
 
-        Q nearness_or_something = repul_height - A[object][2][0];
-        if (abs(nearness_or_something) <= .333) {
-            repulsor_speed *= 3 * nearness_or_something;
+        fix nearness_or_something = repul_height - A[object][2][0];
+        if (fix_abs(nearness_or_something) <= fix_from_float(.333)) {
+            repulsor_speed = fix_mul(repulsor_speed, fix_mul(fix_make(3,0), nearness_or_something));
         }
 
-        Q io17 = repulsor_speed;
+        fix io17 = repulsor_speed;
 
-        I[object][17] = I[object][26] * ((io17 - A[object][2][1]) + I[object][25]);
+        I[object][17] = fix_mul(I[object][26], ((io17 - A[object][2][1]) + I[object][25]));
 
         object9 = 1;
     }
@@ -225,13 +225,13 @@ void robot_idof(int32_t object) {
     //      ===============================================================
     if ((ss_edms_bcd_flags & SS_BCD_MISC_STAIR)) {
 
-        Q o1 = 0, o0 = 0;
+        fix o1 = 0, o0 = 0;
 
-        if ((checker > 0) && (abs(I[object][18]) + abs(I[object][19]) > .01)) {
+        if ((checker > 0) && (fix_abs(I[object][18]) + fix_abs(I[object][19]) > fix_from_float(.01))) {
 
-            Q ratio = (I[object][18] + A[object][0][1]) * object0 + (I[object][19] + A[object][1][1]) * object1;
+            fix ratio = fix_mul((I[object][18] + A[object][0][1]), object0) + fix_mul((I[object][19] + A[object][1][1]), object1);
 
-            Q io17 = .5;
+            fix io17 = fix_from_float(.5);
 
             if (ratio <= 0) {
                 o1 = object1;
@@ -239,14 +239,14 @@ void robot_idof(int32_t object) {
             } else
                 o1 = o0 = io17 = 0;
 
-            I[object][18] = -.3 * I[object][22] * o0 * object8 / checker + .1 * I[object][18];
-            I[object][19] = -.3 * I[object][22] * o1 * object8 / checker + .1 * I[object][19];
+            I[object][18] = fix_div(fix_mul(fix_mul(fix_mul(fix_from_float(-.3), I[object][22]), o0), object8), checker) + fix_mul(fix_from_float(.1), I[object][18]);
+            I[object][19] = fix_div(fix_mul(fix_mul(fix_mul(fix_from_float(-.3), I[object][22]), o1), object8), checker) + fix_mul(fix_from_float(.1), I[object][19]);
             //	        	io18 = -.3*I[object][22]*o0*object8/checker + .1*I[object][18];
             //		        io19 = -.3*I[object][22]*o1*object8/checker + .1*I[object][19];
 
             //                    Set the mojo...
             //                    ===============
-            I[object][17] = 800 * (io17 - A[object][2][1]);
+            I[object][17] = fix_mul(fix_make(800,0), (io17 - A[object][2][1]));
         }
     }
 
@@ -259,33 +259,33 @@ void robot_idof(int32_t object) {
 
     //	Don't be stupid...
     //	------------------
-    drug = -object9 * I[object][23];
+    drug = fix_mul(-object9, I[object][23]);
     //      mout << drug << "\n";
     butt = I[object][24];
 
     //	Try the equations of motion here for grins...
     //	=============================================
-    S[object][2][2] = butt * (object8 * object2 // Elasticity...
+    S[object][2][2] = fix_mul(butt, fix_mul(object8, object2) // Elasticity...
                               - object6         // Drag...
                               + I[object][17]   // Control...
-                              + drug * A21 + object12)
+                              + fix_mul(drug, A21) + object12)
 
                       - I[object][25]; // Grav'ty...
 
-    S[object][0][2] = butt * (object8 * object0         // Elasticity...
+    S[object][0][2] = fix_mul(butt, fix_mul(object8, object0)         // Elasticity...
                               - object4                 // Drag...
-                              + object9 * I[object][18] // Control...
-                              + drug * A01              // Drag...
+                              + fix_mul(object9, I[object][18]) // Control...
+                              + fix_mul(drug, A01)              // Drag...
                               + object10);              // Collide...
 
-    S[object][1][2] = butt * (object8 * object1         // Elasticity...
+    S[object][1][2] = fix_mul(butt, fix_mul(object8, object1)         // Elasticity...
                               - object5                 // Drag...
-                              + object9 * I[object][19] // Control...
-                              + drug * A11              // Drag...
+                              + fix_mul(object9, I[object][19]) // Control...
+                              + fix_mul(drug, A11)              // Drag...
                               + object11);              // Collide...
 
-    S[object][3][2] = I[object][27] * (I[object][16]           // Control...
-                                       - I[object][28] * A31); // Drag...
+    S[object][3][2] = fix_mul(I[object][27], (I[object][16])           // Control...
+                                       - fix_mul(I[object][28], A31)); // Drag...
 
     //        mout << "Butt: " << butt << "\n";
     //        mout << "1X: " << object0 << " 1Y: " << object1 << " 1Z: " << object2 << "\n";
@@ -301,11 +301,11 @@ void robot_idof(int32_t object) {
 
     //      Damnage...
     //      ==========
-    Q dam0 = object8 * object0 - object4;
-    Q dam1 = object8 * object1 - object5;
-    Q dam2 = object8 * object2 - object6;
+    fix dam0 = fix_mul(object8, object0) - object4;
+    fix dam1 = fix_mul(object8, object1) - object5;
+    fix dam2 = fix_mul(object8, object2) - object6;
 
-    I[object][14] = I[object][IDOF_ROBOT_MASS_RECIP] * (abs(dam0) + abs(dam1) + abs(dam2)); // Damage??
+    I[object][14] = fix_mul(I[object][IDOF_ROBOT_MASS_RECIP], (fix_abs(dam0) + fix_abs(dam1) + fix_abs(dam2))); // Damage??
 
     //	Is there a projectile hit?
     //	==========================
@@ -325,9 +325,9 @@ void robot_idof(int32_t object) {
 
         //      mout << "clamp " << I[object][32] << " " << I[object][33] << " " << I[object][34] << "\n";
 
-        S[object][0][2] += /* I[object][24]* */ I[object][32] * check0;
-        S[object][1][2] += /* I[object][24]* */ I[object][33] * check1;
-        S[object][2][2] += /* I[object][24]* */ I[object][34] * check2;
+        S[object][0][2] += /* I[object][24]* */ fix_mul(I[object][32], check0);
+        S[object][1][2] += /* I[object][24]* */ fix_mul(I[object][33], check1);
+        S[object][2][2] += /* I[object][24]* */ fix_mul(I[object][34], check2);
 
         //      mout << "  add " << /* I[object][24]* */ I[object][32]*check0 << " " <<
         //                          /* I[object][24]* */ I[object][33]*check0 << " " <<
@@ -348,9 +348,9 @@ void robot_idof(int32_t object) {
 
 //	We might for now want to set some external forces on the robot...
 //	==================================================================
-void robot_set_control(int32_t robot, Q thrust_lever, Q attitude_jet, Q jump) {
+void robot_set_control(int32_t robot, fix thrust_lever, fix attitude_jet, fix jump) {
 
-    q_sincos(S[robot][3][0], &object0, &object1);
+    fix_sincos(fix_to_fang(S[robot][3][0]), &object0, &object1);
 
 #ifdef EDMS_SHIPPABLE
     if (I[robot][30] != ROBOT)
@@ -359,25 +359,25 @@ void robot_set_control(int32_t robot, Q thrust_lever, Q attitude_jet, Q jump) {
 
     //	Here's the thrust of the situation...
     //	-------------------------------------
-    I[robot][18] = thrust_lever * object1 * I[robot][IDOF_ROBOT_MASS];
-    I[robot][19] = thrust_lever * object0 * I[robot][IDOF_ROBOT_MASS];
-    I[robot][17] = I[robot][26] * jump;
+    I[robot][18] = fix_mul(fix_mul(thrust_lever, object1), I[robot][IDOF_ROBOT_MASS]);
+    I[robot][19] = fix_mul(fix_mul(thrust_lever, object0), I[robot][IDOF_ROBOT_MASS]);
+    I[robot][17] = fix_mul(I[robot][26], jump);
 
     //	And the turn of the...
     //	----------------------
-    I[robot][16] = attitude_jet * I[robot][IDOF_ROBOT_MOI];
+    I[robot][16] = fix_mul(attitude_jet, I[robot][IDOF_ROBOT_MOI]);
 
     //	Wakee wakee...
     //	--------------
-    no_no_not_me[robot] = (abs(I[robot][18]) + abs(I[robot][19]) + abs(I[robot][16]) + abs(I[robot][17]) > 0);
+    no_no_not_me[robot] = (fix_abs(I[robot][18]) + fix_abs(I[robot][19]) + fix_abs(I[robot][16]) + fix_abs(I[robot][17]) > 0);
 }
 
 //	Here is a separate control routine for robots under AI domination...
 //	====================================================================
-void robot_set_ai_control(int32_t robot, Q desired_heading, Q desired_speed, Q sidestep, Q urgency, Q *there_yet,
-                          Q distance) {
+void robot_set_ai_control(int32_t robot, fix desired_heading, fix desired_speed, fix sidestep, fix urgency, fix *there_yet,
+                          fix distance) {
 
-    const Q one_by_pi = 0.31830, pi = 3.14159, two_pi = 6.28318;
+    const fix one_by_pi = fix_from_float(0.31830), pi = fix_from_float(3.14159), two_pi = fix_from_float(6.28318);
 
 #ifdef EDMS_SHIPPABLE
     if (I[robot][30] != ROBOT)
@@ -396,10 +396,10 @@ void robot_set_ai_control(int32_t robot, Q desired_heading, Q desired_speed, Q s
 
     //	Setup...
     //	--------
-    Q speed = sqrt(S[robot][0][1] * S[robot][0][1] + S[robot][1][1] * S[robot][1][1]),
+    fix speed = fix_sqrt(fix_mul(S[robot][0][1], S[robot][0][1]) + fix_mul(S[robot][1][1], S[robot][1][1])),
       direction = desired_heading - S[robot][3][0];
 
-    q_sincos(S[robot][3][0], &object0, &object1);
+    fix_sincos(fix_to_fang(S[robot][3][0]), &object0, &object1);
 
     //	Heading...
     //	----------
@@ -410,29 +410,29 @@ void robot_set_ai_control(int32_t robot, Q desired_heading, Q desired_speed, Q s
 
     //	Inform the caller if we're on course yet...
     //	-------------------------------------------
-    *there_yet = one_by_pi * direction * (1 - 2 * (direction < 0));
+    *there_yet = fix_mul(fix_mul(one_by_pi, direction), (FIX_UNIT - fix_mul(fix_make(2,0), (direction < 0))));
 
     //	Set the control...
     //	------------------
-    I[robot][16] = .1 * urgency * direction * I[robot][29];
+    I[robot][16] = fix_mul(fix_mul(fix_mul(fix_from_float(.1), urgency), direction), I[robot][29]);
 
     //	Speed...
     //	--------
-    I[robot][17] = urgency * (1 / (10 * *there_yet + 5)) * (desired_speed - speed); // temporary...
+    I[robot][17] = fix_mul(fix_mul(urgency, fix_div(FIX_UNIT, (fix_mul(fix_make(10,0), *there_yet) + fix_make(5,0)))), (desired_speed - speed)); // temporary...
     if (I[robot][17] < 0)
         I[robot][17] = 0;
 
     if (distance < 1)
-        I[robot][17] *= distance;
+        I[robot][17] = fix_mul(I[robot][17], distance);
 
-    I[robot][18] = object1 * I[robot][17] + object0 * sidestep;
-    I[robot][19] = object0 * I[robot][17] - object1 * sidestep;
+    I[robot][18] = fix_mul(object1, I[robot][17]) + fix_mul(object0, sidestep);
+    I[robot][19] = fix_mul(object0, I[robot][17]) - fix_mul(object1, sidestep);
     I[robot][17] = 0; // No jumping for AIs
 
     //	Wakee wakee...
     //	--------------
     if (no_no_not_me[robot] == 0) {
-        no_no_not_me[robot] = (abs(I[robot][18]) + abs(I[robot][19]) + abs(I[robot][16]) > 0);
+        no_no_not_me[robot] = (fix_abs(I[robot][18]) + fix_abs(I[robot][19]) + fix_abs(I[robot][16]) > 0);
         //        if ( no_no_not_me[robot] != 0 ) mout << "R: " << robot << ", ph= " << on2ph[robot] << " awoken!  " <<
         //        no_no_not_me[robot] << "\n"; mout << ( abs( I[robot][18] ) + abs( I[robot][19] ) + 50*abs(
         //        I[robot][16] ) + abs( I[robot][17] ) ) << "\n"; mout << no_no_not_me[robot] << "\n";
@@ -442,7 +442,7 @@ void robot_set_ai_control(int32_t robot, Q desired_heading, Q desired_speed, Q s
     //+ abs( I[robot][17] ) ) << ".\n";;
 }
 
-int32_t make_robot(Q init_state[6][3], Q params[10]) {
+int32_t make_robot(fix init_state[6][3], fix params[10]) {
 
     //	Sets up everything needed to manufacture a robot with initial state vector
     //	init_state[][] and EDMS motion parameters params[] into soliton. Returns the

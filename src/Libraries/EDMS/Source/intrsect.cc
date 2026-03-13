@@ -50,7 +50,7 @@ void shall_we_dance(int32_t object, fix *result0, fix *result1, fix *result2) {
 
     //	Collision B/C...
     //	----------------
-    result0 = result1 = result2 = 0; // B/C...
+    *result0 = *result1 = *result2 = 0; // B/C...
 
     //	Here we assume that all hits are encompassed by the projection of the
     //	default radius.  If this is not true, then special care must be taken
@@ -171,7 +171,7 @@ void shall_we_dance(int32_t object, fix *result0, fix *result1, fix *result2) {
     }
 }
 
-Q dx, dy, dz;
+fix dx, dy, dz;
 
 //	Here's the meat of the sutuation...
 //	===================================
