@@ -128,7 +128,6 @@ HFILES=\
 	EDMS/Source/ss_flet.h\
 	FIX/Source/fix.h\
 	FIX/Source/trigtab.h\
-	FIXPP/Source/fixpp.h\
 	H/2dres.h\
 	H/error.h\
 	H/keydefs.h\
@@ -406,7 +405,6 @@ CFLAGS=$CFLAGS -p -D__plan9__ -D__${objtype}__ \
 	-IDSTRUCT/Source \
 	-IEDMS/Source \
 	-IEDMS/Source/MODELS \
-	-IFIXPP/Source \
 	-IFIX/Source \
 	-IH \
 	-IINPUT/Source \
