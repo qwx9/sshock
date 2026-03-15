@@ -132,6 +132,7 @@ HFILES=\
 	H/error.h\
 	H/keydefs.h\
 	H/lg_types.h\
+	H/platform.h\
 	INPUT/Source/kb.h\
 	INPUT/Source/kbcook.h\
 	INPUT/Source/mouse.h\
