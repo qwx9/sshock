@@ -1,7 +1,6 @@
 </$objtype/mkfile
 BIN=/$objtype/bin/games
 TARG=sshock
-
 LIB=src/Libraries/libshock.a$O
 HFILES=\
 	src/MusicSrc/MusicDevice.h\
@@ -373,13 +372,15 @@ CFLAGS=$CFLAGS -p -D__plan9__ -D__${objtype}__ \
 %.$O: %.c
 	$CC $CFLAGS -o $target $stem.c
 
-$LIB: mklib
-
-mklib:
-	cd src/Libraries
-	mk
+$LIB:
+	@{
+		cd src/Libraries
+		mk
+	}
 
 clean nuke:V:
 	rm -f *.[$OS] [$OS].out $TARG $CLEANFILES
-	cd src/Libraries
-	mk $target
+	@{ 
+		cd src/Libraries
+		mk $target
+	}
