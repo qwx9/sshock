@@ -51,7 +51,7 @@ void dirac_mechanicals(int object, fix F[3], fix T[3]) {
 
     void get_boundary_conditions(int32_t object, fix raduis, fix position[3], fix derivitaves[3]);
 
-    fix t, kappa, delta, mechanical_drag;
+    fix kappa, delta, mechanical_drag;
 
     fix *sc;
 
@@ -63,7 +63,7 @@ void dirac_mechanicals(int object, fix F[3], fix T[3]) {
 	structure[2][0] = fix_from_float(-.1);
 	structure[3][1] = fix_from_float(-.1);
 	structure[4][2] = fix_from_float(.1);
-	structure[5][2] = fix_from_float(-1.);
+	structure[5][2] = fix_from_float(-.1);
 
     //      Get the orientation...
     //      ----------------------
@@ -78,12 +78,9 @@ void dirac_mechanicals(int object, fix F[3], fix T[3]) {
 
     //	From the actual model...
     //	------------------------
-	t = fix_mul(e0, ed1) + fix_mul(e3, ed2) - fix_mul(e2, ed3) - fix_mul(e1, ed0);
-	fix beta_dot = fix_mul(fix_make(2, 0), t);
-	t = fix_mul(-e3, ed1) + fix_mul(e0, ed2) + fix_mul(e1, ed3) - fix_mul(e2, ed0);
-    fix alpha_dot = fix_mul(fix_make(2, 0), t);
-	t = fix_mul(e2, ed1) - fix_mul(e1, ed2) + fix_mul(e0, ed3) - fix_mul(e3, ed0);
-    fix gamma_dot = fix_mul(fix_make(2, 0), t);
+    fix beta_dot = fix_mul(fix_make(2,0), fix_mul(e0,ed1) + fix_mul(e3,ed2) - fix_mul(e2,ed3) - fix_mul(e1,ed0));
+    fix alpha_dot = fix_mul(fix_make(2,0), fix_mul(-e3,ed1) + fix_mul(e0,ed2) + fix_mul(e1,ed3) - fix_mul(e2,ed0));
+    fix gamma_dot = fix_mul(fix_make(2,0), fix_mul(e2,ed1) - fix_mul(e1,ed2) + fix_mul(e0,ed3) - fix_mul(e3,ed0));
 
     //      Steering...
     //      -----------
