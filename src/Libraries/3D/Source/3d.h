@@ -359,6 +359,8 @@ extern g3s_vector g3d_light_src, g3d_light_trans;
 extern g3s_vector g3d_light_src, g3d_light_trans;
 extern g3s_vector g3d_view_vec, g3d_light_vec;
 
+#pragma pack off	// 2
+
 // DG: my compiler was not happy about the names "or" and "and", so I appended a
 // _
 typedef struct g3s_codes {
@@ -1015,7 +1017,5 @@ edi];
         "lea esp,[esp+ecx*4]"   \
         parm [ecx] [esi] value [eax] modify [eax ebx ecx edx esi edi];
 */
-
-#pragma pack off
 
 #endif /* __3D_H */
