@@ -54,21 +54,21 @@ extern int32_t EDMS_integrating;
 void generic_write_object(int32_t object, EDMS_Argblock_Pointer state) {
     extern void (*EDMS_off_playfield)(physics_handle caller);
 
-    fix q_hash_x = fix_mul(hash_scale, state[object][DOF_X][0]);
-    fix q_hash_y = fix_mul(hash_scale, state[object][DOF_Y][0]);
+    Q q_hash_x = Q_mul(hash_scale, state[object][DOF_X][0]);
+    Q q_hash_y = Q_mul(hash_scale, state[object][DOF_Y][0]);
 
     uint32_t obit = object_bit(object);
 
-    int32_t hash_x = fix_int(q_hash_x); // The floor should be a function
-    int32_t hash_y = fix_int(q_hash_y); // that returns the edges of the ref. squares...
+    int32_t hash_x = Q_to_int(q_hash_x); // The floor should be a function
+    int32_t hash_y = Q_to_int(q_hash_y); // that returns the edges of the ref. squares...
 
     if ((hash_x > 1) && (hash_y > 1) && (hash_x < collision_max) && (hash_y < collision_max)) {
         // We want to write a 2x2 block.  We adjust the upper left corner of it
         // appropriately given our location in the square.
 
-        if (q_hash_x - fix_make(hash_x,0) < DELTA_BY_TWO)
+        if (Q_sub(q_hash_x, Q_as_int(hash_x)).val < DELTA_BY_TWO.val)
             hash_x--;
-        if (q_hash_y - fix_make(hash_y,0) < DELTA_BY_TWO)
+        if (Q_sub(q_hash_y, Q_as_int(hash_y)).val < DELTA_BY_TWO.val)
             hash_y--;
 
         write_object_bit(hash_x, hash_y, obit);
@@ -99,13 +99,13 @@ void state_write_object(int32_t object) {
 //
 
 void generic_delete_object(int32_t object, EDMS_Argblock_Pointer state) {
-    fix q_hash_x = fix_mul(hash_scale, state[object][DOF_X][0]);
-    fix q_hash_y = fix_mul(hash_scale, state[object][DOF_Y][0]);
+    Q q_hash_x = Q_mul(hash_scale, state[object][DOF_X][0]);
+    Q q_hash_y = Q_mul(hash_scale, state[object][DOF_Y][0]);
 
     uint32_t obit = object_bit(object);
 
-    int32_t hash_x = fix_int(q_hash_x); // The floor should be a function
-    int32_t hash_y = fix_int(q_hash_y); // that returns the edges of the ref. squares...
+    int32_t hash_x = Q_to_int(q_hash_x); // The floor should be a function
+    int32_t hash_y = Q_to_int(q_hash_y); // that returns the edges of the ref. squares...
 
     // AAAAAhhhhhhhhh...
     // mout << "DA" << object << ": (" << hash_x << ", " << hash_y << ")\n";
@@ -117,9 +117,9 @@ void generic_delete_object(int32_t object, EDMS_Argblock_Pointer state) {
         // We want to delete a 2x2 block.  We adjust the upper left corner of it
         // appropriately given our location in the square.
 
-        if (q_hash_x - fix_make(hash_x,0) < DELTA_BY_TWO)
+        if (Q_sub(q_hash_x, Q_as_int(hash_x)).val < DELTA_BY_TWO.val)
             hash_x--;
-        if (q_hash_y - fix_make(hash_y,0) < DELTA_BY_TWO)
+        if (Q_sub(q_hash_y, Q_as_int(hash_y)).val < DELTA_BY_TWO.val)
             hash_y--;
 
         delete_object_bit(hash_x, hash_y, obit);
@@ -131,7 +131,7 @@ void generic_delete_object(int32_t object, EDMS_Argblock_Pointer state) {
         //	-------------------------------------------------------------------------
         //        mout << "collide2...\n";
         if(object < 0 || object >= nelem(on2ph)){
-        	fprint(2, "on %d >= %d\n", object, nelem(on2ph));
+        	TRACE("generic_delete_object: on2ph overflow %d>%d", object, nelem(on2ph));
         	abort();
         }
         EDMS_off_playfield(on2ph[object]);
@@ -162,8 +162,8 @@ bool object_check_hash(int32_t object, int32_t hx, int32_t hy) {
 
     EDMS_Argblock_Pointer state = (A_is_active && no_no_not_me[object]) ? A : S;
 
-    int32_t my_hx = fix_int(fix_mul(hash_scale, state[object][DOF_X][0]));
-    int32_t my_hy = fix_int(fix_mul(hash_scale, state[object][DOF_Y][0]));
+    int32_t my_hx = Q_to_int(Q_mul(hash_scale, state[object][DOF_X][0]));
+    int32_t my_hy = Q_to_int(Q_mul(hash_scale, state[object][DOF_Y][0]));
 
     return (abs(my_hx - hx) <= 1 && abs(my_hy - hy) <= 1);
 }
@@ -176,9 +176,9 @@ bool object_check_hash(int32_t object, int32_t hx, int32_t hy) {
 void reset_collisions(int32_t object) {
     //	Are we really inactivated?
     //	--------------------------
-    if (I[object][IDOF_COLLIDE] > fix_make(-1,0)) {
-        I[fix_int(I[object][IDOF_COLLIDE])][IDOF_COLLIDE] = fix_make(-1,0);
-        I[object][IDOF_COLLIDE] = fix_make(-1,0);
+    if (I[object][IDOF_COLLIDE].val > Q_as_int(-1).val) {
+        I[Q_to_int(I[object][IDOF_COLLIDE])][IDOF_COLLIDE] = Q_as_int(-1);
+        I[object][IDOF_COLLIDE] = Q_as_int(-1);
     }
 }
 
@@ -187,12 +187,12 @@ void reset_collisions(int32_t object) {
 void exclude_from_collisions(int32_t guy_1, int32_t guy_2) {
     //	Are we ready?
     //	-------------
-    if ((I[guy_1][IDOF_COLLIDE] > fix_make(-1,0)) || (I[guy_2][IDOF_COLLIDE] > fix_make(-1,0))) {
+    if ((I[guy_1][IDOF_COLLIDE].val > Q_as_int(-1).val) || (I[guy_2][IDOF_COLLIDE].val > Q_as_int(-1).val)) {
         reset_collisions(guy_1);
         reset_collisions(guy_2);
     }
-    I[guy_1][IDOF_COLLIDE] = guy_2;
-    I[guy_2][IDOF_COLLIDE] = guy_1;
+    I[guy_1][IDOF_COLLIDE] = Q_as_int(guy_2);
+    I[guy_2][IDOF_COLLIDE] = Q_as_int(guy_1);
 
     // Viola!
 }
@@ -206,7 +206,7 @@ uint32_t test_bitmask; // used to be clean_test_bit
 //	=================================================================
 int32_t are_you_there(int32_t object) {
     return (test_bitmask =
-                data[fix_int(fix_mul(hash_scale, A[object][DOF_X][0]))][fix_int(fix_mul(hash_scale, A[object][DOF_Y][0]))]);
+                data[Q_to_int(Q_mul(hash_scale, A[object][DOF_X][0]))][Q_to_int(Q_mul(hash_scale, A[object][DOF_Y][0]))]);
 }
 
 //////////////////////////////

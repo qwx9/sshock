@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	Here is the bridge routine for maintenance and upkeep of the FTL models...
 //	==========================================================================
 
-#include "fix.h"
+#include "fixpp.h"
 #include "edms_int.h"
 
 //#ifdef EDMS_SHIPPABLE
@@ -37,7 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	Data...
 //	=======
 extern EDMS_Argblock_Pointer A;
-extern fix S[MAX_OBJ][7][4], I[MAX_OBJ][DOF_MAX];
+extern Q S[MAX_OBJ][7][4], I[MAX_OBJ][DOF_MAX];
 
 //	Structs...
 //	==========
@@ -56,20 +56,20 @@ physics_handle EDMS_beam_weapon(fix X[3], fix D[3], fix kick, fix knock, fix siz
     physics_handle ph = -1;
     int32_t EXCLUDE = 0;
 
-    fix DD[3];
+    Q DD[3];
 
-    fix Kick, Knock, Size, Range;
+    Q Kick, Knock, Size, Range;
 
-    fix *XX = (fix *)&X[0];
+    Q *XX = (Q *)&X[0];
 
-    DD[0] = D[0];
-    DD[1] = D[1];
-    DD[2] = D[2];
+    DD[0] = Q_as_fix(D[0]);
+    DD[1] = Q_as_fix(D[1]);
+    DD[2] = Q_as_fix(D[2]);
 
-    Kick = kick;
-    Knock = knock;
-    Size = size;
-    Range = range;
+    Kick = Q_as_fix(kick);
+    Knock = Q_as_fix(knock);
+    Size = Q_as_fix(size);
+    Range = Q_as_fix(range);
 
     //	Is this a valid physics handle???
     //	=================================
@@ -79,15 +79,13 @@ physics_handle EDMS_beam_weapon(fix X[3], fix D[3], fix kick, fix knock, fix siz
 
     //		Do it...
     //		========
-    ph = EDMS_cast_projectile(X, D, kick, knock, size, range, EXCLUDE, shooter);
+    ph = EDMS_cast_projectile(XX, DD, Kick, Knock, Size, Range, EXCLUDE, shooter);
 
     //      	Convert back to the goofbakk fixpoint system...
     //		-----------------------------------------------
-    /*
-    X[0] = XX[0];
-    X[1] = XX[1];
-    X[2] = XX[2];
-    */
+    X[0] = Q_to_fix(XX[0]);
+    X[1] = Q_to_fix(XX[1]);
+    X[2] = Q_to_fix(XX[2]);
 
     //	Return a physics handle...
     //	==========================

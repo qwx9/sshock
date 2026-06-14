@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	Seamus, Nov 2, 1993...
 //	========================
 
+//#include <iostream>
 ////#include <conio.h>
 #include "edms_int.h" //This is the object type library. It is universal.
 #include "idof.h"
@@ -36,9 +37,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ss_flet.h"
 
-fix EDMS_CYBER_FLOW1X = fix_make(100, 0);
-fix EDMS_CYBER_FLOW2X = fix_make(200, 0);
-fix EDMS_CYBER_FLOW3X = fix_make(270, 0);
+Q EDMS_CYBER_FLOW1X = Q_from_int(100);
+Q EDMS_CYBER_FLOW2X = Q_from_int(200);
+Q EDMS_CYBER_FLOW3X = Q_from_int(270);
 
 int32_t EDMS_BCD = 0;
 bool pelvis_is_climbing = false;
@@ -49,16 +50,16 @@ fix hacked_head_bob_2 = fix_make(1, 0);
 
 //}
 
-#define EDMS_DIV_ZERO_TOLERANCE fix_from_float(.0005)
+#define EDMS_DIV_ZERO_TOLERANCE Q_as_double(.0005)
 
 //      For lean-o-meter...
 //      -------------------
-static fix V_ceiling[3], V_floor[3], V_wall[3];
+static Q V_ceiling[3], V_floor[3], V_wall[3];
 
 //	State information and utilities...
 //	==================================
 extern EDMS_Argblock_Pointer A;
-extern fix S[MAX_OBJ][7][4], I[MAX_OBJ][DOF_MAX];
+extern Q S[MAX_OBJ][7][4], I[MAX_OBJ][DOF_MAX];
 extern int32_t no_no_not_me[MAX_OBJ];
 
 //	Functions...
@@ -69,28 +70,28 @@ extern void (*idof_functions[MAX_OBJ])(int32_t), (*equation_of_motion[MAX_OBJ][7
 //	-----------------------
 extern void (*EDMS_wall_contact)(physics_handle caller);
 
-static fix fix_one = fix_from_float(1.), point_five = fix_from_float(.5), two_pi = fix_from_float(6.283185);
+static Q fix_one = Q_from_double(1.), point_five = Q_from_double(.5), two_pi = Q_from_double(6.283185);
 
 //	Just a thought...
 //	=================
-static fix object0, object1, object2, object3, object4, // Howzat??
+static Q object0, object1, object2, object3, object4, // Howzat??
     object5, object6, object7, object8, object9, object10, object11, object12, object13, object14, object15, object16,
     object17, object18, object19, object20, object21, object22;
 
-static fix sin_alpha = 0, cos_alpha = 0, sin_beta = 0, cos_beta = 0, sin_gamma = 0, cos_gamma = 0, lp_x = 0, lp_y = 0,
-         lp_z = 0, Fmxm = 0, Fmym = 0, Fmzm = 0, T_beta = 0, T_gamma = 0;
+static Q sin_alpha = Q_from_int(0), cos_alpha = Q_from_int(0), sin_beta = Q_from_int(0), cos_beta = Q_from_int(0), sin_gamma = Q_from_int(0), cos_gamma = Q_from_int(0), lp_x = Q_from_int(0), lp_y = Q_from_int(0),
+         lp_z = Q_from_int(0), Fmxm = Q_from_int(0), Fmym = Q_from_int(0), Fmzm = Q_from_int(0), T_beta = Q_from_int(0), T_gamma = Q_from_int(0);
 
-static fix io17 = 0, io18 = 0, io19 = 0;
+static Q io17 = Q_from_int(0), io18 = Q_from_int(0), io19 = Q_from_int(0);
 
-static fix checker = 0, wall_check = 0;
+static Q checker = Q_from_int(0), wall_check = Q_from_int(0);
 
 //      Global for head information...
 //      ==============================
-fix head_delta[3], head_kappa[3], body_delta[3], body_kappa[3];
+Q head_delta[3], head_kappa[3], body_delta[3], body_kappa[3];
 
 //	Storage for running feel...
 //	===========================
-fix bob_arg = 0;
+Q bob_arg = Q_from_int(0);
 
 #pragma require_prototypes off
 
@@ -99,8 +100,8 @@ fix bob_arg = 0;
 void pelvis_idof(int32_t object) {
 
     // attemp to speed up something
-    fix *i_object = I[object];
-    fix temp_Q;
+    Q *i_object = I[object];
+    Q temp_Q;
 
     //      To do the head motion, collisions, and climbing...
     //      --------------------------------------------------
@@ -108,7 +109,7 @@ void pelvis_idof(int32_t object) {
 
     //	Call me instead of having special code everywhere...
     //	====================================================
-    extern void shall_we_dance(int32_t object, fix *result0, fix *result1, fix *result2);
+    extern void shall_we_dance(int32_t object, Q *result0, Q *result1, Q *result2);
 
     pelvis_is_climbing = false;
 
@@ -116,160 +117,158 @@ void pelvis_idof(int32_t object) {
                    A[object][1][0], A[object][2][0], i_object[22],
 		   on2ph[object], TFD_FULL);
 
-    V_ceiling[0] = terrain_info.cx; // Put it in...
-    V_ceiling[1] = terrain_info.cy;
-    V_ceiling[2] = terrain_info.cz;
+    V_ceiling[0] = Q_as_fix(terrain_info.cx); // Put it in...
+    V_ceiling[1] = Q_as_fix(terrain_info.cy);
+    V_ceiling[2] = Q_as_fix(terrain_info.cz);
 
-    V_floor[0] = terrain_info.fx;
-    V_floor[1] = terrain_info.fy;
-    V_floor[2] = terrain_info.fz;
+    V_floor[0] = Q_as_fix(terrain_info.fx);
+    V_floor[1] = Q_as_fix(terrain_info.fy);
+    V_floor[2] = Q_as_fix(terrain_info.fz);
 
-    fix mag = fix_mul(i_object[18], i_object[18]) + fix_mul(i_object[19], i_object[19]);
-    if (mag < fix_from_float(.1)
-    && fix_abs(V_floor[0]) < fix_mul(fix_from_float(.05), i_object[22])
-    && fix_abs(V_floor[1]) < fix_mul(fix_from_float(.05), i_object[22])) {
-        V_floor[1] = 0; // Turns on SlopeStand(tm)...
-        V_floor[0] = 0;
+    Q mag = Q_add(Q_mul(i_object[18], i_object[18]), Q_mul(i_object[19], i_object[19]));
+    if (mag.val < Q_as_double(.1).val && Q_abs(V_floor[0]).val < Q_mul(Q_as_double(.05), i_object[22]).val && Q_abs(V_floor[1]).val < Q_mul(Q_as_double(.05), i_object[22]).val) {
+        V_floor[1].val = 0; // Turns on SlopeStand(tm)...
+        V_floor[0].val = 0;
     }
 
-    V_wall[0] = terrain_info.wx;
-    V_wall[1] = terrain_info.wy;
-    V_wall[2] = terrain_info.wz;
+    V_wall[0] = Q_as_fix(terrain_info.wx);
+    V_wall[1] = Q_as_fix(terrain_info.wy);
+    V_wall[2] = Q_as_fix(terrain_info.wz);
 
-    object0 = V_wall[0] + V_floor[0] + V_ceiling[0]; // V_raw...
-    object1 = V_wall[1] + V_floor[1] + V_ceiling[1];
-    object2 = V_wall[2] + V_floor[2] + V_ceiling[2];
+    object0.val = V_wall[0].val + V_floor[0].val + V_ceiling[0].val; // V_raw...
+    object1.val = V_wall[1].val + V_floor[1].val + V_ceiling[1].val;
+    object2.val = V_wall[2].val + V_floor[2].val + V_ceiling[2].val;
 
     //		checker = sqrt(object0*object0 + object1*object1 + object2*object2);
-    checker = fix_sqrt(fix_mul(object0, object0) + fix_mul(object1, object1) +
-                           fix_mul(object2, object2));
+    checker.val = fix_sqrt(fix_mul(object0.val, object0.val) + fix_mul(object1.val, object1.val) +
+                           fix_mul(object2.val, object2.val));
 
-    if (checker > EDMS_DIV_ZERO_TOLERANCE) { // To get primitive...
-        object3 = fix_div(fix_one, checker);
-        object9 = fix_make(1, 0); // Are we in the rub???
+    if (checker.val > EDMS_DIV_ZERO_TOLERANCE.val) { // To get primitive...
+        object3.val = fix_div(fix_one.val, checker.val);
+        object9.val = fix_make(1, 0); // Are we in the rub???
     } else
-        checker = object9 = 0;
+        checker.val = object9.val = 0;
 
-    if (i_object[10] == 2)
-        object9 = fix_make(1, 0); // Cyberspace...
+    if (i_object[10].val == Q_as_int(2).val)
+        object9.val = fix_make(1, 0); // Cyberspace...
 
-    object4 = fix_mul(object3, object0); // The primitive V_n...
-    object5 = fix_mul(object3, object1);
-    object6 = fix_mul(object3, object2);
+    object4.val = fix_mul(object3.val, object0.val); // The primitive V_n...
+    object5.val = fix_mul(object3.val, object1.val);
+    object6.val = fix_mul(object3.val, object2.val);
 
-    object7 = fix_mul(i_object[21],
-                          (fix_mul(A[object][0][1], object4) // Delta_magnitude...
-                           + fix_mul(A[object][1][1], object5) + fix_mul(A[object][2][1], object6)));
+    object7.val = fix_mul(i_object[21].val,
+                          (fix_mul(A[object][0][1].val, object4.val) // Delta_magnitude...
+                           + fix_mul(A[object][1][1].val, object5.val) + fix_mul(A[object][2][1].val, object6.val)));
 
-    object8 = i_object[20];
+    object8.val = i_object[20].val;
 
-    if (i_object[10] > 0) {
-        object7 = fix_mul(object7, fix_make(2, 0));
-        object8 = fix_mul(object8, fix_make(2, 0));
+    if (i_object[10].val > Q_as_int(0).val) {
+        object7.val = fix_mul(object7.val, fix_make(2, 0));
+        object8.val = fix_mul(object8.val, fix_make(2, 0));
     }
 
-    object4 = fix_mul(object7, object4); // Delta...
-    object5 = fix_mul(object7, object5);
-    object6 = fix_mul(object7, object6);
+    object4.val = fix_mul(object7.val, object4.val); // Delta...
+    object5.val = fix_mul(object7.val, object5.val);
+    object6.val = fix_mul(object7.val, object6.val);
 
     //		CONTROL...
     //		==========
 
     //		Head motion for fucking hacking...
     //		----------------------------------
-    fix x_ease = A[object][0][0] - S[object][0][0];
-    fix y_ease = A[object][1][0] - S[object][1][0];
-    fix bob_delta = fix_sqrt(fix_mul(x_ease, x_ease) + fix_mul(y_ease, y_ease));
-    fix bob_speed = fix_sqrt(fix_mul(A[object][0][1], A[object][0][1]) + fix_mul(A[object][1][1], A[object][1][1]));
+    Q x_ease = Q_sub(A[object][0][0], S[object][0][0]);
+    Q y_ease = Q_sub(A[object][1][0], S[object][1][0]);
+    Q bob_delta = Q_sqrt(Q_add(Q_mul(x_ease, x_ease), Q_mul(y_ease, y_ease)));
+    Q bob_speed = Q_sqrt(Q_add(Q_mul(A[object][0][1], A[object][0][1]), Q_mul(A[object][1][1], A[object][1][1])));
 
-    bob_arg += fix_div(fix_mul(fix_make(5, 0), bob_delta), (bob_speed + fix_make(1, 0)));
+    bob_arg.val += fix_div(fix_mul(fix_make(5, 0), bob_delta.val), (bob_speed.val + fix_make(1, 0)));
 
-    if (bob_arg > two_pi)
-        bob_arg = bob_arg - two_pi;
+    if (bob_arg.val > two_pi.val)
+        bob_arg.val = bob_arg.val - two_pi.val;
 
-    fix bob_fac = fix_mul(bob_speed, fix_abs(fix_sin(fix_to_fang(bob_arg))));
+    Q bob_fac = Q_mul(bob_speed, Q_abs(Q_sin(bob_arg)));
 
-#define EDMS_HEAD_BOB_HEIGHT 2
+#define EDMS_HEAD_BOB_HEIGHT Q_as_int(2)
 
-    if (bob_fac > EDMS_HEAD_BOB_HEIGHT)
+    if (bob_fac.val > EDMS_HEAD_BOB_HEIGHT.val)
         bob_fac = EDMS_HEAD_BOB_HEIGHT;
 
-    bob_fac = fix_make(EDMS_HEAD_BOB_HEIGHT, 0) - fix_mul(0x09999, bob_fac); // 0x9999 = .6
+    bob_fac.val = fix_make(Q_to_int(EDMS_HEAD_BOB_HEIGHT), 0) - fix_mul(0x09999, bob_fac.val); // 0x9999 = .6
 
-    if (i_object[10] > 0)
-        bob_fac = 1;
+    if (i_object[10].val > Q_as_int(0).val)
+        bob_fac = Q_as_int(1);
 
-    io18 = fix_mul(i_object[18], bob_fac);
-    io19 = fix_mul(i_object[19], bob_fac);
-    io17 = i_object[17];
+    io18.val = fix_mul(i_object[18].val, bob_fac.val);
+    io19.val = fix_mul(i_object[19].val, bob_fac.val);
+    io17.val = i_object[17].val;
 
     //		Let's not power through the walls anymore...
     //		--------------------------------------------
-    io18 *= (V_wall[0] == 0);
-    io19 *= (V_wall[1] == 0);
-    io17 *= (V_ceiling[2] == 0);
-    if ((V_floor[2] == 0) && (io17 > 0))
-        io17 = 0;
+    io18 = Q_mul(io18, Q_as_int(V_wall[0].val == 0));
+    io19 = Q_mul(io19, Q_as_int(V_wall[1].val == 0));
+    io17 = Q_mul(io17, Q_as_int(V_ceiling[2].val == 0));
+    if ((V_floor[2].val == 0) && (io17.val > 0))
+        io17.val = 0;
 
     //		Cyberama...
     //		-----------
-    if ((object9 == 0) && (io17 >= 0) && (i_object[25] > 0x08000)) // 0x08000 = .5
-        io18 = io19 = io17 = 0;
+    if ((object9.val == 0) && (io17.val >= 0) && (i_object[25].val > 0x08000)) // 0x08000 = .5
+        io18.val = io19.val = io17.val = 0;
 
     //      Here are collisions with other objects...
     //      =========================================
     shall_we_dance(object, &object10, &object11, &object12);
 
-    object10 = fix_mul(object10, i_object[20]); // More general than it was...
-    object11 = fix_mul(object11, i_object[20]);
-    object12 = fix_mul(object12, i_object[20]);
+    object10.val = fix_mul(object10.val, i_object[20].val); // More general than it was...
+    object11.val = fix_mul(object11.val, i_object[20].val);
+    object12.val = fix_mul(object12.val, i_object[20].val);
 
     //	Let's not power through the walls anymore...
     //	--------------------------------------------
-    //  	object10 *= ( (V_wall[0]< 0x028f) && (V_wall[0]>-0x028f));	// 0x028f = 0.01
-    if (!((V_wall[0] < 0x028f) && (V_wall[0] > -0x028f)))
-        object10 = 0;
-    //  	object11 *= ( (V_wall[1]<0x028f) && (V_wall[1]>-0x028f));
-    if (!((V_wall[1] < 0x028f) && (V_wall[1] > -0x028f)))
-        object11 = 0;
+    //  	object10 *= ( (V_wall[0].val< 0x028f) && (V_wall[0].val>-0x028f));	// 0x028f = 0.01
+    if (!((V_wall[0].val < 0x028f) && (V_wall[0].val > -0x028f)))
+        object10.val = 0;
+    //  	object11 *= ( (V_wall[1].val<0x028f) && (V_wall[1].val>-0x028f));
+    if (!((V_wall[1].val < 0x028f) && (V_wall[1].val > -0x028f)))
+        object11.val = 0;
 
     //	Back to business...
     //	===================
-    fix_sincos(fix_to_fang(A[object][3][0]), &sin_alpha, &cos_alpha); // Positive for local...
-    fix_sincos(fix_to_fang(A[object][4][0]), &sin_beta, &cos_beta);
-    fix_sincos(fix_to_fang(A[object][5][0]), &sin_gamma, &cos_gamma);
+    Q_sincos(A[object][3][0], &sin_alpha, &cos_alpha); // Positive for local...
+    Q_sincos(A[object][4][0], &sin_beta, &cos_beta);
+    Q_sincos(A[object][5][0], &sin_gamma, &cos_gamma);
 
     //      The head...
     //      ===========
     int32_t edms_ss_bcd_flags_save = ss_edms_bcd_flags; // Save off info for after head call...
     int32_t edms_ss_param_save = ss_edms_bcd_param;
 
-    fix head_check_x = 0;
-    fix head_check_y = 0;
+    Q head_check_x = Q_as_int(0);
+    Q head_check_y = Q_as_int(0);
 
     get_head_of_death(object);
 
     if (terrain_info.wx == 0)
-        head_check_x = FIX_UNIT;
+        head_check_x = Q_as_int(1);
     if (terrain_info.wy == 0)
-        head_check_y = FIX_UNIT;
+        head_check_y = Q_as_int(1);
 
     //     	io18 *= head_check_x;
     //      io19 *= head_check_y;
 
     edms_ss_head_bcd_flags = ss_edms_bcd_flags;
-    if (terrain_info.cz != 0 || head_kappa[2] != 0)
-        i_object[17] = io17 = 0;
+    if (terrain_info.cz != 0 || head_kappa[2].val != Q_as_int(0).val)
+        i_object[17] = io17 = Q_as_int(0);
 
     //      The Body...
     //      ===========
     get_body_of_death(object);
     //        io18 *= ( body_kappa[0] == 0 );
     //        io19 *= ( body_kappa[1] == 0 );
-    if (body_kappa[0] != 0)
-        io18 = 0;
-    if (body_kappa[1] != 0)
-        io19 = 0;
+    if (body_kappa[0].val != 0)
+        io18.val = 0;
+    if (body_kappa[1].val != 0)
+        io19.val = 0;
 
     ss_edms_bcd_flags = edms_ss_bcd_flags_save;
     ss_edms_bcd_param = edms_ss_param_save;
@@ -281,49 +280,48 @@ void pelvis_idof(int32_t object) {
     //      Fateful attempt(Jump)...
     //      ========================
     //        object18 = 800*(io17>0)*(object9>0)*( io17 - A[object][2][1] ); //Jump...
-    object18 = 0;
-    if (io17 > 0 && object9 > 0)
-        object18 = fix_mul(fix_make(800, 0), (io17 - A[object][2][1]));
+    object18.val = 0;
+    if (io17.val > 0 && object9.val > 0)
+        object18.val = fix_mul(fix_make(800, 0), (io17.val - A[object][2][1].val));
 
     //            Jump jets...
     //            ------------
-    if ((io17 < 0) && (terrain_info.cz == 0))
-        object18 = 800 * (-io17 - A[object][2][1]); // Jump jets...
+    if ((io17.val < Q_as_int(0).val) && (terrain_info.cz == 0))
+        object18 = Q_mul(Q_as_int(800), Q_sub(Q_neg(io17), A[object][2][1])); // Jump jets...
 
     //      Climbing overriden with repulsors...
     //      ====================================
     if (ss_edms_bcd_flags & SS_BCD_REPUL_ON) {
 
         //              Get the speed...
-        fix repulsor_speed = fix_make(21, 0);
+        Q repulsor_speed = Q_as_int(21);
         if ((ss_edms_bcd_flags & SS_BCD_REPUL_SPD) == SS_BCD_REPUL_NORM)
-            repulsor_speed = fix_make(7, 0);
+            repulsor_speed = Q_as_int(7);
 
         //              Assume we're going up, unless...
         if ((ss_edms_bcd_flags & SS_BCD_REPUL_TYPE) == SS_BCD_REPUL_DOWN)
-            repulsor_speed = fix_mul(repulsor_speed, fix_from_float(-.5));
+            repulsor_speed = Q_mul(repulsor_speed, Q_as_double(-.5));
 
         //              The parameter should be the desired height....
-        fix repul_height;
-        repul_height = ss_edms_bcd_param;
+        Q repul_height = Q_as_fix(ss_edms_bcd_param);
 
-        fix nearness_or_something = repul_height - A[object][2][0];
-        if (fix_abs(nearness_or_something) <= fix_from_float(.333))
-            repulsor_speed = fix_mul(repulsor_speed, fix_mul(fix_make(3,0) , nearness_or_something));
+        Q nearness_or_something = Q_sub(repul_height, A[object][2][0]);
+        if (Q_abs(nearness_or_something).val <= Q_as_double(.333).val)
+            repulsor_speed = Q_mul(repulsor_speed, Q_mul(Q_as_int(3), nearness_or_something));
 
         io17 = repulsor_speed;
-        if ((fix_abs(A[object][2][1] - i_object[17]) > .6 * i_object[17]) && (terrain_info.cz == 0) &&
-            (repulsor_speed >= 0))
-            io17 += fix_mul(fix_make(50, 0), i_object[17]);
+        if ((Q_abs(Q_sub(A[object][2][1], i_object[17])).val > Q_mul(Q_as_double(.6), i_object[17]).val) && (terrain_info.cz == 0) &&
+            (repulsor_speed.val >= Q_as_int(0).val))
+            io17 = Q_add(io17, Q_mul(Q_as_int(50), i_object[17]));
 
-        object18 = fix_mul(i_object[26], (io17 - A[object][2][1]) + i_object[25]);
+        object18 = Q_mul(i_object[26], Q_add(Q_sub(io17, A[object][2][1]), i_object[25]));
 
-        if (fix_abs(io18) < fix_from_float(.01))
-            io18 = fix_mul(i_object[18], V_wall[0] == 0);
-        if (fix_abs(io19) < fix_from_float(.01))
-            io19 = fix_mul(i_object[19], V_wall[1] == 0);
+        if (Q_abs(io18).val < Q_as_double(.01).val)
+            io18 = Q_mul(i_object[18], Q_as_int(V_wall[0].val == Q_as_int(0).val));
+        if (Q_abs(io19).val < Q_as_double(.01).val)
+            io19 = Q_mul(i_object[19], Q_as_int(V_wall[1].val == Q_as_int(0).val));
 
-        object9 = FIX_UNIT;
+        object9 = Q_as_int(1);
     }
 
     //      Do climbing...
@@ -332,111 +330,111 @@ void pelvis_idof(int32_t object) {
 
     //	Crouch torso bend thang and boogie boogie boogie...
     //	===================================================
-    if ((i_object[7] > 0.0) || (i_object[0] < i_object[6]))
-        i_object[0] = fix_mul(i_object[6], FIX_UNIT - fix_mul(fix_from_float(.636), fix_abs(S[object][4][0]))); // Crouch...
+    if ((i_object[7].val > Q_as_double(0.0).val) || (i_object[0].val < i_object[6].val))
+        i_object[0] = Q_mul(i_object[6], Q_sub(Q_as_int(1), Q_mul(Q_as_double(.636), Q_abs(S[object][4][0])))); // Crouch...
     else
         i_object[0] = i_object[6];
 
     //	Cyberspace for real...
     //	======================
-    fix drug_addict0 = fix_mul(i_object[IDOF_PELVIS_ROLL_DRAG], A[object][0][1]);
-    fix drug_addict1 = fix_mul(i_object[IDOF_PELVIS_ROLL_DRAG], A[object][1][1]);
-    if (fix_abs(io18) == 0 && i_object[10] > 0)
-        drug_addict0 = fix_mul(drug_addict0, fix_from_float(0.2)); // Skateware drag reduction...
-    if (abs(io19) == 0 && i_object[10] > 0)
-        drug_addict1 = fix_mul(drug_addict1, fix_from_float(0.2));
+    Q drug_addict0 = Q_mul(i_object[IDOF_PELVIS_ROLL_DRAG], A[object][0][1]);
+    Q drug_addict1 = Q_mul(i_object[IDOF_PELVIS_ROLL_DRAG], A[object][1][1]);
+    if (Q_abs(io18).val == Q_as_int(0).val && i_object[10].val > Q_as_int(0).val)
+        drug_addict0 = Q_mul(drug_addict0, Q_as_double(.2)); // Skateware drag reduction...
+    if (Q_abs(io19).val == Q_as_int(0).val && i_object[10].val > Q_as_int(0).val)
+        drug_addict1 = Q_mul(drug_addict1, Q_as_double(.2));
 
     //      Pelvis specifics...
     //      ===================
-    object20 = fix_mul(object8, object0) - object4 + head_kappa[0] - head_delta[0] + io18 + body_kappa[0] -
-               body_delta[0] // F_mxyz...
-               + fix_mul(object9, -drug_addict0) + object10;
+    object20 = Q_add(Q_add(Q_sub(Q_add(Q_add(Q_sub(Q_add(Q_sub(Q_mul(object8, object0), object4), head_kappa[0]), head_delta[0]), io18), body_kappa[0]),
+               body_delta[0]), // F_mxyz...
+               Q_mul(object9, Q_neg(drug_addict0))), object10);
 
-    object21 = fix_mul(object8, object1) - object5 + head_kappa[1] - head_delta[1] + io19 + body_kappa[1] - body_delta[1] +
-               fix_mul(object9, -drug_addict1) + object11;
+    object21 = Q_add(Q_add(Q_sub(Q_add(Q_add(Q_sub(Q_add(Q_sub(Q_mul(object8, object1), object5), head_kappa[1]), head_delta[1]), io19), body_kappa[1]), body_delta[1]),
+               Q_mul(object9, Q_neg(drug_addict1))), object11);
 
-    object22 = fix_mul(object8, object2) - fix_mul(object18 == 0, object6) + head_kappa[2] - head_delta[2] + object18 +
-               body_kappa[2] - body_delta[2] + fix_mul(object9, fix_mul(-i_object[23], A[object][2][1])) + object12;
+    object22 = Q_add(Q_add(Q_sub(Q_add(Q_add(Q_sub(Q_add(Q_mul(Q_sub(Q_mul(object8, object2), Q_as_int(object18.val == Q_as_int(0).val)), object6), head_kappa[2]), head_delta[2]), object18),
+               body_kappa[2]), body_delta[2]), Q_mul(object9, Q_mul(Q_neg(i_object[23]), A[object][2][1]))), object12);
 
     //	Damage control...
     //	=================
-    fix dam0 = fix_mul(object8, object0) - object4 + head_kappa[0] - head_delta[0];
-    fix dam1 = fix_mul(object8, object1) - object5 + head_kappa[1] - head_delta[1];
-    fix dam2 = fix_mul(object8, object2) - fix_mul(object18 == 0, object6) + head_kappa[2] - head_delta[2];
+    Q dam0 = Q_sub(Q_add(Q_sub(Q_mul(object8, object0), object4), head_kappa[0]), head_delta[0]);
+    Q dam1 = Q_sub(Q_add(Q_sub(Q_mul(object8, object1), object5), head_kappa[1]), head_delta[1]);
+    Q dam2 = Q_sub(Q_add(Q_sub(Q_mul(object8, object2), Q_mul(Q_as_int(object18.val == Q_as_int(0).val), object6)), head_kappa[2]), head_delta[2]);
 
-    i_object[14] = abs(dam0) + abs(dam1) + abs(dam2) - fix_mul(fix_mul(fix_make(2,0), i_object[26]), i_object[25]); // Damage??
-    if (i_object[14] > 0)
-        i_object[14] = fix_mul(fix_mul(i_object[14], i_object[IDOF_PELVIS_MASS_RECIP]), (io17 < fix_from_float(.5)));
+    i_object[14] = Q_sub(Q_add(Q_add(Q_abs(dam0), Q_abs(dam1)), Q_abs(dam2)), Q_mul(Q_mul(Q_as_int(2), i_object[26]), i_object[25])); // Damage??
+    if (i_object[14].val > Q_as_int(0).val)
+        i_object[14] = Q_mul(i_object[14], Q_mul(i_object[IDOF_PELVIS_MASS_RECIP], Q_as_int((io17.val < Q_as_double(.5).val))));
     else
-        i_object[14] = 0;
+        i_object[14] = Q_as_int(0);
 
     //	Is there a projectile hit?
     //	==========================
-    if (i_object[35] > 0) {
+    if (i_object[35].val > Q_as_int(0).val) {
 
         //		Let's not power through the walls anymore...
         //		--------------------------------------------
-        i_object[32] = fix_mul(i_object[32], ((V_wall[0] < 0.01) && (V_wall[0] > -0.01)));
-        i_object[33] = fix_mul(i_object[33], ((V_wall[1] < 0.01) && (V_wall[1] > -0.01)));
-        i_object[34] = fix_mul(i_object[34], ((V_ceiling[2] < 0.01) && (V_ceiling[2] > -0.01)));
+        i_object[32] = Q_mul(i_object[32], Q_as_int((V_wall[0].val < Q_as_double(0.01).val) && (V_wall[0].val > Q_as_double(-0.01).val)));
+        i_object[33] = Q_mul(i_object[33], Q_as_int((V_wall[1].val < Q_as_double(0.01).val) && (V_wall[1].val > Q_as_double(-0.01).val)));
+        i_object[34] = Q_mul(i_object[34], Q_as_int((V_ceiling[2].val < Q_as_double(0.01).val) && (V_ceiling[2].val > Q_as_double(-0.01).val)));
 
-        object20 += i_object[32];
-        object21 += i_object[33];
-        object22 += i_object[34];
+        object20 = Q_add(object20, i_object[32]);
+        object21 = Q_add(object21, i_object[33]);
+        object22 = Q_add(object22, i_object[34]);
 
-        i_object[35] = 0;
-        i_object[32] = 0;
-        i_object[33] = 0;
-        i_object[34] = 0;
+        i_object[35] = Q_as_int(0);
+        i_object[32] = Q_as_int(0);
+        i_object[33] = Q_as_int(0);
+        i_object[34] = Q_as_int(0);
     }
 
-    Fmxm = fix_mul(object20, cos_alpha) + fix_mul(object21, sin_alpha); // Locals...
-    Fmym = fix_mul(-object20, sin_alpha) + fix_mul(object21, cos_alpha);
+    Fmxm = Q_add(Q_mul(object20, cos_alpha), Q_mul(object21, sin_alpha)); // Locals...
+    Fmym = Q_add(Q_mul(Q_neg(object20), sin_alpha), Q_mul(object21, cos_alpha));
 
-    lp_z = fix_mul(fix_mul(fix_mul(fix_from_float(-.1), i_object[0]), cos_beta), cos_gamma);
+    lp_z = Q_mul(Q_mul(Q_mul(Q_as_double(-.1), i_object[0]), cos_beta), cos_gamma);
 
-    fix Head_tau_beta = fix_mul(fix_mul(fix_mul(fix_from_float(-.1), i_object[0]), sin_beta), head_kappa[2] - head_delta[2]),
-      Head_tau_gamma = fix_mul(fix_mul(fix_mul(fix_from_float(-.1), i_object[0]), sin_gamma), head_kappa[2] - head_delta[2]);
+    Q Head_tau_beta = Q_mul(Q_mul(Q_mul(Q_as_double(-.1), i_object[0]), sin_beta), Q_sub(head_kappa[2], head_delta[2])),
+      Head_tau_gamma = Q_mul(Q_mul(Q_mul(Q_as_double(-.1), i_object[0]), sin_gamma), Q_sub(head_kappa[2], head_delta[2]));
 
-    if (((V_wall[1] != 0) && (head_check_y == 0)) || ((V_wall[0] != 0) && (head_check_x == 0)))
-        i_object[15] = 0;
+    if (((V_wall[1].val != Q_as_int(0).val) && (head_check_y.val == Q_as_int(0).val)) || ((V_wall[0].val != Q_as_int(0).val) && (head_check_x.val == Q_as_int(0).val)))
+        i_object[15] = Q_as_int(0);
 
-    T_beta = -fix_mul(lp_z, Fmxm) + i_object[7] + Head_tau_beta; // Actual torques...
-    T_gamma = -fix_mul(-Fmym, lp_z) + fix_mul(fix_mul(fix_from_float(.04), i_object[16]), +Head_tau_gamma);
+    T_beta = Q_add(Q_add(Q_neg(Q_mul(lp_z, Fmxm)), i_object[7]), Head_tau_beta); // Actual torques...
+    T_gamma = Q_add(Q_neg(Q_mul(Q_neg(Fmym), lp_z)), Q_mul(Q_mul(Q_as_double(.04), i_object[16]), Head_tau_gamma));
 
     //	Kickbacks...
     //	============
-    if (fix_abs(i_object[8]) > 0) {
-        T_beta -= fix_mul(cos_alpha, i_object[8]) + fix_mul(sin_alpha, i_object[9]);
-        T_gamma = fix_mul(-sin_alpha, i_object[8]) + fix_mul(cos_alpha, i_object[9]);
+    if (Q_abs(i_object[8]).val > Q_as_int(0).val) {
+        T_beta = Q_sub(T_beta, Q_add(Q_mul(cos_alpha, i_object[8]), Q_mul(sin_alpha, i_object[9])));
+        T_gamma = Q_add(Q_mul(Q_neg(sin_alpha), i_object[8]), Q_mul(cos_alpha, i_object[9]));
 
-        object20 -= i_object[8]; // For zero g...
-        object21 -= i_object[9];
+        object20 = Q_sub(object20, i_object[8]); // For zero g...
+        object21 = Q_sub(object21, i_object[9]);
 
-        i_object[8] = i_object[9] = 0;
+        i_object[8] = i_object[9] = Q_as_int(0);
     }
 
-    object17 = fix_mul(i_object[28], FIX_UNIT + fix_mul(fix_from_float(1.2), i_object[16] == 0)); // 3 is 2
+    object17 = Q_mul(i_object[28], Q_as_double(1 + 1.2 * (i_object[16].val == Q_as_int(0).val))); // 3 is 2
 
     //	Angular play (citadel) ...
     //	==========================
-    if (S[object][3][0] > two_pi)
-        S[object][3][0] -= two_pi;
-    if (S[object][3][0] < -two_pi)
-        S[object][3][0] += two_pi;
+    if (S[object][3][0].val > two_pi.val)
+        S[object][3][0] = Q_sub(S[object][3][0], two_pi);
+    if (S[object][3][0].val < Q_neg(two_pi).val)
+        S[object][3][0] = Q_add(S[object][3][0], two_pi);
 
     //	Try the equations of motion here for grins...
     //	=============================================
-    S[object][0][2] = fix_mul(i_object[IDOF_PELVIS_MASS_RECIP], object20);
-    S[object][1][2] = fix_mul(i_object[IDOF_PELVIS_MASS_RECIP], object21);
-    S[object][2][2] = fix_mul(i_object[IDOF_PELVIS_MASS_RECIP], object22-i_object[IDOF_PELVIS_GRAVITY]);
-    S[object][3][2] = fix_mul(i_object[IDOF_PELVIS_MOI_RECIP], i_object[16] - fix_mul(object17, A[object][3][1]));
-    S[object][4][2] = fix_mul(i_object[IDOF_PELVIS_MOI_RECIP], (T_beta - fix_mul(fix_mul(fix_from_float(1.5), i_object[1]), A[object][4][0]) /**(1-.5*(i_object[10]==1))*/
-                                      - fix_mul(fix_mul(fix_from_float(.8), i_object[2]), A[object][4][1]) /**(1-.5*(i_object[10]==1))*/));
+    S[object][0][2] = Q_mul(i_object[IDOF_PELVIS_MASS_RECIP], (object20));
+    S[object][1][2] = Q_mul(i_object[IDOF_PELVIS_MASS_RECIP], (object21));
+    S[object][2][2] = Q_sub(Q_mul(i_object[IDOF_PELVIS_MASS_RECIP], (object22)), i_object[IDOF_PELVIS_GRAVITY]);
+    S[object][3][2] = Q_mul(i_object[IDOF_PELVIS_MOI_RECIP], Q_sub(i_object[16], Q_mul(object17, A[object][3][1])));
+    S[object][4][2] = Q_mul(i_object[IDOF_PELVIS_MOI_RECIP], Q_sub(Q_sub(T_beta, Q_mul(Q_mul(Q_as_double(1.5), i_object[1]), A[object][4][0])), /**(1-.5*(i_object[10]==1))*/
+                                      Q_mul(Q_mul(Q_as_double(.8), i_object[2]), A[object][4][1])) /**(1-.5*(i_object[10]==1))*/);
 
-    S[object][5][2] = fix_mul(i_object[IDOF_PELVIS_MOI_RECIP], (T_gamma - fix_mul(i_object[1], A[object][5][0]) /**(1-.5*(i_object[10]==1))*/
-                                      - fix_mul(fix_mul(fix_from_float(.8), i_object[2]), A[object][5][1])    /**(1-.5*(i_object[10]==1))*/
-                                      + i_object[15]));
+    S[object][5][2] = Q_mul(i_object[IDOF_PELVIS_MOI_RECIP], Q_add(Q_sub(Q_sub(T_gamma, Q_mul(i_object[1], A[object][5][0])), /**(1-.5*(i_object[10]==1))*/
+                                      Q_mul(Q_mul(Q_as_double(.8), i_object[2]), A[object][5][1])),    /**(1-.5*(i_object[10]==1))*/
+                                      i_object[15]));
 
     //	That's all, folks...
     //	====================
@@ -445,124 +443,124 @@ void pelvis_idof(int32_t object) {
 //      Here we'll get the head information we all want so badly...
 //      ===========================================================
 void get_head_of_death(int32_t object) {
-    fix *i_object = I[object];
-    fix vec0, vec1, vec2, test, mul, vv0, vv1, vv2, dmag, kmag;
+    Q *i_object = I[object];
+    Q vec0, vec1, vec2, test, mul, vv0, vv1, vv2, dmag, kmag;
 
-    fix offset_x = fix_mul(i_object[0], fix_sin(fix_to_fang(A[object][4][0]))), offset_y = fix_mul(fix_mul(fix_from_float(-1.5), i_object[0]), fix_sin(fix_to_fang(A[object][5][0]))),
-      offset_z = fix_mul(fix_mul(i_object[0], fix_cos(fix_to_fang(A[object][4][0]))), fix_cos(fix_to_fang(A[object][5][0])));
+    Q offset_x = Q_mul(i_object[0], Q_sin(A[object][4][0])), offset_y = Q_mul(Q_mul(Q_as_double(-1.5), i_object[0]), Q_sin(A[object][5][0])),
+      offset_z = Q_mul(Q_mul(i_object[0], Q_cos(A[object][4][0])), Q_cos(A[object][5][0]));
 
-    fix sin_alpha = 0, cos_alpha = 0;
+    Q sin_alpha = Q_as_int(0), cos_alpha = Q_as_int(0);
 
-    fix final_x = 0, final_y = 0;
+    Q final_x = Q_as_int(0), final_y = Q_as_int(0);
 
-    fix_sincos(fix_to_fang(-A[object][3][0]), &sin_alpha, &cos_alpha);
-    final_x = fix_mul(cos_alpha, offset_x) + fix_mul(sin_alpha, offset_y);
-    final_y = fix_mul(-sin_alpha, offset_x) + fix_mul(cos_alpha, offset_y);
+    Q_sincos(Q_neg(A[object][3][0]), &sin_alpha, &cos_alpha);
+    final_x = Q_add(Q_mul(cos_alpha, offset_x), Q_mul(sin_alpha, offset_y));
+    final_y = Q_add(Q_mul(Q_neg(sin_alpha), offset_x), Q_mul(cos_alpha, offset_y));
 
-    indoor_terrain(A[object][0][0] + final_x, A[object][1][0] + final_y, A[object][2][0] + offset_z, fix_mul(fix_from_float(.75), i_object[22]),
-                   fix_make(-1,0) /*on2ph[object]*/, TFD_FULL);
+    indoor_terrain(Q_add(A[object][0][0], final_x), Q_add(A[object][1][0], final_y), Q_add(A[object][2][0], offset_z), Q_mul(Q_as_double(.75), i_object[22]),
+                   -1 /*on2ph[object]*/, TFD_FULL);
 
-    fix mag = fix_mul(i_object[18], i_object[18]) + fix_mul(i_object[19], i_object[19]);
-    if (mag < fix_from_float(.1) && fix_abs(V_floor[0]) < fix_mul(fix_from_float(.05), i_object[22]) && fix_abs(V_floor[1]) < fix_mul(fix_from_float(.05), i_object[22])) {
+    Q mag = Q_add(Q_mul(i_object[18], i_object[18]), Q_mul(i_object[19], i_object[19]));
+    if (mag.val < Q_as_double(.1).val && Q_abs(V_floor[0]).val < Q_mul(Q_as_double(.05), i_object[22]).val && Q_abs(V_floor[1]).val < Q_mul(Q_as_double(.05), i_object[22]).val) {
         terrain_info.fx = terrain_info.fy = 0;
     }
 
-    vec0 = terrain_info.fx + terrain_info.cx + terrain_info.wx;
-    vec1 = terrain_info.fy + terrain_info.cy + terrain_info.wy;
-    vec2 = terrain_info.fz + terrain_info.cz + terrain_info.wz;
+    vec0 = Q_as_fix(terrain_info.fx + terrain_info.cx + terrain_info.wx);
+    vec1 = Q_as_fix(terrain_info.fy + terrain_info.cy + terrain_info.wy);
+    vec2 = Q_as_fix(terrain_info.fz + terrain_info.cz + terrain_info.wz);
 
-    test = fix_sqrt(fix_mul(vec0, vec0) + fix_mul(vec1, vec1) + fix_mul(vec2, vec2));
+    test = Q_sqrt(Q_add(Q_add(Q_mul(vec0, vec0), Q_mul(vec1, vec1)), Q_mul(vec2, vec2)));
 
-    if (test > EDMS_DIV_ZERO_TOLERANCE)
-        mul = fix_div(fix_one, test); // To get primitive...
+    if (test.val > EDMS_DIV_ZERO_TOLERANCE.val)
+        mul = Q_div(fix_one, test); // To get primitive...
     else
-        test = mul = 0;
+        test = mul = Q_as_int(0);
 
-    vv0 = fix_mul(mul, vec0); // The primitive V_n...
-    vv1 = fix_mul(mul, vec1);
-    vv2 = fix_mul(mul, vec2);
+    vv0 = Q_mul(mul, vec0); // The primitive V_n...
+    vv1 = Q_mul(mul, vec1);
+    vv2 = Q_mul(mul, vec2);
 
-    dmag = fix_mul(i_object[IDOF_PELVIS_D], fix_mul(A[object][0][1], vv0) // Delta_magnitude...
-                           + fix_mul(A[object][1][1], vv1) + fix_mul(A[object][2][1], vv2));
+    dmag = Q_mul(i_object[IDOF_PELVIS_D], Q_add(Q_add(Q_mul(A[object][0][1], vv0), // Delta_magnitude...
+                           Q_mul(A[object][1][1], vv1)), Q_mul(A[object][2][1], vv2)));
 
-    head_delta[0] = fix_mul(dmag, vv0); // Delta...
-    head_delta[1] = fix_mul(dmag, vv1);
-    head_delta[2] = fix_mul(dmag, vv2);
+    head_delta[0] = Q_mul(dmag, vv0); // Delta...
+    head_delta[1] = Q_mul(dmag, vv1);
+    head_delta[2] = Q_mul(dmag, vv2);
 
     //		if (test < .5*i_object[22]) kmag = i_object[20];			//Omega_magnitude...
     //              else kmag = i_object[20]/test;
     kmag = i_object[IDOF_PELVIS_K];
 
-    head_kappa[0] = fix_mul(kmag, vec0);
-    head_kappa[1] = fix_mul(kmag, vec1);
-    head_kappa[2] = fix_mul(kmag, vec2);
+    head_kappa[0] = Q_mul(kmag, vec0);
+    head_kappa[1] = Q_mul(kmag, vec1);
+    head_kappa[2] = Q_mul(kmag, vec2);
 }
 
 void get_body_of_death(int32_t object) {
-    fix *i_object = I[object];
+    Q *i_object = I[object];
 
-    fix vec0, vec1, vec2, test, mul, vv0, vv1, vv2, dmag, kmag;
+    Q vec0, vec1, vec2, test, mul, vv0, vv1, vv2, dmag, kmag;
 
-    fix half_height = fix_mul(fix_from_float(.5), i_object[0]);
+    Q half_height = Q_mul(Q_as_double(.5), i_object[0]);
 
-    fix offset_x = fix_mul(half_height, fix_sin(fix_to_fang(A[object][4][0]))), offset_y = fix_mul(fix_mul(fix_from_float(-1.5), half_height), fix_sin(fix_to_fang(A[object][5][0]))),
-      offset_z = fix_mul(fix_mul(half_height, fix_cos(fix_to_fang(A[object][4][0]))), fix_cos(fix_to_fang(A[object][5][0])));
+    Q offset_x = Q_mul(half_height, Q_sin(A[object][4][0])), offset_y = Q_mul(Q_mul(Q_as_double(-1.5), half_height), Q_sin(A[object][5][0])),
+      offset_z = Q_mul(Q_mul(half_height, Q_cos(A[object][4][0])), Q_cos(A[object][5][0]));
 
-    fix sin_alpha = 0, cos_alpha = 0;
+    Q sin_alpha = Q_as_int(0), cos_alpha = Q_as_int(0);
 
-    fix final_x = 0, final_y = 0;
+    Q final_x = Q_as_int(0), final_y = Q_as_int(0);
 
-    fix_sincos(fix_to_fang(-A[object][3][0]), &sin_alpha, &cos_alpha);
-    final_x = fix_mul(cos_alpha, offset_x) + fix_mul(sin_alpha, offset_y);
-    final_y = fix_mul(-sin_alpha, offset_x) + fix_mul(cos_alpha, offset_y);
+    Q_sincos(Q_neg(A[object][3][0]), &sin_alpha, &cos_alpha);
+    final_x = Q_add(Q_mul(cos_alpha, offset_x), Q_mul(sin_alpha, offset_y));
+    final_y = Q_add(Q_mul(Q_neg(sin_alpha), offset_x), Q_mul(cos_alpha, offset_y));
 
-    indoor_terrain(A[object][0][0] + final_x, A[object][1][0] + final_y, A[object][2][0] + offset_z, fix_mul(fix_from_float(.33), i_object[0]),
-                   fix_make(-1,0) /*on2ph[object]*/, TFD_FULL);
+    indoor_terrain(Q_add(A[object][0][0], final_x), Q_add(A[object][1][0], final_y), Q_add(A[object][2][0], offset_z), Q_mul(Q_as_double(.33), i_object[0]),
+                   -1 /*on2ph[object]*/, TFD_FULL);
 
     //      Zero result!
     //      ============
-    body_kappa[0] = body_kappa[1] = body_kappa[2] = 0;
-    body_delta[0] = body_delta[1] = body_delta[2] = 0;
+    body_kappa[0] = body_kappa[1] = body_kappa[2] = Q_as_int(0);
+    body_delta[0] = body_delta[1] = body_delta[2] = Q_as_int(0);
 
     //      Do ANYTHING?
     //      ------------
-    fix abtotal = fix_abs(terrain_info.fx) + fix_abs(terrain_info.fy) + fix_abs(terrain_info.fz);
-    abtotal += fix_abs(terrain_info.wx) + fix_abs(terrain_info.wy) + fix_abs(terrain_info.wz);
-    abtotal += fix_abs(terrain_info.cx) + fix_abs(terrain_info.cy) + fix_abs(terrain_info.cz);
-    if (abtotal != 0) {
-        fix mag = fix_mul(i_object[18], i_object[18]) + fix_mul(i_object[19], i_object[19]);
-        if (mag < fix_from_float(.1) && fix_abs(V_floor[0]) < fix_mul(fix_from_float(.05), i_object[22]) && fix_abs(V_floor[1]) < fix_mul(fix_from_float(.05), i_object[22]))
+    Q abtotal = Q_as_fix(abs(terrain_info.fx) + abs(terrain_info.fy) + abs(terrain_info.fz));
+    abtotal = Q_add(abtotal, Q_as_fix(abs(terrain_info.wx) + abs(terrain_info.wy) + abs(terrain_info.wz)));
+    abtotal = Q_add(abtotal, Q_as_fix(abs(terrain_info.cx) + abs(terrain_info.cy) + abs(terrain_info.cz)));
+    if (abtotal.val != Q_as_int(0).val) {
+        Q mag = Q_add(Q_mul(i_object[18], i_object[18]), Q_mul(i_object[19], i_object[19]));
+        if (mag.val < Q_as_double(.1).val && Q_abs(V_floor[0]).val < Q_mul(Q_as_double(.05), i_object[22]).val && Q_abs(V_floor[1]).val < Q_mul(Q_as_double(.05), i_object[22]).val)
             terrain_info.fx = terrain_info.fy = 0;
 
-        vec0 = terrain_info.fx + terrain_info.cx + terrain_info.wx;
-        vec1 = terrain_info.fy + terrain_info.cy + terrain_info.wy;
-        vec2 = terrain_info.fz + terrain_info.cz + terrain_info.wz;
+        vec0 = Q_as_fix(terrain_info.fx + terrain_info.cx + terrain_info.wx);
+        vec1 = Q_as_fix(terrain_info.fy + terrain_info.cy + terrain_info.wy);
+        vec2 = Q_as_fix(terrain_info.fz + terrain_info.cz + terrain_info.wz);
 
-        test = fix_sqrt(fix_mul(vec0, vec0) + fix_mul(vec1, vec1) + fix_mul(vec2, vec2));
+        test = Q_sqrt(Q_add(Q_add(Q_mul(vec0, vec0), Q_mul(vec1, vec1)), Q_mul(vec2, vec2)));
 
-        if (test > EDMS_DIV_ZERO_TOLERANCE)
-            mul = fix_div(fix_one, test); // To get primitive...
+        if (test.val > EDMS_DIV_ZERO_TOLERANCE.val)
+            mul = Q_div(fix_one, test); // To get primitive...
         else
-            test = mul = 0;
+            test = mul = Q_as_int(0);
 
-        vv0 = fix_mul(mul, vec0); // The primitive V_n...
-        vv1 = fix_mul(mul, vec1);
-        vv2 = fix_mul(mul, vec2);
+        vv0 = Q_mul(mul, vec0); // The primitive V_n...
+        vv1 = Q_mul(mul, vec1);
+        vv2 = Q_mul(mul, vec2);
 
-        vec2 = vv2 = 0;
+        vec2 = vv2 = Q_as_int(0);
 
-        dmag = fix_mul(i_object[IDOF_PELVIS_D], (fix_mul(A[object][0][1], vv0) // Delta_magnitude...
-                               + fix_mul(A[object][1][1], vv1) + fix_mul(A[object][2][1], vv2)));
+        dmag = Q_mul(i_object[IDOF_PELVIS_D], Q_add(Q_add(Q_mul(A[object][0][1], vv0), // Delta_magnitude...
+                               Q_mul(A[object][1][1], vv1)), Q_mul(A[object][2][1], vv2)));
 
-        body_delta[0] = fix_mul(dmag, vv0); // Delta...
-        body_delta[1] = fix_mul(dmag, vv1);
-        body_delta[2] = fix_mul(dmag, vv2);
+        body_delta[0] = Q_mul(dmag, vv0); // Delta...
+        body_delta[1] = Q_mul(dmag, vv1);
+        body_delta[2] = Q_mul(dmag, vv2);
 
         kmag = i_object[20];
 
-        body_kappa[0] = fix_mul(kmag, vec0);
-        body_kappa[1] = fix_mul(kmag, vec1);
-        body_kappa[2] = fix_mul(kmag, vec2);
+        body_kappa[0] = Q_mul(kmag, vec0);
+        body_kappa[1] = Q_mul(kmag, vec1);
+        body_kappa[2] = Q_mul(kmag, vec2);
 
     } // Do NOTHING...
 }
@@ -570,49 +568,49 @@ void get_body_of_death(int32_t object) {
 //      Climbing stuff also removed for speed of compilations...
 //      ========================================================
 void do_climbing(int32_t object) {
-    fix *i_object = I[object];
+    Q *i_object = I[object];
 
     //      Hellishness...
     //      ==============
-    if ((i_object[17] > 0) &&
+    if ((i_object[17].val > Q_as_int(0).val) &&
         ((ss_edms_bcd_flags & SS_BCD_MISC_CLIMB) || (edms_ss_head_bcd_flags & SS_BCD_MISC_CLIMB))) {
-        fix ass = fix_sqrt(fix_mul(fix_mul(fix_from_float(.05), i_object[18]), i_object[18]) + fix_mul(fix_mul(fix_from_float(.05), i_object[19]), i_object[19]));
-        fix ratio = fix_mul(i_object[18], object0) + fix_mul(i_object[19], object1);
+        Q ass = Q_sqrt(Q_add(Q_mul(Q_mul(Q_as_double(.05), i_object[18]), i_object[18]), Q_mul(Q_mul(Q_as_double(.05), i_object[19]), i_object[19])));
+        Q ratio = Q_add(Q_mul(i_object[18], object0), Q_mul(i_object[19], object1));
 
-        if (ratio > 0)
-            ass = 0;
+        if (ratio.val > Q_as_int(0).val)
+            ass = Q_as_int(0);
 
         pelvis_is_climbing = true;
 
-        if (checker > 0) {
-            io17 = fix_mul(fix_from_float(.02), ass); // + 100*( .2*i_object[22] - V_[floor][2] );
+        if (checker.val > Q_as_int(0).val) {
+            io17 = Q_mul(Q_as_double(.02), ass); // + 100*( .2*i_object[22] - V_[floor][2] );
             if ((terrain_info.cz != 0))
-                io17 = 0;
-            io18 = fix_mul_div(fix_mul(fix_mul(fix_from_float(-.4), i_object[IDOF_PELVIS_RADIUS]), object0), object8, checker) + fix_mul(fix_from_float(.5), i_object[18]);
-            io19 = fix_mul_div(fix_mul(fix_mul(fix_from_float(-.4), i_object[IDOF_PELVIS_RADIUS]), object1), object8, checker) + fix_mul(fix_from_float(.5), i_object[19]);
-            i_object[16] = fix_mul(i_object[16], fix_from_float(.5));
+                io17 = Q_as_int(0);
+            io18 = Q_add(Q_div(Q_mul(Q_mul(Q_mul(Q_as_double(-.4), i_object[IDOF_PELVIS_RADIUS]), object0), object8), checker), Q_mul(Q_as_double(.5), i_object[18]));
+            io19 = Q_add(Q_div(Q_mul(Q_mul(Q_mul(Q_as_double(-.4), i_object[IDOF_PELVIS_RADIUS]), object1), object8), checker), Q_mul(Q_as_double(.5), i_object[19]));
+            i_object[16] = Q_mul(i_object[16], Q_as_double(.5));
 
             //                    Set the mojo...
             //                    ===============
-            object18 = fix_mul(fix_mul(fix_make(800,0), (io17 > 0)), (io17 - A[object][2][1]));
+            object18 = Q_mul(Q_as_int(800 * (io17.val > Q_as_int(0).val)), Q_sub(io17, A[object][2][1]));
         }
     }
 
     //      AutoClimbing(tm) is for wussies (is superseeded by climbing)...
     //      ===============================================================
     else if ((ss_edms_bcd_flags & SS_BCD_MISC_STAIR) /*&& (i_object[17] == 0) (io17==0) */) {
-        if ((checker > 0) && (fix_abs(i_object[18]) + fix_abs(i_object[19]) > fix_from_float(.01))) {
-            fix ratio = fix_mul(i_object[18] + A[object][0][1], object0) + fix_mul(i_object[19] + A[object][1][1], object1);
+        if ((checker.val > Q_as_int(0).val) && (Q_add(Q_abs(i_object[18]), Q_abs(i_object[19])).val > Q_as_double(.01).val)) {
+            Q ratio = Q_add(Q_mul(Q_add(i_object[18], A[object][0][1]), object0), Q_mul(Q_add(i_object[19], A[object][1][1]), object1));
 
-            if (ratio <= 0) {
-                io17 = fix_from_float(.5);
+            if (ratio.val <= Q_as_int(0).val) {
+                io17 = Q_as_double(.5);
 
-                io18 = fix_mul_div(fix_mul(fix_mul(fix_from_float(-.3), i_object[IDOF_PELVIS_RADIUS]), object0), object8, checker) + fix_mul(fix_from_float(.2), i_object[18]);
-                io19 = fix_mul_div(fix_mul(fix_mul(fix_from_float(-.3), i_object[IDOF_PELVIS_RADIUS]), object1), object8, checker) + fix_mul(fix_from_float(.2), i_object[19]);
+                io18 = Q_add(Q_div(Q_mul(Q_mul(Q_mul(Q_as_double(-.3), i_object[IDOF_PELVIS_RADIUS]), object0), object8), checker), Q_mul(Q_as_double(.2), i_object[18]));
+                io19 = Q_add(Q_div(Q_mul(Q_mul(Q_mul(Q_as_double(-.3), i_object[IDOF_PELVIS_RADIUS]), object1), object8), checker), Q_mul(Q_as_double(.2), i_object[19]));
 
                 //                              Set the mojo...
                 //                              ===============
-                object18 = fix_mul(fix_mul(fix_make(800,0), (io17 > 0)), io17 - A[object][2][1]);
+                object18 = Q_mul(Q_as_int(800 * (io17.val > Q_as_int(0).val)), Q_sub(io17, A[object][2][1]));
             } else {
                 io18 = i_object[18];
                 io19 = i_object[19];
@@ -623,50 +621,50 @@ void do_climbing(int32_t object) {
 
 //	We might for now want to set some external forces on the pelvis...
 //	==================================================================
-void pelvis_set_control(int32_t pelvis, fix forward, fix turn, fix sidestep, fix lean, fix jump, int32_t crouch) {
-    const fix pi_by_two = fix_from_float(1.5707); // Yea, flixpoint...
+void pelvis_set_control(int32_t pelvis, Q forward, Q turn, Q sidestep, Q lean, Q jump, int32_t crouch) {
+    const Q pi_by_two = Q_as_double(1.5707); // Yea, flixpoint...
 
-    fix_sincos(fix_to_fang(S[pelvis][3][0]), &object0, &object1);
+    Q_sincos(S[pelvis][3][0], &object0, &object1);
 
     //	Get rid of it all...
     //	--------------------
-    I[pelvis][15] = I[pelvis][16] = I[pelvis][17] = I[pelvis][18] = I[pelvis][19] = I[pelvis][7] = 0;
+    I[pelvis][15] = I[pelvis][16] = I[pelvis][17] = I[pelvis][18] = I[pelvis][19] = I[pelvis][7] = Q_as_int(0);
 
     //		Here's the thrust of the situation...
     //		-------------------------------------
-    I[pelvis][18] = fix_mul(fix_mul(forward, object1), I[pelvis][IDOF_PELVIS_MASS]);
-    I[pelvis][19] = fix_mul(fix_mul(forward, object0), I[pelvis][IDOF_PELVIS_MASS]);
+    I[pelvis][18] = Q_mul(Q_mul(forward, object1), I[pelvis][IDOF_PELVIS_MASS]);
+    I[pelvis][19] = Q_mul(Q_mul(forward, object0), I[pelvis][IDOF_PELVIS_MASS]);
 
     //		And the sidestep is off by pi/two...
     //      	------------------------------------
-    fix_sincos(fix_to_fang(S[pelvis][3][0] - pi_by_two), &object0, &object1);
-    I[pelvis][18] += fix_mul(fix_mul(sidestep, object1), I[pelvis][IDOF_PELVIS_MASS]);
-    I[pelvis][19] += fix_mul(fix_mul(sidestep, object0), I[pelvis][IDOF_PELVIS_MASS]);
+    Q_sincos(Q_sub(S[pelvis][3][0], pi_by_two), &object0, &object1);
+    I[pelvis][18] = Q_add(I[pelvis][18], Q_mul(Q_mul(sidestep, object1), I[pelvis][IDOF_PELVIS_MASS]));
+    I[pelvis][19] = Q_add(I[pelvis][19], Q_mul(Q_mul(sidestep, object0), I[pelvis][IDOF_PELVIS_MASS]));
 
     //		And the turn of the...
     //		----------------------
-    I[pelvis][16] = fix_mul(turn, I[pelvis][IDOF_PELVIS_MOI]);
+    I[pelvis][16] = Q_mul(turn, I[pelvis][IDOF_PELVIS_MOI]);
 
     //		Jump jets of joy...
     //		-------------------
-    if (jump > 0)
-        I[pelvis][17] = fix_mul(fix_mul(fix_from_float(.003), I[pelvis][IDOF_PELVIS_MASS]), jump);
-    if (jump < 0)
-        I[pelvis][17] = fix_mul(fix_mul(fix_from_float(.0006), I[pelvis][IDOF_PELVIS_MASS]), jump);
+    if (jump.val > Q_as_int(0).val)
+        I[pelvis][17] = Q_mul(Q_mul(Q_as_double(.003), I[pelvis][IDOF_PELVIS_MASS]), jump);
+    if (jump.val < Q_as_int(0).val)
+        I[pelvis][17] = Q_mul(Q_mul(Q_as_double(.0006), I[pelvis][IDOF_PELVIS_MASS]), jump);
 
     //		And finally leaning about...
     //		----------------------------
-    I[pelvis][15] = fix_mul(fix_mul(fix_from_float(.04), lean), I[pelvis][1]); // Exactly the angle!
+    I[pelvis][15] = Q_mul(Q_mul(Q_as_double(.04), lean), I[pelvis][1]); // Exactly the angle!
 
     //		Crouching (overpowers jumping )...
     //		----------------------------------
     if (crouch > 0)
-        I[pelvis][7] = fix_mul(fix_mul(fix_from_float(.20), crouch), I[pelvis][1]);
+        I[pelvis][7] = Q_mul(Q_mul(Q_as_double(.20), Q_as_int(crouch)), I[pelvis][1]);
 
     //	Wake up...
     //	==========
     no_no_not_me[pelvis] =
-        (fix_abs(I[pelvis][15]) + fix_abs(I[pelvis][16]) + fix_abs(I[pelvis][17]) + fix_abs(I[pelvis][18]) + fix_abs(I[pelvis][19]) > 0) ||
+        (Q_add(Q_add(Q_add(Q_add(Q_abs(I[pelvis][15]), Q_abs(I[pelvis][16])), Q_abs(I[pelvis][17])), Q_abs(I[pelvis][18])), Q_abs(I[pelvis][19])).val > Q_as_int(0).val) ||
         (no_no_not_me[pelvis] == 1);
 }
 
@@ -674,7 +672,7 @@ void pelvis_set_control(int32_t pelvis, fix forward, fix turn, fix sidestep, fix
 //	init_state[][] and EDMS motion parameters params[] into soliton. Returns the
 //	object number, or else a negative error code (see Soliton.CPP for error handling and codes).
 //	============================================================================================
-int32_t make_pelvis(fix init_state[6][3], fix params[10]) {
+int32_t make_pelvis(Q init_state[6][3], Q params[10]) {
     //	Have some variables...
     //	======================
     int32_t object_number = -1, // Three guesses...
@@ -686,7 +684,7 @@ int32_t make_pelvis(fix init_state[6][3], fix params[10]) {
 
     //	First find out which object we're going to be...
     //	================================================
-    while (S[++object_number][0][0] > END)
+    while (S[++object_number][0][0].val > END.val)
         ; // Jon's first C trickie...
 
     //	Is it an allowed object number?  Are we full? Why are we here? Is there a God?
@@ -713,22 +711,22 @@ int32_t make_pelvis(fix init_state[6][3], fix params[10]) {
         // We need some information that won't fit in the usual areas...
         // =============================================================
         // I[object_number][0] =                                           //For reference...
-        I[object_number][6] = fix_mul(fix_from_float(.5), I[object_number][IDOF_PELVIS_RADIUS]);
-        I[object_number][1] = fix_mul(fix_make(20,0), I[object_number][IDOF_PELVIS_MOI]);
-        I[object_number][2] = fix_mul(fix_make(4,0), fix_sqrt(fix_mul(I[object_number][IDOF_PELVIS_MOI], I[object_number][1])));
+        I[object_number][6] = Q_mul(Q_as_double(.5), I[object_number][IDOF_PELVIS_RADIUS]);
+        I[object_number][1] = Q_mul(Q_as_int(20), I[object_number][IDOF_PELVIS_MOI]);
+        I[object_number][2] = Q_mul(Q_as_int(4), Q_sqrt(Q_mul(I[object_number][IDOF_PELVIS_MOI], I[object_number][1])));
 
         // Put in the collision information...
         // ===================================
         I[object_number][31] = I[object_number][IDOF_PELVIS_RADIUS];
-        I[object_number][32] = I[object_number][33] = I[object_number][34] = I[object_number][35] = 0;
+        I[object_number][32] = I[object_number][33] = I[object_number][34] = I[object_number][35] = Q_as_int(0);
         I[object_number][36] = I[object_number][IDOF_PELVIS_MASS_RECIP]; // Shrugoff "mass"...
-        I[object_number][IDOF_COLLIDE] = fix_make(-1,0);
-        I[object_number][IDOF_AUTODESTRUCT] = 0; // No kill I...
+        I[object_number][IDOF_COLLIDE] = Q_as_int(-1);
+        I[object_number][IDOF_AUTODESTRUCT] = Q_as_int(0); // No kill I...
 
         // Zero the control initially...
         // =============================
         I[object_number][7] = I[object_number][8] = I[object_number][9] = I[object_number][15] = I[object_number][16] =
-            I[object_number][18] = I[object_number][19] = I[object_number][17] = 0;
+            I[object_number][18] = I[object_number][19] = I[object_number][17] = Q_as_int(0);
 
         // Now tell Soliton where to look for the equations of motion...
         // =============================================================
@@ -788,9 +786,9 @@ void EDMS_lean_o_meter(physics_handle ph, fix *lean, fix *crouch) {
 
         // Are you a pelvis...
         // -------------------
-        if (I[on][IDOF_MODEL] == PELVIS) {
-            *lean = S[on][5][0];
-            *crouch = I[on][0] - fix_mul(fix_make(3,0), V_floor[2]);
+        if (I[on][IDOF_MODEL].val == PELVIS.val) {
+            *lean = Q_to_fix(S[on][5][0]);
+            *crouch = Q_to_fix(I[on][0]) - 3 * Q_to_fix(V_floor[2]);
 
         } // Pelvis check...
 

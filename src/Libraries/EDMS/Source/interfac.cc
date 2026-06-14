@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	State information and utilities...
 //	========================
 
-#include "fix.h"
+#include "fixpp.h"
 #include "edms_int.h"
 #include "idof.h"
 
@@ -72,7 +72,7 @@ physics_handle on2ph[MAX_OBJ];
 
 //	Constants...
 //	============
-fix fix_zero = fix_from_float(0.);
+Q fix_zero = Q_from_double(0.);
 
 //	Bridge routine to the terrain functions.  C++ functions are all lower case, C are Capped...
 //	===========================================================================================
@@ -81,8 +81,8 @@ fix fix_zero = fix_from_float(0.);
 //	because it is not called by the user,
 //	but rather calls the user function Terrain().
 //	=============================================
-fix terrain(fix X, fix Y, int32_t deriv) {
-    fix ans = 0;
+Q terrain(Q X, Q Y, int32_t deriv) {
+    Q ans;
 
     printf("There is no terrain in space!\n");
     // ans.fix_to( Terrain( X.to_fix(), Y.to_fix(), deriv ) );
@@ -91,9 +91,11 @@ fix terrain(fix X, fix Y, int32_t deriv) {
 
 //	Same with Indoors...
 //	--------------------
-TerrainHit indoor_terrain(fix X, fix Y, fix Z, fix R, physics_handle ph, TFType type) {
-    if ((X > FIX_UNIT) && (Y > FIX_UNIT) && (X < fix_make(64,0)) && (Y < fix_make(64,0))) {
-        return Indoor_Terrain(X, Y, Z, R, ph, type);
+TerrainHit indoor_terrain(Q X, Q Y, Q Z, Q R, physics_handle ph, TFType type) {
+    if(sanity_check() != 0)
+    	abort();
+    if ((X.val > Q_as_int(1).val) && (Y.val > Q_as_int(1).val) && (X.val < Q_as_int(64).val) && (Y.val < Q_as_int(64).val)) {
+        return Indoor_Terrain(Q_to_fix(X), Q_to_fix(Y), Q_to_fix(Z), Q_to_fix(R), ph, type);
     } else {
         //      EDMS_robot_global_badness_indicator = 1000;
         //      mout << "!EDMS: integrator = " << EDMS_integrating << " !!\n";
@@ -121,20 +123,17 @@ TerrainHit indoor_terrain(fix X, fix Y, fix Z, fix R, physics_handle ph, TFType 
 
 //      And with Freefall...
 //      --------------------
-bool ff_terrain(fix X, fix Y, fix Z, uchar fast, terrain_ff *FFT) {
-    return FF_terrain(X, Y, Z, fast, FFT);
+bool ff_terrain(Q X, Q Y, Q Z, uchar fast, terrain_ff *FFT) {
+    return FF_terrain(Q_to_fix(X), Q_to_fix(Y), Q_to_fix(Z), fast, FFT);
 }
 
-bool ff_raycast(fix x, fix y, fix z, fix *vec, fix range, fix *where_hit, terrain_ff *FFT) {
-    return FF_raycast(x, y, z, vec, range, where_hit, FFT);
+bool ff_raycast(Q x, Q y, Q z, Q *vec, Q range, Q *where_hit, terrain_ff *FFT) {
+    return FF_raycast(Q_to_fix(x), Q_to_fix(y), Q_to_fix(z), (fix *)vec, Q_to_fix(range), (fix *)where_hit, FFT);
 }
 
 bool FF_terrain(fix X, fix Y, fix Z, uchar fast, terrain_ff *TFF) { return (true); }
 
 bool FF_raycast(fix x, fix y, fix z, fix *vec, fix range, fix *where_hit, terrain_ff *tff) { return (true); }
-
-//	We need to link to c...
-//	=======================
 
 //	Startup the mighty and perilous EDMS engine...
 //	==============================================
@@ -172,7 +171,7 @@ void EDMS_set_workspace(void *place) { A = (EDMS_Argblock_Pointer)place; }
 void EDMS_set_autodestruct(physics_handle ph) {
     if (ph > -1) {
         int32_t object = ph2on[ph];
-        I[object][38] = 1;
+        I[object][38] = Q_as_int(1);
     }
 }
 
@@ -181,7 +180,7 @@ void EDMS_set_autodestruct(physics_handle ph) {
 void EDMS_defuse_autodestruct(physics_handle ph) {
     if (ph > -1) {
         int object = ph2on[ph];
-        I[object][38] = 0;
+        I[object][38] = Q_as_int(0);
     }
 }
 
@@ -219,18 +218,18 @@ void EDMS_get_state(physics_handle ph, State *s) {
 
     int on = physics_handle_to_object_number(ph);
     if (on > -1 && on < MAX_OBJ) {
-        s->X = S[on][0][0];
-        s->X_dot = S[on][0][1];
-        s->Y = S[on][1][0];
-        s->Y_dot = S[on][1][1];
-        s->Z = S[on][2][0];
-        s->Z_dot = S[on][2][1];
-        s->alpha = S[on][3][0];
-        s->alpha_dot = S[on][3][1];
-        s->beta = S[on][4][0];
-        s->beta_dot = S[on][4][1];
-        s->gamma = S[on][5][0];
-        s->gamma_dot = S[on][5][1];
+        s->X = Q_to_fix(S[on][0][0]);
+        s->X_dot = Q_to_fix(S[on][0][1]);
+        s->Y = Q_to_fix(S[on][1][0]);
+        s->Y_dot = Q_to_fix(S[on][1][1]);
+        s->Z = Q_to_fix(S[on][2][0]);
+        s->Z_dot = Q_to_fix(S[on][2][1]);
+        s->alpha = Q_to_fix(S[on][3][0]);
+        s->alpha_dot = Q_to_fix(S[on][3][1]);
+        s->beta = Q_to_fix(S[on][4][0]);
+        s->beta_dot = Q_to_fix(S[on][4][1]);
+        s->gamma = Q_to_fix(S[on][5][0]);
+        s->gamma_dot = Q_to_fix(S[on][5][1]);
     }
 
 #ifdef EDMS_SHIPPABLE
@@ -253,22 +252,22 @@ void EDMS_holistic_teleport(physics_handle ph, State *s) {
 
         //	Now move the thing...
         //	=====================
-        S[on][0][0] = s->X;
-        S[on][0][1] = s->X_dot;
-        S[on][1][0] = s->Y;
-        S[on][1][1] = s->Y_dot;
-        S[on][2][0] = s->Z;
-        S[on][2][1] = s->Z_dot;
+        S[on][0][0] = Q_as_fix(s->X);
+        S[on][0][1] = Q_as_fix(s->X_dot);
+        S[on][1][0] = Q_as_fix(s->Y);
+        S[on][1][1] = Q_as_fix(s->Y_dot);
+        S[on][2][0] = Q_as_fix(s->Z);
+        S[on][2][1] = Q_as_fix(s->Z_dot);
 
-        if (I[on][30] != D_FRAME) {
-            S[on][3][0] = s->alpha;
+        if (I[on][30].val != D_FRAME.val) {
+            S[on][3][0] = Q_as_fix(s->alpha);
             S[on][3][1] = fix_zero;
-            S[on][4][0] = s->beta;
+            S[on][4][0] = Q_as_fix(s->beta);
             S[on][4][1] = fix_zero;
-            S[on][5][0] = s->gamma;
+            S[on][5][0] = Q_as_fix(s->gamma);
             S[on][5][1] = fix_zero;
         } else {
-            fix alpha, beta, gamma, sin_alpha, cos_alpha, sin_beta, cos_beta, sin_gamma, cos_gamma;
+            Q alpha, beta, gamma, sin_alpha, cos_alpha, sin_beta, cos_beta, sin_gamma, cos_gamma;
 
             // alpha.fix_to( s -> alpha);
             // beta.fix_to( s -> beta);
@@ -276,26 +275,26 @@ void EDMS_holistic_teleport(physics_handle ph, State *s) {
 
             // For shock...
             // ------------
-            alpha = s->beta;
-            beta = s->gamma;
-            gamma = s->alpha;
+            alpha = Q_as_fix(s->beta);
+            beta = Q_as_fix(s->gamma);
+            gamma = Q_as_fix(s->alpha);
 
-            alpha = beta = 0;
+            alpha = beta = Q_as_int(0);
 
-            fix_sincos(fix_to_fang(fix_mul(fix_from_float(.5), alpha)), &sin_alpha, &cos_alpha);
-            fix_sincos(fix_to_fang(fix_mul(fix_from_float(.5), beta)), &sin_beta, &cos_beta);
-            fix_sincos(fix_to_fang(fix_mul(fix_from_float(.5), gamma)), &sin_gamma, &cos_gamma);
+            Q_sincos(Q_mul(Q_as_double(.5), alpha), &sin_alpha, &cos_alpha);
+            Q_sincos(Q_mul(Q_as_double(.5), beta), &sin_beta, &cos_beta);
+            Q_sincos(Q_mul(Q_as_double(.5), gamma), &sin_gamma, &cos_gamma);
 
-            S[on][3][0] = fix_mul(fix_mul(cos_gamma, cos_alpha), cos_beta) + fix_mul(fix_mul(sin_gamma, sin_alpha), sin_beta);
-            S[on][4][0] = fix_mul(fix_mul(cos_gamma, cos_alpha), sin_beta) - fix_mul(fix_mul(sin_gamma, sin_alpha), cos_beta);
-            S[on][5][0] = fix_mul(fix_mul(cos_gamma, sin_alpha), cos_beta) + fix_mul(fix_mul(sin_gamma, cos_alpha), sin_beta);
-            S[on][6][0] = fix_mul(fix_mul(-cos_gamma, sin_alpha), sin_beta) + fix_mul(fix_mul(sin_gamma, cos_alpha), cos_beta);
+            S[on][3][0] = Q_add(Q_mul(Q_mul(cos_gamma, cos_alpha), cos_beta), Q_mul(Q_mul(sin_gamma, sin_alpha), sin_beta));
+            S[on][4][0] = Q_sub(Q_mul(Q_mul(cos_gamma, cos_alpha), sin_beta), Q_mul(Q_mul(sin_gamma, sin_alpha), cos_beta));
+            S[on][5][0] = Q_add(Q_mul(Q_mul(cos_gamma, sin_alpha), cos_beta), Q_mul(Q_mul(sin_gamma, cos_alpha), sin_beta));
+            S[on][6][0] = Q_add(Q_mul(Q_mul(Q_neg(cos_gamma), sin_alpha), sin_beta), Q_mul(Q_mul(sin_gamma, cos_alpha), cos_beta));
 
             // Derivatives
-            S[on][3][1] = 0;
-            S[on][4][1] = 0;
-            S[on][5][1] = 0;
-            S[on][6][1] = 0;
+            S[on][3][1] = Q_as_int(0);
+            S[on][4][1] = Q_as_int(0);
+            S[on][5][1] = Q_as_int(0);
+            S[on][6][1] = Q_as_int(0);
         }
 
         //	Restart collisions on it...
@@ -314,7 +313,7 @@ void EDMS_mouselook(physics_handle ph, int32_t xlook) {
     on = physics_handle_to_object_number(ph);
     EDMS_get_state(ph, &current_state);
 
-    S[on][3][0] = current_state.alpha + fix_make(xlook, 0);
+    S[on][3][0] = Q_as_fix(current_state.alpha + xlook);
     S[on][3][1] = fix_zero;
 }
 
@@ -355,8 +354,8 @@ void EDMS_make_robot_antisocial(physics_handle ph) {
     // --------------
     if (ph > -1) {
         on = ph2on[ph];
-        if (I[on][30] == ROBOT)
-            I[on][5] = fix_make(-1,0);
+        if (I[on][30].val == ROBOT.val)
+            I[on][5] = Q_as_int(-1);
     } // You suck...
 }
 
@@ -369,8 +368,8 @@ void EDMS_make_robot_social(physics_handle ph) {
     // --------------
     if (ph > -1) {
         on = ph2on[ph];
-        if (I[on][30] == ROBOT)
-            I[on][5] = 0;
+        if (I[on][30].val == ROBOT.val)
+            I[on][5] = Q_as_int(0);
     } // You suck...
 }
 
@@ -406,7 +405,7 @@ void EDMS_inventory_and_statistics(int32_t show_sleepers) { inventory_and_statis
 
 //	Here is the sanity checker, but you already can read that, can't you...
 //	=======================================================================
-int32_t EDMS_sanity_check() { return sanity_check(); }
+int32_t EDMS_sanity_check(void) { return sanity_check(); }
 
 //	Here are the bridge routines to the "default" EDMS models, others are segregates(d)...
 //	======================================================================================
@@ -416,7 +415,7 @@ int32_t EDMS_sanity_check() { return sanity_check(); }
 
 //      Hardness scale for robots...
 //      ----------------------------
-#define ROBOT_HARD_FAC fix_make(10,0)
+#define ROBOT_HARD_FAC Q_as_int(10)
 
 //	This guy is BROKEN FOR NOW (until we get the params finalized)...
 //	------------------------------------------------
@@ -429,12 +428,12 @@ void EDMS_get_robot_parameters(physics_handle ph, Robot *m) {
 #endif
 
     // mout << "RD: " << I[on][IDOF_ROBOT_ROLL_DRAG] << " : M:" << I[on][IDOF_ROBOT_MASS] << "\n";
-    m->pep = fix_div(I[on][IDOF_ROBOT_ROLL_DRAG], fix_mul(fix_from_float(1.5), I[on][IDOF_ROBOT_MASS]));
-    m->size = I[on][IDOF_ROBOT_RADIUS];
-    m->hardness = fix_mul_div(I[on][IDOF_ROBOT_K], I[on][IDOF_ROBOT_RADIUS], fix_mul(I[on][IDOF_ROBOT_MASS], ROBOT_HARD_FAC));
-    m->mass = I[on][IDOF_ROBOT_MASS];
-    m->gravity = I[on][IDOF_ROBOT_GRAVITY];
-    m->cyber_space = fix_int(I[on][IDOF_CYBERSPACE]);
+    m->pep = Q_to_fix(Q_div(I[on][IDOF_ROBOT_ROLL_DRAG], Q_mul(Q_as_double(1.5), I[on][IDOF_ROBOT_MASS])));
+    m->size = Q_to_fix(I[on][IDOF_ROBOT_RADIUS]);
+    m->hardness = Q_to_fix(Q_div(Q_mul(I[on][IDOF_ROBOT_K], I[on][IDOF_ROBOT_RADIUS]), Q_mul(I[on][IDOF_ROBOT_MASS], ROBOT_HARD_FAC)));
+    m->mass = Q_to_fix(I[on][IDOF_ROBOT_MASS]);
+    m->gravity = Q_to_fix(I[on][IDOF_ROBOT_GRAVITY]);
+    m->cyber_space = Q_to_fix(I[on][IDOF_CYBERSPACE]);
 }
 
 //	And the compression test for terrain "traps..."
@@ -443,14 +442,14 @@ fix EDMS_get_robot_damage(physics_handle ph) {
     int32_t object;
 
     object = ph2on[ph]; // As stupid as it gets...
-    return I[object][14];
+    return Q_to_fix(I[object][14]);
 }
 
 //	In flux (Thrust, attitude and JumpJets)...
 //	==========================================
 void EDMS_control_robot(physics_handle ph, fix T, fix A, fix J) {
 
-    fix TT,   // thrust
+    Q TT,   // thrust
         AA, // attitude jets
         JJ; // jump jets
 
@@ -459,9 +458,9 @@ void EDMS_control_robot(physics_handle ph, fix T, fix A, fix J) {
         mout << "Hey, you are an idiot...";
 #endif
 
-    TT = T;
-    AA = A;
-    JJ = J;
+    TT = Q_as_fix(T);
+    AA = Q_as_fix(A);
+    JJ = Q_as_fix(J);
 
     int32_t on = physics_handle_to_object_number(ph);
     robot_set_control(on, TT, AA, JJ);
@@ -470,7 +469,7 @@ void EDMS_control_robot(physics_handle ph, fix T, fix A, fix J) {
 //	AI control routines...
 //	======================
 void EDMS_ai_control_robot(physics_handle ph, fix D_H, fix D_S, fix S_S, fix U, fix *T_Y, fix D) {
-    fix DH,   // desired heading
+    Q DH,   // desired heading
         DS, // desired speed
         SS, // sidestep
         UU, // urgency
@@ -482,88 +481,88 @@ void EDMS_ai_control_robot(physics_handle ph, fix D_H, fix D_S, fix S_S, fix U, 
         mout << "Hey, you are and idiot...";
 #endif
 
-    DH = D_H;
-    DS = D_S;
-    SS = S_S;
-    UU = U;
-    DD = D;
+    DH = Q_as_fix(D_H);
+    DS = Q_as_fix(D_S);
+    SS = Q_as_fix(S_S);
+    UU = Q_as_fix(U);
+    DD = Q_as_fix(D);
 
     int32_t on = physics_handle_to_object_number(ph);
     robot_set_ai_control(on, DH, DS, SS, UU, &TU, DD);
 
-    *T_Y = TU;
+    *T_Y = Q_to_fix(TU);
 }
 
 //	These are different parameters than for the marble now...
 //	---------------------------------------------------------
 physics_handle EDMS_make_robot(Robot *m, State *s) {
-    fix params[10], init_state[6][3];
+    Q params[10], init_state[6][3];
 
-    fix mass, pep, hardness, size, gravity;
+    Q mass, pep, hardness, size, gravity;
 
     int32_t cyber_space;
 
     int32_t on = 0;
     physics_handle ph = 0;
 
-    init_state[DOF_X][0] = s->X;
-    init_state[DOF_X][1] = s->X_dot;
-    init_state[DOF_Y][0] = s->Y;
-    init_state[DOF_Y][1] = s->Y_dot;
-    init_state[DOF_Z][0] = s->Z;
-    init_state[DOF_Z][1] = s->Z_dot;
-    init_state[DOF_ALPHA][0] = s->alpha;
-    init_state[DOF_ALPHA][1] = s->alpha_dot;
+    init_state[DOF_X][0] = Q_as_fix(s->X);
+    init_state[DOF_X][1] = Q_as_fix(s->X_dot);
+    init_state[DOF_Y][0] = Q_as_fix(s->Y);
+    init_state[DOF_Y][1] = Q_as_fix(s->Y_dot);
+    init_state[DOF_Z][0] = Q_as_fix(s->Z);
+    init_state[DOF_Z][1] = Q_as_fix(s->Z_dot);
+    init_state[DOF_ALPHA][0] = Q_as_fix(s->alpha);
+    init_state[DOF_ALPHA][1] = Q_as_fix(s->alpha_dot);
     init_state[DOF_BETA][0] = init_state[DOF_BETA][1] = init_state[DOF_GAMMA][0] = init_state[DOF_GAMMA][1] = END;
 
-    mass = m->mass;
-    size = m->size;
+    mass = Q_as_fix(m->mass);
+    size = Q_as_fix(m->size);
     // if ( size > .45/hash_scale ) size = .45/hash_scale;
-    hardness = m->hardness;
-    pep = m->pep;
-    gravity = m->gravity;
+    hardness = Q_as_fix(m->hardness);
+    pep = Q_as_fix(m->pep);
+    gravity = Q_as_fix(m->gravity);
     cyber_space = m->cyber_space;
 
     // if (hardness > 15) { mout << "Hardness too too too: " << hardness << "\n"; hardness = 15; }
 
-    if (mass < FIX_UNIT)
-        mass = FIX_UNIT;
-    if (mass > fix_make(30,0))
-        mass = fix_make(30,0);
+    if (mass.val < Q_as_int(1).val)
+        mass = Q_as_int(1);
+    if (mass.val > Q_as_int(30).val)
+        mass = Q_as_int(30);
 
-    hardness = fix_mul(hardness, fix_mul_div(mass, ROBOT_HARD_FAC, size));
-    if (hardness > fix_make(4000,0)) {
-        hardness = fix_make(4000,0);
+    hardness = Q_mul(hardness, Q_div(Q_mul(mass, ROBOT_HARD_FAC), size));
+    if (hardness.val > Q_as_int(4000).val) {
+        hardness = Q_as_int(4000);
         // mout << "Hard cap!\n";
     }
 
     params[OFFSET(IDOF_ROBOT_K)] = hardness;
-    params[OFFSET(IDOF_ROBOT_D)] = fix_mul(fix_mul(fix_from_float(1.5), fix_sqrt(params[OFFSET(IDOF_ROBOT_K)])), fix_sqrt(mass));
+    params[OFFSET(IDOF_ROBOT_D)] = Q_mul(Q_mul(Q_as_double(1.5), Q_sqrt(params[OFFSET(IDOF_ROBOT_K)])), Q_sqrt(mass));
     params[OFFSET(IDOF_ROBOT_RADIUS)] = size;
 
     // mout << params[OFFSET(IDOF_ROBOT_D)] << "\n";
 
-    params[OFFSET(IDOF_ROBOT_ROLL_DRAG)] = fix_mul(fix_mul(fix_from_float(1.5), pep), mass);
-    params[OFFSET(IDOF_ROBOT_MASS_RECIP)] = fix_div(fix_from_float(1.), mass);
+    params[OFFSET(IDOF_ROBOT_ROLL_DRAG)] = Q_mul(Q_mul(Q_as_double(1.5), pep), mass);
+    params[OFFSET(IDOF_ROBOT_MASS_RECIP)] = Q_div(Q_as_double(1.), mass);
     params[OFFSET(IDOF_ROBOT_GRAVITY)] = gravity;
     params[OFFSET(IDOF_ROBOT_MASS)] = mass;
     // params[7] = 1. / ( .4*mass*size*size );
     // params[8] = 5.*(1. / params[7]);
     // params[9] = .4*mass*size*size;
-    params[OFFSET(IDOF_ROBOT_MOI)] = fix_mul(fix_mul(fix_mul(fix_from_float(.4), mass), size), size);
-    params[OFFSET(IDOF_ROBOT_ROT_DRAG)] = fix_mul(fix_make(5,0), params[OFFSET(IDOF_ROBOT_MOI)]);
+    params[OFFSET(IDOF_ROBOT_MOI)] = Q_mul(Q_mul(Q_mul(Q_as_double(.4), mass), size), size);
+    params[OFFSET(IDOF_ROBOT_ROT_DRAG)] = Q_mul(Q_as_int(5), params[OFFSET(IDOF_ROBOT_MOI)]);
 
-    if (params[OFFSET(IDOF_ROBOT_MOI)] != 0)
+    if (params[OFFSET(IDOF_ROBOT_MOI)].val != Q_as_int(0).val)
 
-        params[OFFSET(IDOF_ROBOT_MOI_RECIP)] = fix_div(fix_from_float(1.0), params[OFFSET(IDOF_ROBOT_MOI)]);
+        params[OFFSET(IDOF_ROBOT_MOI_RECIP)] = Q_div(Q_as_double(1.0), params[OFFSET(IDOF_ROBOT_MOI)]);
     else
-        params[OFFSET(IDOF_ROBOT_MOI_RECIP)] = fix_from_float(0.0);
+        params[OFFSET(IDOF_ROBOT_MOI_RECIP)] = Q_as_double(0.0);
 
     on = make_robot(init_state, params);
 
     // Here is where cyberspace gets turned on...
     // ------------------------------------------
-    I[on][IDOF_CYBERSPACE] = fix_make(cyber_space > 0, 0);
+    I[on][IDOF_CYBERSPACE] = Q_as_int(cyber_space > 0);
 
     ph = EDMS_bind_object_number(on);
 
@@ -576,16 +575,16 @@ physics_handle EDMS_make_robot(Robot *m, State *s) {
 }
 
 void EDMS_set_robot_parameters(physics_handle ph, Robot *m) {
-    fix mass, hardness, size, pep, gravity;
+    Q mass, hardness, size, pep, gravity;
 
     int32_t cyber_space;
 
-    mass = m->mass;
-    size = m->size;
+    mass = Q_as_fix(m->mass);
+    size = Q_as_fix(m->size);
     //	if ( size > .45/hash_scale ) size = .45/hash_scale;
-    hardness = m->hardness;
-    pep = m->pep;
-    gravity = m->gravity;
+    hardness = Q_as_fix(m->hardness);
+    pep = Q_as_fix(m->pep);
+    gravity = Q_as_fix(m->gravity);
     cyber_space = m->cyber_space;
 
     int32_t on = physics_handle_to_object_number(ph);
@@ -602,30 +601,30 @@ void EDMS_set_robot_parameters(physics_handle ph, Robot *m) {
     //	mout << "	pepp: " << pep << "\n";
     //	mout << "	grav: " << gravity << "\n";
 
-    if (mass < FIX_UNIT)
-        mass = FIX_UNIT;
-    if (mass > fix_make(30,0))
-        mass = fix_make(30,0);
+    if (mass.val < Q_as_int(1).val)
+        mass = Q_as_int(1);
+    if (mass.val > Q_as_int(30).val)
+        mass = Q_as_int(30);
 
-    hardness = hardness * (mass * ROBOT_HARD_FAC / size);
+    hardness = Q_mul(hardness, Q_div(Q_mul(mass, ROBOT_HARD_FAC), size));
 
     //	hardness = hardness*(mass*ROBOT_HARD_FAC/size);
-    if (hardness > fix_make(4000,0)) {
-        hardness = fix_make(4000,0);
+    if (hardness.val > Q_as_int(4000).val) {
+        hardness = Q_as_int(4000);
         //                               mout << "Hard cap!\n";
     }
 
     I[on][IDOF_ROBOT_K] = hardness;
-    I[on][IDOF_ROBOT_D] = fix_mul(fix_mul(fix_from_float(1.5), fix_sqrt(I[on][IDOF_ROBOT_K])), fix_sqrt(mass));
+    I[on][IDOF_ROBOT_D] = Q_mul(Q_mul(Q_as_double(1.5), Q_sqrt(I[on][IDOF_ROBOT_K])), Q_sqrt(mass));
     I[on][IDOF_ROBOT_RADIUS] = size;
-    I[on][IDOF_ROBOT_ROLL_DRAG] = fix_mul(fix_mul(fix_from_float(1.5), pep), mass);
-    I[on][IDOF_ROBOT_MASS_RECIP] = fix_div(fix_from_float(1.), mass);
+    I[on][IDOF_ROBOT_ROLL_DRAG] = Q_mul(Q_mul(Q_as_double(1.5), pep), mass);
+    I[on][IDOF_ROBOT_MASS_RECIP] = Q_div(Q_as_double(1.), mass);
     I[on][IDOF_ROBOT_GRAVITY] = gravity;
     I[on][IDOF_ROBOT_MASS] = mass;
-    I[on][IDOF_ROBOT_MOI_RECIP] = fix_div(fix_from_float(1.), fix_mul(fix_mul(fix_mul(fix_from_float(.4), mass), size), size));
-    I[on][IDOF_ROBOT_ROT_DRAG] = fix_mul(fix_from_float(5.), fix_div(fix_from_float(1.), I[on][IDOF_ROBOT_MOI_RECIP]));
-    I[on][IDOF_ROBOT_MOI] = fix_mul(fix_mul(fix_mul(fix_from_float(.4), mass), size), size);
-    I[on][IDOF_CYBERSPACE] = fix_make(cyber_space > 0, 0);
+    I[on][IDOF_ROBOT_MOI_RECIP] = Q_div(Q_as_double(1.), Q_mul(Q_mul(Q_mul(Q_as_double(.4), mass), size), size));
+    I[on][IDOF_ROBOT_ROT_DRAG] = Q_mul(Q_as_double(5.), Q_div(Q_as_double(1.), I[on][IDOF_ROBOT_MOI_RECIP]));
+    I[on][IDOF_ROBOT_MOI] = Q_mul(Q_mul(Q_mul(Q_as_double(.4), mass), size), size);
+    I[on][IDOF_CYBERSPACE] = Q_as_int(cyber_space > 0);
 
     //        mout << "Roll: " << I[on][IDOF_ROBOT_ROLL_DRAG] << "\n";
 }
@@ -636,32 +635,32 @@ void EDMS_set_robot_parameters(physics_handle ph, Robot *m) {
 //	4th order and very stable...
 //	----------------------------
 void EDMS_soliton(fix timestep) {
-    fix temp;
-    temp = timestep;
+    Q temp;
+    temp = Q_as_fix(timestep);
     soliton(temp);
 }
 
 //	2nd order and needs some attention...
 //	-------------------------------------
 void EDMS_soliton_lite(fix timestep) {
-    fix temp;
-    temp = timestep;
+    Q temp;
+    temp = Q_as_fix(timestep);
     soliton_lite(temp);
 }
 
 //	Efficient and unstoppable...
 //	----------------------------
 void EDMS_soliton_vector(fix timestep) {
-    fix temp;
-    temp = timestep;
+    Q temp;
+    temp = Q_as_fix(timestep);
     soliton_vector(temp);
 }
 
 //	Won't allow objects to collide w/one another...
 //	-----------------------------------------------
 void EDMS_soliton_vector_holistic(fix timestep) {
-    fix temp;
-    temp = timestep;
+    Q temp;
+    temp = Q_as_fix(timestep);
     soliton_vector_holistic(temp);
 }
 

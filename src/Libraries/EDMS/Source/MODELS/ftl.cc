@@ -23,6 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "edms_int.h"
 #include "idof.h"
+#include "physhand.h"
+#include "lg.h"
 //#ifdef EDMS_SHIPPABLE
 ////#include <mout.h>
 //#endif
@@ -37,21 +39,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //	Here is some stuff that the line finder needs that is stupid to pass around...
 //	==============================================================================
-static fix initial_X[3] = {0, 0, 0}, final_X[3] = {0, 0, 0};
+static Q initial_X[3] = {Q_from_int(0), Q_from_int(0), Q_from_int(0)}, final_X[3] = {Q_from_int(0), Q_from_int(0), Q_from_int(0)};
 
 extern int32_t EDMS_integrating;
 
 extern int32_t alarm_clock[MAX_OBJ];
 
-physics_handle object_check(uint32_t data_word, fix size, fix range, int32_t exclude, int32_t steps,
-                            fix *dist); // Checks for hits...
+physics_handle object_check(uint32_t data_word, Q size, Q range, int32_t exclude, int32_t steps,
+                            Q *dist); // Checks for hits...
 
 //	Here is the high velocity weapon primitive...
 //	=============================================
-physics_handle EDMS_cast_projectile(fix *X, fix D[3], fix kick, fix knock, fix size, fix range, int32_t exclude, int32_t shooter) {
-    extern fix PELVIS;
+physics_handle EDMS_cast_projectile(Q *X, Q D[3], Q kick, Q knock, Q size, Q range, int32_t exclude, int32_t shooter) {
+    extern Q PELVIS;
     int32_t stepper = 0,
-        max_step = fix_int(fix_mul_div(fix_make(2,0), range, size)), // samples per meter...
+        max_step = Q_to_int(Q_div(Q_mul(Q_as_int(2), range), size)), // samples per meter...
         victim_on = 0, shooter_on = 0, object_pointer = 0, i = 0;
 
     uint32_t must_check_objects[MAX_OBJ];
@@ -64,10 +66,10 @@ physics_handle EDMS_cast_projectile(fix *X, fix D[3], fix kick, fix knock, fix s
 
     // I think now victim and return_victim can be the same thing - DS
 
-    fix iota_c = 0; // Some variable or other...
-    fix D_old[3];   // Hey, blow blow blow...
+    Q iota_c = Q_as_int(0); // Some variable or other...
+    Q D_old[3];   // Hey, blow blow blow...
 
-    fix dist; // where did we hit the victim?
+    Q dist; // where did we hit the victim?
 
     //	Reset the object collisions...
     //	==============================
@@ -86,18 +88,18 @@ physics_handle EDMS_cast_projectile(fix *X, fix D[3], fix kick, fix knock, fix s
     initial_X[1] = X[1];
     initial_X[2] = X[2];
 
-    fix anus = fix_sqrt(fix_mul(D[0], D[0]) + fix_mul(D[1], D[1]) + fix_mul(D[2], D[2]));
-    if (anus < fix_from_float(.80) || range < fix_from_float(.25)) {
-        if (anus < fix_from_float(.80)) {
-            D[2] = FIX_UNIT;
-            D[1] = D[0] = 0;
+    Q anus = Q_sqrt(Q_add(Q_add(Q_mul(D[0], D[0]), Q_mul(D[1], D[1])), Q_mul(D[2], D[2])));
+    if (anus.val < Q_as_double(.80).val || range.val < Q_as_double(.25).val) {
+        if (anus.val < Q_as_double(.80).val) {
+            D[2] = Q_as_int(1);
+            D[1] = D[0] = Q_as_int(0);
             no_dont_do_it = 1;
         }
 
         //#ifdef EDMS_SHIPPABLE
         //      mout << "!EDMS: raycast with bad vector: mag = " << anus << ", range = " << range << "\n";
         //#endif
-        range = fix_from_float(.25);
+        range = Q_as_double(.25);
     }
 
     //	Rescale direction to 1/3 decimeters...
@@ -106,14 +108,14 @@ physics_handle EDMS_cast_projectile(fix *X, fix D[3], fix kick, fix knock, fix s
     D_old[1] = D[1];
     D_old[2] = D[2];
 
-    D[0] = fix_mul(D[0], fix_mul(fix_from_float(.5), size));
-    D[1] = fix_mul(D[1], fix_mul(fix_from_float(.5), size));
-    D[2] = fix_mul(D[2], fix_mul(fix_from_float(.5), size));
+    D[0] = Q_mul(D[0], Q_mul(Q_as_double(.5), size));
+    D[1] = Q_mul(D[0], Q_mul(Q_as_double(.5), size));
+    D[2] = Q_mul(D[0], Q_mul(Q_as_double(.5), size));
 
     //	Make sure we're ON THE MAP before casting into random memory...
     //	===============================================================
-    if ((X[0] < 0) || (X[1] < 0) || (X[0] > EDMS_DATA_SIZE - 1) || (X[1] > EDMS_DATA_SIZE - 1)) {
-        checker = fix_make(1000,0);
+    if ((X[0].val < Q_as_int(0).val) || (X[1].val < Q_as_int(0).val) || (X[0].val > Q_as_int(EDMS_DATA_SIZE - 1).val) || (X[1].val > Q_as_int(EDMS_DATA_SIZE - 1).val)) {
+        checker = 1000;
         //      mout << "!EDMS: bad raycast start at:\n";
         //      PRINT3D( X )
         //      mout << "!EDMS: raycast excluded physics handle " << exclude << "\n";
@@ -138,13 +140,13 @@ physics_handle EDMS_cast_projectile(fix *X, fix D[3], fix kick, fix knock, fix s
             checker = (terrain_info.cx) | (terrain_info.cy) | (terrain_info.cz) | (terrain_info.fx) |
                       (terrain_info.fy) | (terrain_info.fz) | (terrain_info.wx) | (terrain_info.wy) | (terrain_info.wz);
 #else
-            checker = fix_make(hit == HIT_FACELET,0);
+            checker = (hit == HIT_FACELET);
 #endif
 
             //	Check for object collisions...
             //	==============================
-            int32_t hx = fix_int(fix_floor(fix_mul(hash_scale, X[0])));
-            int32_t hy = fix_int(fix_floor(fix_mul(hash_scale, X[1])));
+            int32_t hx = Q_floor(Q_mul(hash_scale, X[0]));
+            int32_t hy = Q_floor(Q_mul(hash_scale, X[1]));
             test_data = data[hx][hy];
 
             if (test_data != last_test_data && test_data != 0) {
@@ -157,12 +159,12 @@ physics_handle EDMS_cast_projectile(fix *X, fix D[3], fix kick, fix knock, fix s
 
             //	Move the check point...
             //	=======================
-            X[0] += D[0];
-            X[1] += D[1];
-            X[2] += D[2];
+            X[0] = Q_add(X[0], D[0]);
+            X[1] = Q_add(X[1], D[1]);
+            X[2] = Q_add(X[2], D[2]);
 
-            if ((X[0] < 0) || (X[1] < 0) || (X[0] > fix_make(EDMS_DATA_SIZE - 1,0)) || (X[1] > fix_make(EDMS_DATA_SIZE - 1,0))) {
-                checker = fix_make(1000,0); // Get out...
+            if ((X[0].val < Q_as_int(0).val) || (X[1].val < Q_as_int(0).val) || (X[0].val > Q_as_int(EDMS_DATA_SIZE - 1).val) || (X[1].val > Q_as_int(EDMS_DATA_SIZE - 1).val)) {
+                checker = 1000; // Get out...
                 //            PRINT3D( X )
                 //            mout << "!EDMS: Raycast has left map!\n";
             }
@@ -185,26 +187,26 @@ physics_handle EDMS_cast_projectile(fix *X, fix D[3], fix kick, fix knock, fix s
 
                 victim_on = ph2on[victim];
 
-                fix inv_mass = (I[victim_on][IDOF_MODEL] == ROBOT ? I[victim_on][IDOF_ROBOT_MASS_RECIP] : I[victim_on][36]);
+                Q inv_mass = (I[victim_on][IDOF_MODEL].val == ROBOT.val ? I[victim_on][IDOF_ROBOT_MASS_RECIP] : I[victim_on][36]);
 
-                if (inv_mass > fix_from_float(0.05) && fix_mul(knock, inv_mass) > fix_div(fix_from_float(10.0), inv_mass)) {
+                if (inv_mass.val > Q_as_double(0.05).val && Q_mul(knock, inv_mass).val > Q_div(Q_as_double(10.0), inv_mass).val) {
                     //             mout << "Clamping knock from " << knock;
 
-                    knock = fix_div(fix_from_float(10.0), fix_mul(inv_mass, inv_mass));
+                    knock = Q_div(Q_as_double(10.0), Q_mul(inv_mass, inv_mass));
 
                     //             mout << " to " << knock << "\n";
                 }
                 // FIXME this statement does nothing
-                if (I[victim_on][IDOF_MODEL] == ROBOT)
-                    iota_c = fix_mul(fix_mul(fix_mul(fix_make(200,0), inv_mass), inv_mass), knock);
+                if (I[victim_on][IDOF_MODEL].val == ROBOT.val)
+                    iota_c = Q_mul(Q_mul(Q_mul(Q_as_int(200), inv_mass), inv_mass), knock);
                 else
-                    iota_c = fix_mul(fix_mul(fix_mul(fix_make(200,0), inv_mass), inv_mass), knock);
+                    iota_c = Q_mul(Q_mul(Q_mul(Q_as_int(200), inv_mass), inv_mass), knock);
 
-                I[victim_on][32] = fix_mul(D_old[0], iota_c); // Absolute blows off walls, remember explosions too...
-                I[victim_on][33] = fix_mul(D_old[1], iota_c);
-                I[victim_on][34] = fix_mul(D_old[2], iota_c);
+                I[victim_on][32] = Q_mul(D_old[0], iota_c); // Absolute blows off walls, remember explosions too...
+                I[victim_on][33] = Q_mul(D_old[1], iota_c);
+                I[victim_on][34] = Q_mul(D_old[2], iota_c);
 
-                I[victim_on][35] = FIX_UNIT; // Deweet!
+                I[victim_on][35] = Q_as_int(1); // Deweet!
 
                 if (no_no_not_me[victim_on] ==
                     0) { // hey folks, if our poor victim is asleep, wake him in the way appropriate to us
@@ -236,9 +238,9 @@ physics_handle EDMS_cast_projectile(fix *X, fix D[3], fix kick, fix knock, fix s
         if (victim > -1) {
             // ha ha, the above text lies, it now works
 
-            X[0] = initial_X[0] + fix_mul(D_old[0], dist);
-            X[1] = initial_X[1] + fix_mul(D_old[1], dist);
-            X[2] = initial_X[2] + fix_mul(D_old[2], dist);
+            X[0] = Q_add(initial_X[0], Q_mul(D_old[0], dist));
+            X[1] = Q_add(initial_X[1], Q_mul(D_old[1], dist));
+            X[2] = Q_add(initial_X[2], Q_mul(D_old[2], dist));
 
             //         Spew (DSRC_EDMS_Collide, ("vic %f %f %f hit %f %f %f\n", S[victim_on][0][0], S[victim_on][1][0],
             //            S[victim_on][2][0], X[0], X[1], X[2]));
@@ -246,9 +248,9 @@ physics_handle EDMS_cast_projectile(fix *X, fix D[3], fix kick, fix knock, fix s
             // Apparently things are going through walls a little so let's bring
             // it even farther back.
 
-            X[0] -= fix_mul(D[0], fix_make(2,0));
-            X[1] -= fix_mul(D[1], fix_make(2,0));
-            X[2] -= fix_mul(D[2], fix_make(2,0));
+            X[0] = Q_sub(X[0], Q_mul(D[0], Q_as_int(2)));
+            X[1] = Q_sub(X[0], Q_mul(D[1], Q_as_int(2)));
+            X[2] = Q_sub(X[0], Q_mul(D[2], Q_as_int(2)));
         }
 
         //	Did we hit a wall, or did we hit range out?
@@ -261,11 +263,11 @@ physics_handle EDMS_cast_projectile(fix *X, fix D[3], fix kick, fix knock, fix s
         //	==================
         if (shooter != -1) {
             shooter_on = ph2on[shooter];
-            iota_c = fix_mul(I[shooter_on][29], kick);
+            iota_c = Q_mul(I[shooter_on][29], kick);
 
-            if (I[shooter_on][IDOF_MODEL] == PELVIS) {
-                I[shooter_on][8] = fix_mul(D_old[0], iota_c);
-                I[shooter_on][9] = fix_mul(D_old[1], iota_c);
+            if (I[shooter_on][IDOF_MODEL].val == PELVIS.val) {
+                I[shooter_on][8] = Q_mul(D_old[0], iota_c);
+                I[shooter_on][9] = Q_mul(D_old[1], iota_c);
             }
         }
 
@@ -282,7 +284,7 @@ physics_handle EDMS_cast_projectile(fix *X, fix D[3], fix kick, fix knock, fix s
 //	Here, since we know the line segment we're interested in, we check to make sure that we
 //	didn't hit any objects, and return the one we did...
 //	====================================================
-physics_handle object_check(uint32_t data_word, fix size, fix range, int32_t exclude, int32_t stepper, fix *dist) {
+physics_handle object_check(uint32_t data_word, Q size, Q range, int32_t exclude, int32_t stepper, Q *dist) {
     //		General purpose...
     //		==================
     int32_t object;
@@ -290,38 +292,42 @@ physics_handle object_check(uint32_t data_word, fix size, fix range, int32_t exc
 
     //	For the lines...
     //	================
-    fix a = initial_X[0] - final_X[0], b = initial_X[1] - final_X[1], c = initial_X[2] - final_X[2], top_1 = 0, top_2 = 0,
-      top_3 = 0, bottom = 0, kill_zone = 0, kzdist = 0, kzdisto = fix_make(10000,0);
+    Q a = Q_sub(initial_X[0], final_X[0]), b = Q_sub(initial_X[1], final_X[1]), c = Q_sub(initial_X[2], final_X[2]), top_1 = Q_as_int(0), top_2 = Q_as_int(0),
+      top_3 = Q_as_int(0), bottom = Q_as_int(0), kill_zone = Q_as_int(0), kzdist = Q_as_int(0), kzdisto = Q_as_int(10000);
 
     uint32_t bit = 0; // which object bit we're checking
 
     while (data_word != 0) {
         if (data_word & 1) {
             // Object bit number 'bit' is on, we must check all objects which have that bit
-            for (object = bit; object < MAX_OBJ && S[object][0][0] > END; object += NUM_OBJECT_BITS) {
+            for (object = bit; object < MAX_OBJ && S[object][0][0].val > END.val; object += NUM_OBJECT_BITS) {
+		    	if(object >= MAX_OBJ){
+					TRACE("S overflow");
+					break;
+		    	}
                 if (object != exclude) {
-                    top_1 = fix_mul(c, (S[object][1][0] - initial_X[1])) - fix_mul(b, (S[object][2][0] - initial_X[2]));
-                    top_1 = fix_mul(top_1, top_1);
+                    top_1 = Q_sub(Q_mul(c, (Q_sub(S[object][1][0], initial_X[1]))), Q_mul(b, (Q_sub(S[object][2][0], initial_X[2]))));
+                    top_1 = Q_mul(top_1, top_1);
 
-                    top_2 = fix_mul(a, (S[object][2][0] - initial_X[2])) - fix_mul(c, (S[object][0][0] - initial_X[0]));
-                    top_2 = fix_mul(top_2, top_2);
+                    top_2 = Q_sub(Q_mul(a, (Q_sub(S[object][2][0], initial_X[2]))), Q_mul(c, (Q_sub(S[object][0][0], initial_X[0]))));
+                    top_2 = Q_mul(top_1, top_1);;
 
-                    top_3 = fix_mul(b, (S[object][0][0] - initial_X[0])) - fix_mul(a, (S[object][1][0] - initial_X[1]));
-                    top_3 = fix_mul(top_3, top_3);
+                    top_3 = Q_sub(Q_mul(b, (Q_sub(S[object][0][0], initial_X[0]))), Q_mul(a, (Q_sub(S[object][1][0], initial_X[1]))));
+                    top_3 = Q_mul(top_1, top_1);;
 
-                    bottom = fix_mul(a, a) + fix_mul(b, b) + fix_mul(c, c);
+                    bottom = Q_add(Q_add(Q_mul(a, a), Q_mul(b, b)), Q_mul(c, c));
 
-                    kill_zone = fix_sqrt(fix_div(top_1 + top_2 + top_3, bottom));
+                    kill_zone = Q_sqrt(Q_div((Q_add(Q_add(top_1, top_2), top_3)), bottom));
 
-                    if (kill_zone < (I[object][31] + size)) {
-                        kzdist = fix_sqrt(fix_mul((initial_X[0] - S[object][0][0]), (initial_X[0] - S[object][0][0])) +
-                                      fix_mul((initial_X[1] - S[object][1][0]), (initial_X[1] - S[object][1][0])) +
-                                      fix_mul((initial_X[2] - S[object][2][0]), (initial_X[2] - S[object][2][0])));
+                    if (kill_zone.val < Q_add(I[object][31], size).val) {
+                        kzdist = Q_sqrt(Q_add(Q_add(Q_mul((Q_sub(initial_X[0], S[object][0][0])), (Q_sub(initial_X[0], S[object][0][0]))),
+                                      Q_mul((Q_sub(initial_X[1], S[object][1][0])), (Q_sub(initial_X[1], S[object][1][0])))),
+                                      Q_mul((Q_sub(initial_X[2], S[object][2][0])), (Q_sub(initial_X[2], S[object][2][0])))));
 
-                        if ((kzdist < fix_mul(fix_mul(fix_from_float(.5), size), stepper)) && (kzdist < kzdisto)) {
+                        if ((kzdist.val < Q_mul(Q_mul(Q_as_double(.5), size), Q_as_int(stepper)).val) && (kzdist.val < kzdisto.val)) {
                             victim = on2ph[object];
                             kzdisto = kzdist;
-                            *dist = kzdist - I[object][31];
+                            *dist = Q_sub(kzdist, I[object][31]);
 
                             //	   			      X[0] = S[object][0][0];	//Provide hit location, naive for
                             //now... 	   			      X[1] = S[object][1][0]; 	   			      X[2] = S[object][2][0];
@@ -330,50 +336,59 @@ physics_handle object_check(uint32_t data_word, fix size, fix range, int32_t exc
 
                     // Is it a pelvis, and, if so, do I check for your head?  (sooooo clean..)
                     // =======================================================================
-                    if (I[object][IDOF_MODEL] == PELVIS) {
+                    if (I[object][IDOF_MODEL].val == PELVIS.val) {
 
-                        fix position[3];
+                        Q position[3];
 
-                        fix offset_x = fix_mul(I[object][0], fix_sin(fix_to_fang(S[object][4][0]))),
-                          offset_y = fix_mul(fix_mul(fix_from_float(-1.5), I[object][0]), fix_sin(fix_to_fang(S[object][5][0]))),
-                          offset_z = fix_mul(fix_mul(I[object][0], fix_cos(fix_to_fang(S[object][4][0]))), fix_cos(fix_to_fang(S[object][5][0])));
+                        Q offset_x = Q_mul(I[object][0], Q_sin(S[object][4][0])),
+                          offset_y = Q_mul(Q_mul(Q_as_double(-1.5), I[object][0]), Q_sin(S[object][5][0])),
+                          offset_z = Q_mul(Q_mul(I[object][0], Q_cos(S[object][4][0])), Q_cos(S[object][5][0]));
 
-                        fix sin_alpha = 0, cos_alpha = 0;
+                        Q sin_alpha = Q_as_int(0), cos_alpha = Q_as_int(0);
 
-                        fix final_x = 0, final_y = 0;
+                        Q final_x = Q_as_int(0), final_y = Q_as_int(0);
 
-                        fix_sincos(fix_to_fang(-S[object][3][0]), &sin_alpha, &cos_alpha);
-                        final_x = fix_mul(cos_alpha, offset_x) + fix_mul(sin_alpha, offset_y);
-                        final_y = fix_mul(-sin_alpha, offset_x) + fix_mul(cos_alpha, offset_y);
+                        Q_sincos(Q_neg(S[object][3][0]), &sin_alpha, &cos_alpha);
+                        final_x = Q_add(Q_mul(cos_alpha, offset_x), Q_mul(sin_alpha, offset_y));
+                        final_y = Q_add(Q_mul(Q_neg(sin_alpha), offset_x), Q_mul(cos_alpha, offset_y));
 
-                        position[0] = S[object][0][0] + final_x;
-                        position[1] = S[object][1][0] + final_y;
-                        position[2] = S[object][2][0] + offset_z;
+                        position[0] = Q_add(S[object][0][0], final_x);
+                        position[1] = Q_add(S[object][1][0], final_y);
+                        position[2] = Q_add(S[object][2][0], offset_z);
 
-                        top_1 = fix_mul(c, (position[1] - initial_X[1])) - fix_mul(b, (position[2] - initial_X[2]));
-                        top_1 = fix_mul(top_1, top_1);
+                        top_1 = Q_sub(Q_mul(c, (Q_sub(position[1], initial_X[1]))), Q_mul(b, (Q_sub(position[2], initial_X[2]))));
+                        top_1 = Q_mul(top_1, top_1);
 
-                        top_2 = fix_mul(a, (position[2] - initial_X[2])) - fix_mul(c, (position[0] - initial_X[0]));
-                        top_2 = fix_mul(top_2, top_2);
+                        top_2 = Q_sub(Q_mul(a, (Q_sub(position[2], initial_X[2]))), Q_mul(c, (Q_sub(position[0], initial_X[0]))));
+                        top_2 = Q_mul(top_2, top_2);
 
-                        top_3 = fix_mul(b, (position[0] - initial_X[0])) - fix_mul(a, (position[1] - initial_X[1]));
-                        top_3 = fix_mul(top_3, top_3);
+                        top_3 = Q_sub(Q_mul(b, (Q_sub(position[0], initial_X[0]))), Q_mul(a, (Q_sub(position[1], initial_X[1]))));
+                        top_3 = Q_mul(top_3, top_3);
 
-                        bottom = fix_mul(a, a) + fix_mul(b, b) + fix_mul(c, c);
+                        top_1 = Q_sub(Q_mul(c, Q_sub(position[1], initial_X[1])), Q_mul(b, Q_sub(position[2], initial_X[2])));
+                        top_1 = Q_mul(top_1, top_1);
 
-                        kill_zone = fix_sqrt(fix_div(top_1 + top_2 + top_3, bottom));
+                        top_2 = Q_sub(Q_mul(a, (Q_sub(position[2], initial_X[2]))), Q_mul(c, Q_sub(position[0], initial_X[0])));
+                        top_2 = Q_mul(top_2, top_2);
 
-                        if (kill_zone < (fix_mul(fix_from_float(.75), I[object][IDOF_PELVIS_RADIUS]) + size)) {
-                            kzdist = fix_sqrt(fix_mul((initial_X[0] - position[0]), (initial_X[0] - position[0])) +
-                                          fix_mul((initial_X[1] - position[1]), (initial_X[1] - position[1])) +
-                                          fix_mul((initial_X[2] - position[2]), (initial_X[2] - position[2])));
+                        top_3 = Q_sub(Q_mul(b, (Q_sub(position[0], initial_X[0]))), Q_mul(a, Q_sub(position[1], initial_X[1])));
+                        top_3 = Q_mul(top_3, top_3);
+
+                        bottom = Q_add(Q_add(Q_mul(a, a), Q_mul(b, b)), Q_mul(c, c));
+
+                        kill_zone = Q_sqrt(Q_div(Q_add(Q_add(top_1, top_2), top_3), bottom));
+
+                        if (kill_zone.val < Q_add(Q_mul(Q_as_double(.75), I[object][IDOF_PELVIS_RADIUS]), size).val) {
+                            kzdist = Q_sqrt(Q_add(Q_add(Q_mul((Q_sub(initial_X[0], position[0])), (Q_sub(initial_X[0], position[0]))),
+                                          Q_mul((Q_sub(initial_X[1], position[1])), (Q_sub(initial_X[1], position[1])))),
+                                          Q_mul((Q_sub(initial_X[2], position[2])), (Q_sub(initial_X[2], position[2])))));
 
                             // It's a bouncing baby head hit!...
                             // ---------------------------------
-                            if ((kzdist < fix_mul(fix_mul(fix_from_float(.5), size), stepper)) && (kzdist < kzdisto)) {
+                            if ((kzdist.val < Q_mul(Q_mul(Q_as_double(.5), size), Q_as_int(stepper)).val) && (kzdist.val < kzdisto.val)) {
                                 victim = on2ph[object];
                                 kzdisto = kzdist;
-                                *dist = kzdist - I[object][31];
+                                *dist = Q_sub(kzdist, I[object][31]);
                             }
                         }
 

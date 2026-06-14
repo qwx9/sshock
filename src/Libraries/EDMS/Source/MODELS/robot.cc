@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	Seamus, June 29, 1993...
 //	========================
 
+//#include <iostream>
 //#include <conio.h>
 #include "edms_int.h" //This is the object type library. It is universal.
 #include "idof.h"
@@ -41,7 +42,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	State information and utilities...
 //	==================================
 extern EDMS_Argblock_Pointer A;
-extern fix S[MAX_OBJ][7][4], I[MAX_OBJ][DOF_MAX];
+extern Q S[MAX_OBJ][7][4], I[MAX_OBJ][DOF_MAX];
 extern int32_t no_no_not_me[MAX_OBJ];
 
 #define SOLITION_FRAME_CNT
@@ -59,11 +60,11 @@ extern void (*EDMS_object_collision)(physics_handle caller, physics_handle victi
 // extern int	are_you_there( int );			//Collisions...
 // extern int	check_for_hit( int );
 
-static fix fix_one = fix_from_float(1.), point_five = fix_from_float(.5), two_pi = fix_from_float(6.283185);
+static Q fix_one = Q_from_double(1.), point_five = Q_from_double(.5), two_pi = Q_from_double(6.283185);
 
 //	Just a thought...
 //	=================
-static fix object0, object1, object2, object3, object4, // Howzat??
+static Q object0, object1, object2, object3, object4, // Howzat??
     object5, object6, object7, object8, object9, object10, object11, object12, object13, object14, object15, object16,
     object17, object18, object19;
 
@@ -73,13 +74,13 @@ int32_t EDMS_robot_global_badness_indicator = 0;
 
 //	Variables that are NOT on the stack...
 //	======================================
-static fix A00, A10, A20, A30, A01, A11, A21, A31;
+static Q A00, A10, A20, A30, A01, A11, A21, A31;
 
-static fix checker, check0, check1, check2, V_wall0, V_wall1;
+static Q checker, check0, check1, check2, V_wall0, V_wall1;
 
-static fix drug, butt;
+static Q drug, butt;
 
-const fix wt_pos = fix_from_float(0.001), wt_neg = fix_from_float(-0.001);
+const Q wt_pos = Q_from_double(0.001), wt_neg = Q_from_double(-0.001);
 
 #pragma require_prototypes off
 
@@ -89,7 +90,7 @@ void robot_idof(int32_t object) {
 
     //	Call me instead of having special code everywhere...
     //	====================================================
-    extern void shall_we_dance(int object, fix *result0, fix *result1, fix *result2);
+    extern void shall_we_dance(int object, Q *result0, Q *result1, Q *result2);
 
     A00 = A[object][0][0]; // Dereference NOW!
     A10 = A[object][1][0];
@@ -100,7 +101,7 @@ void robot_idof(int32_t object) {
     A21 = A[object][2][1];
     A31 = A[object][3][1];
 
-    I[object][17] = 0; // Make sure we REALLY want to climb...
+    I[object][17] = Q_as_int(0); // Make sure we REALLY want to climb...
 
     EDMS_robot_global_badness_indicator = 0;
 
@@ -115,10 +116,10 @@ void robot_idof(int32_t object) {
 
     //              Boy, will this be faster in the new order...
     //              ============================================
-    fix w0, w1, w2, w3, w4;
-    w0 = terrain_info.wx;
-    w1 = terrain_info.wy;
-    w2 = terrain_info.wz;
+    Q w0, w1, w2, w3, w4;
+    w0 = Q_as_fix(terrain_info.wx);
+    w1 = Q_as_fix(terrain_info.wy);
+    w2 = Q_as_fix(terrain_info.wz);
 
     //		w3 = sqrt( w0*w0 + w1*w1 + w2*w2 );
     //		w4 = 2*( w3 - .5*I[object][22] );
@@ -126,69 +127,69 @@ void robot_idof(int32_t object) {
     //		w4 = w4 / w3;
     //		w0 *= w4;       w1 *= w4;       w2 *= w4;
 
-    if (w0 == 0)
-        check0 = FIX_UNIT;
+    if (w0.val == Q_as_int(0).val)
+        check0 = Q_as_int(1);
     else
-        check0 = 0;
+        check0 = Q_as_int(0);
 
-    if (w1 == 0)
-        check1 = FIX_UNIT;
+    if (w1.val == Q_as_int(0).val)
+        check1 = Q_as_int(1);
     else
-        check1 = 0;
+        check1 = Q_as_int(0);
 
     if ((terrain_info.fz == 0) && (terrain_info.cz == 0))
-        check2 = FIX_UNIT;
+        check2 = Q_as_int(1);
     else
-        check2 = 0;
+        check2 = Q_as_int(0);
 
-    object0 = terrain_info.fx + terrain_info.cx;
-    object1 = terrain_info.fy + terrain_info.cy;
-    object2 = terrain_info.fz + terrain_info.cz;
+    object0 = Q_as_fix(terrain_info.fx + terrain_info.cx);
+    object1 = Q_as_fix(terrain_info.fy + terrain_info.cy);
+    object2 = Q_as_fix(terrain_info.fz + terrain_info.cz);
 
-    object0 += w0;
-    object1 += w1;
-    object2 += w2;
+    object0 = Q_add(object0, w0);
+    object1 = Q_add(object1, w1);
+    object2 = Q_add(object2, w2);
 
-    checker = fix_sqrt(fix_mul(object0, object0) + fix_mul(object1, object1) + fix_mul(object2, object2));
+    checker = Q_sqrt(Q_add(Q_add(Q_mul(object0, object0), Q_mul(object1, object1)), Q_mul(object2, object2)));
 
-    if (checker > fix_from_float(.0005)) {
-        object3 = fix_div(fix_one, checker); // To get primitive...
+    if (checker.val > Q_as_double(.0005).val) {
+        object3 = Q_div(fix_one, checker); // To get primitive...
         //                                               mout << "NZero!!  " << checker << "\n";
     } else
-        checker = object3 = 0;
+        checker = object3 = Q_as_int(0);
 
-    object4 = fix_mul(object3, object0); // The primitive V_n...
-    object5 = fix_mul(object3, object1);
-    object6 = fix_mul(object3, object2);
+    object4 = Q_mul(object3, object0); // The primitive V_n...
+    object5 = Q_mul(object3, object1);
+    object6 = Q_mul(object3, object2);
 
-    object7 = fix_mul(fix_mul(fix_from_float(.75), I[object][21]),
-              fix_mul(A01, object4) // Delta_magnitude...
-               + fix_mul(A11, object5) + fix_mul(A21, object6));
+    object7 = Q_mul(Q_mul(Q_as_double(.75), I[object][21]),
+              Q_add(Q_add(Q_mul(A01, object4), // Delta_magnitude...
+               Q_mul(A11, object5)), Q_mul(A21, object6)));
 
     object8 = I[object][20]; // Omega_magnitude...
     //		if( I[object][10]<0 ) object7 *= 4;
     //		if( I[object][10]<0 ) object8 *= 2;
 
     //              mout << "o7: " << object7 << "\n";
-    object4 = fix_mul(object7, object4); // Delta...
-    object5 = fix_mul(object7, object5);
-    object6 = fix_mul(object7, object6);
+    object4 = Q_mul(object7, object4); // Delta...
+    object5 = Q_mul(object7, object5);
+    object6 = Q_mul(object7, object6);
 
-    object9 = ((checker > fix_from_float(.001)) || (I[object][10] > 0)); // Are we in the rub???
+    object9 = Q_as_int((checker.val > Q_as_double(.001).val) || (I[object][10].val > Q_as_int(0).val)); // Are we in the rub???
 
     //		Let's not power through the walls anymore...
     //		--------------------------------------------
-    I[object][18] = fix_mul(I[object][18], check0);
-    I[object][19] = fix_mul(I[object][19], check1);
+    I[object][18] = Q_mul(I[object][18], check0);
+    I[object][19] = Q_mul(I[object][19], check1);
 
     //      Here are collisions with other objects...
     //      =========================================
-    object10 = object11 = object12 = 0;
+    object10 = object11 = object12 = Q_as_int(0);
 
-    if (I[object][5] == 0) {
+    if (I[object][5].val == Q_as_int(0).val) {
         shall_we_dance(object, &object10, &object11, &object12);
-        object10 = fix_mul(object10, fix_mul(I[object][20], check0)); // More general than it was...
-        object11 = fix_mul(object11, fix_mul(I[object][20], check1));
+        object10 = Q_mul(object10, Q_mul(I[object][20], check0)); // More general than it was...
+        object11 = Q_mul(object11, Q_mul(I[object][20], check1));
         //  	object12 *= I[object][20]*check2;
     }
 
@@ -197,95 +198,95 @@ void robot_idof(int32_t object) {
     if (ss_edms_bcd_flags & SS_BCD_REPUL_ON) {
 
         //              Get the speed...
-        fix repulsor_speed = fix_make(21,0);
+        Q repulsor_speed = Q_as_int(21);
         if ((ss_edms_bcd_flags & SS_BCD_REPUL_SPD) == SS_BCD_REPUL_NORM)
-            repulsor_speed = fix_make(7,0);
+            repulsor_speed = Q_as_int(7);
 
         //              Assume we're going up, unless...
         if ((ss_edms_bcd_flags & SS_BCD_REPUL_TYPE) == SS_BCD_REPUL_DOWN)
-            repulsor_speed = fix_mul(repulsor_speed, fix_from_float(-.5));
+            repulsor_speed = Q_mul(repulsor_speed, Q_as_double(-.5));
 
         //              The parameter should be the desired height....
-        fix repul_height;
-        repul_height = ss_edms_bcd_param;
+        Q repul_height;
+        repul_height = Q_as_fix(ss_edms_bcd_param);
 
-        fix nearness_or_something = repul_height - A[object][2][0];
-        if (fix_abs(nearness_or_something) <= fix_from_float(.333)) {
-            repulsor_speed = fix_mul(repulsor_speed, fix_mul(fix_make(3,0), nearness_or_something));
+        Q nearness_or_something = Q_sub(repul_height, A[object][2][0]);
+        if (Q_abs(nearness_or_something).val <= Q_as_double(.333).val) {
+            repulsor_speed = Q_mul(repulsor_speed, Q_mul(Q_as_int(3), nearness_or_something));
         }
 
-        fix io17 = repulsor_speed;
+        Q io17 = repulsor_speed;
 
-        I[object][17] = fix_mul(I[object][26], ((io17 - A[object][2][1]) + I[object][25]));
+        I[object][17] = Q_mul(I[object][26], Q_add(Q_sub(io17, A[object][2][1]), I[object][25]));
 
-        object9 = 1;
+        object9 = Q_as_int(1);
     }
 
     //      AutoClimbing(tm) is for wussies (is superseeded by climbing)...
     //      ===============================================================
     if ((ss_edms_bcd_flags & SS_BCD_MISC_STAIR)) {
 
-        fix o1 = 0, o0 = 0;
+        Q o1 = Q_as_int(0), o0 = Q_as_int(0);
 
-        if ((checker > 0) && (fix_abs(I[object][18]) + fix_abs(I[object][19]) > fix_from_float(.01))) {
+        if ((checker.val > Q_as_int(0).val) && (Q_add(Q_abs(I[object][18]), Q_abs(I[object][19])).val > Q_as_double(.01).val)) {
 
-            fix ratio = fix_mul((I[object][18] + A[object][0][1]), object0) + fix_mul((I[object][19] + A[object][1][1]), object1);
+            Q ratio = Q_add(Q_mul(Q_add(I[object][18], A[object][0][1]), object0), Q_mul(Q_add(I[object][19], A[object][1][1]), object1));
 
-            fix io17 = fix_from_float(.5);
+            Q io17 = Q_as_double(.5);
 
-            if (ratio <= 0) {
+            if (ratio.val <= Q_as_int(0).val) {
                 o1 = object1;
                 o0 = object0;
             } else
-                o1 = o0 = io17 = 0;
+                o1 = o0 = io17 = Q_as_int(0);
 
-            I[object][18] = fix_div(fix_mul(fix_mul(fix_mul(fix_from_float(-.3), I[object][22]), o0), object8), checker) + fix_mul(fix_from_float(.1), I[object][18]);
-            I[object][19] = fix_div(fix_mul(fix_mul(fix_mul(fix_from_float(-.3), I[object][22]), o1), object8), checker) + fix_mul(fix_from_float(.1), I[object][19]);
+            I[object][18] = Q_add(Q_div(Q_mul(Q_mul(Q_mul(Q_as_double(-.3), I[object][22]), o0), object8), checker), Q_mul(Q_as_double(.1), I[object][18]));
+            I[object][19] = Q_add(Q_div(Q_mul(Q_mul(Q_mul(Q_as_double(-.3), I[object][22]), o1), object8), checker), Q_mul(Q_as_double(.1), I[object][19]));
             //	        	io18 = -.3*I[object][22]*o0*object8/checker + .1*I[object][18];
             //		        io19 = -.3*I[object][22]*o1*object8/checker + .1*I[object][19];
 
             //                    Set the mojo...
             //                    ===============
-            I[object][17] = fix_mul(fix_make(800,0), (io17 - A[object][2][1]));
+            I[object][17] = Q_mul(Q_as_int(800), (Q_sub(io17, A[object][2][1])));
         }
     }
 
     //	Angular play (citadel) ...
     //	==========================
-    if (S[object][3][0] > two_pi)
-        S[object][3][0] -= two_pi;
-    if (S[object][3][0] < -two_pi)
-        S[object][3][0] += two_pi;
+    if (S[object][3][0].val > two_pi.val)
+        S[object][3][0] = Q_sub(S[object][3][0], two_pi);
+    if (S[object][3][0].val < Q_neg(two_pi).val)
+        S[object][3][0] = Q_add(S[object][3][0], two_pi);
 
     //	Don't be stupid...
     //	------------------
-    drug = fix_mul(-object9, I[object][23]);
+    drug = Q_mul(Q_neg(object9), I[object][23]);
     //      mout << drug << "\n";
     butt = I[object][24];
 
     //	Try the equations of motion here for grins...
     //	=============================================
-    S[object][2][2] = fix_mul(butt, fix_mul(object8, object2) // Elasticity...
-                              - object6         // Drag...
-                              + I[object][17]   // Control...
-                              + fix_mul(drug, A21) + object12)
+    S[object][2][2] = Q_sub(Q_mul(butt, (Q_add(Q_add(Q_add(Q_sub(Q_mul(object8, object2), // Elasticity...
+                              object6),         // Drag...
+                              I[object][17]),   // Control...
+                              Q_mul(drug, A21)), object12))),
 
-                      - I[object][25]; // Grav'ty...
+                      I[object][25]); // Grav'ty...
 
-    S[object][0][2] = fix_mul(butt, fix_mul(object8, object0)         // Elasticity...
-                              - object4                 // Drag...
-                              + fix_mul(object9, I[object][18]) // Control...
-                              + fix_mul(drug, A01)              // Drag...
-                              + object10);              // Collide...
+    S[object][0][2] = Q_mul(butt, Q_add(Q_add(Q_add(Q_sub(Q_mul(object8, object0),         // Elasticity...
+                              object4),                 // Drag...
+                              Q_mul(object9, I[object][18])), // Control...
+                              Q_mul(drug, A01)),              // Drag...
+                              object10));              // Collide...
 
-    S[object][1][2] = fix_mul(butt, fix_mul(object8, object1)         // Elasticity...
-                              - object5                 // Drag...
-                              + fix_mul(object9, I[object][19]) // Control...
-                              + fix_mul(drug, A11)              // Drag...
-                              + object11);              // Collide...
+    S[object][1][2] = Q_mul(butt, Q_add(Q_add(Q_add(Q_sub(Q_mul(object8, object1),         // Elasticity...
+                              object5),                 // Drag...
+                              Q_mul(object9, I[object][19])), // Control...
+                              Q_mul(drug, A11)),              // Drag...
+                              object11));              // Collide...
 
-    S[object][3][2] = fix_mul(I[object][27], (I[object][16])           // Control...
-                                       - fix_mul(I[object][28], A31)); // Drag...
+    S[object][3][2] = Q_mul(I[object][27], Q_sub(I[object][16],          // Control...
+                                       Q_mul(I[object][28], A31))); // Drag...
 
     //        mout << "Butt: " << butt << "\n";
     //        mout << "1X: " << object0 << " 1Y: " << object1 << " 1Z: " << object2 << "\n";
@@ -301,15 +302,15 @@ void robot_idof(int32_t object) {
 
     //      Damnage...
     //      ==========
-    fix dam0 = fix_mul(object8, object0) - object4;
-    fix dam1 = fix_mul(object8, object1) - object5;
-    fix dam2 = fix_mul(object8, object2) - object6;
+    Q dam0 = Q_sub(Q_mul(object8, object0), object4);
+    Q dam1 = Q_sub(Q_mul(object8, object1), object5);
+    Q dam2 = Q_sub(Q_mul(object8, object2), object6);
 
-    I[object][14] = fix_mul(I[object][IDOF_ROBOT_MASS_RECIP], (fix_abs(dam0) + fix_abs(dam1) + fix_abs(dam2))); // Damage??
+    I[object][14] = Q_mul(I[object][IDOF_ROBOT_MASS_RECIP], Q_add(Q_add(Q_abs(dam0), Q_abs(dam1)), Q_abs(dam2))); // Damage??
 
     //	Is there a projectile hit?
     //	==========================
-    if (I[object][35] > 0) {
+    if (I[object][35].val > Q_as_int(0).val) {
 
         //		Let's not power through the walls anymore...
         //		--------------------------------------------
@@ -325,9 +326,9 @@ void robot_idof(int32_t object) {
 
         //      mout << "clamp " << I[object][32] << " " << I[object][33] << " " << I[object][34] << "\n";
 
-        S[object][0][2] += /* I[object][24]* */ fix_mul(I[object][32], check0);
-        S[object][1][2] += /* I[object][24]* */ fix_mul(I[object][33], check1);
-        S[object][2][2] += /* I[object][24]* */ fix_mul(I[object][34], check2);
+        S[object][0][2] = Q_add(S[object][0][2], /* I[object][24]* */ Q_mul(I[object][32], check0));
+        S[object][1][2] = Q_add(S[object][0][2], /* I[object][24]* */ Q_mul(I[object][33], check1));
+        S[object][2][2] = Q_add(S[object][0][2], /* I[object][24]* */ Q_mul(I[object][34], check2));
 
         //      mout << "  add " << /* I[object][24]* */ I[object][32]*check0 << " " <<
         //                          /* I[object][24]* */ I[object][33]*check0 << " " <<
@@ -336,10 +337,10 @@ void robot_idof(int32_t object) {
         //                mout << "R: " << object << " K: " << I[object][24]*I[object][32]*check0 << " : " <<
         //                I[object][24]*I[object][33]*check1 << " : " << I[object][24]*I[object][34] << "\n";
 
-        I[object][35] = 0;
-        I[object][32] = 0;
-        I[object][33] = 0;
-        I[object][34] = 0;
+        I[object][35] = Q_as_int(0);
+        I[object][32] = Q_as_int(0);
+        I[object][33] = Q_as_int(0);
+        I[object][34] = Q_as_int(0);
     }
 
     //	That's all, folks...
@@ -348,46 +349,46 @@ void robot_idof(int32_t object) {
 
 //	We might for now want to set some external forces on the robot...
 //	==================================================================
-void robot_set_control(int32_t robot, fix thrust_lever, fix attitude_jet, fix jump) {
+void robot_set_control(int32_t robot, Q thrust_lever, Q attitude_jet, Q jump) {
 
-    fix_sincos(fix_to_fang(S[robot][3][0]), &object0, &object1);
+    Q_sincos(S[robot][3][0], &object0, &object1);
 
 #ifdef EDMS_SHIPPABLE
-    if (I[robot][30] != ROBOT)
+    if (I[robot][30].val != ROBOT.val)
         mout << "You are an idiot: I'm not a ROBOT!\n";
 #endif
 
     //	Here's the thrust of the situation...
     //	-------------------------------------
-    I[robot][18] = fix_mul(fix_mul(thrust_lever, object1), I[robot][IDOF_ROBOT_MASS]);
-    I[robot][19] = fix_mul(fix_mul(thrust_lever, object0), I[robot][IDOF_ROBOT_MASS]);
-    I[robot][17] = fix_mul(I[robot][26], jump);
+    I[robot][18] = Q_mul(Q_mul(thrust_lever, object1), I[robot][IDOF_ROBOT_MASS]);
+    I[robot][19] = Q_mul(Q_mul(thrust_lever, object0), I[robot][IDOF_ROBOT_MASS]);
+    I[robot][17] = Q_mul(I[robot][26], jump);
 
     //	And the turn of the...
     //	----------------------
-    I[robot][16] = fix_mul(attitude_jet, I[robot][IDOF_ROBOT_MOI]);
+    I[robot][16] = Q_mul(attitude_jet, I[robot][IDOF_ROBOT_MOI]);
 
     //	Wakee wakee...
     //	--------------
-    no_no_not_me[robot] = (fix_abs(I[robot][18]) + fix_abs(I[robot][19]) + fix_abs(I[robot][16]) + fix_abs(I[robot][17]) > 0);
+    no_no_not_me[robot] = (Q_add(Q_add(Q_add(Q_abs(I[robot][18]), Q_abs(I[robot][19])), Q_abs(I[robot][16])), Q_abs(I[robot][17])).val > Q_as_int(0).val);
 }
 
 //	Here is a separate control routine for robots under AI domination...
 //	====================================================================
-void robot_set_ai_control(int32_t robot, fix desired_heading, fix desired_speed, fix sidestep, fix urgency, fix *there_yet,
-                          fix distance) {
+void robot_set_ai_control(int32_t robot, Q desired_heading, Q desired_speed, Q sidestep, Q urgency, Q *there_yet,
+                          Q distance) {
 
-    const fix one_by_pi = fix_from_float(0.31830), pi = fix_from_float(3.14159), two_pi = fix_from_float(6.28318);
+    const Q one_by_pi = Q_as_double(0.31830), pi = Q_as_double(3.14159), two_pi = Q_as_double(6.28318);
 
 #ifdef EDMS_SHIPPABLE
-    if (I[robot][30] != ROBOT)
+    if (I[robot][30].val != ROBOT.val)
         mout << "Hey, don't call control_robot on non-robots!\n";
 #endif
 
-    if (desired_heading > two_pi)
-        desired_heading -= two_pi;
-    if (desired_heading < 0)
-        desired_heading += two_pi;
+    if (desired_heading.val > two_pi.val)
+        desired_heading = Q_sub(desired_heading, two_pi);
+    if (desired_heading.val < Q_as_int(0).val)
+        desired_heading = Q_add(desired_heading, two_pi);
 
     //	Nota bene:  Here the desired heading is specified is in the range
     //		    0 <= desired_heading < 2pi.	Urgency is a number in the range
@@ -396,43 +397,43 @@ void robot_set_ai_control(int32_t robot, fix desired_heading, fix desired_speed,
 
     //	Setup...
     //	--------
-    fix speed = fix_sqrt(fix_mul(S[robot][0][1], S[robot][0][1]) + fix_mul(S[robot][1][1], S[robot][1][1])),
-      direction = desired_heading - S[robot][3][0];
+    Q speed = Q_sqrt(Q_add(Q_mul(S[robot][0][1], S[robot][0][1]), Q_mul(S[robot][1][1], S[robot][1][1]))),
+      direction = Q_sub(desired_heading, S[robot][3][0]);
 
-    fix_sincos(fix_to_fang(S[robot][3][0]), &object0, &object1);
+    Q_sincos(S[robot][3][0], &object0, &object1);
 
     //	Heading...
     //	----------
-    if (direction > pi)
-        direction = -(direction - pi);
-    if (direction <= -pi)
-        direction = -(direction + pi);
+    if (direction.val > pi.val)
+        direction = Q_neg(Q_sub(direction, pi));
+    if (direction.val <= Q_neg(pi).val)
+        direction = Q_neg(Q_add(direction, pi));
 
     //	Inform the caller if we're on course yet...
     //	-------------------------------------------
-    *there_yet = fix_mul(fix_mul(one_by_pi, direction), (FIX_UNIT - fix_mul(fix_make(2,0), (direction < 0))));
+    *there_yet = Q_mul(Q_mul(one_by_pi, direction), Q_sub(Q_as_int(1), Q_mul(Q_as_int(2), Q_as_int(direction.val < Q_as_int(0).val))));
 
     //	Set the control...
     //	------------------
-    I[robot][16] = fix_mul(fix_mul(fix_mul(fix_from_float(.1), urgency), direction), I[robot][29]);
+    I[robot][16] = Q_mul(Q_mul(Q_mul(Q_as_double(.1), urgency), direction), I[robot][29]);
 
     //	Speed...
     //	--------
-    I[robot][17] = fix_mul(fix_mul(urgency, fix_div(FIX_UNIT, (fix_mul(fix_make(10,0), *there_yet) + fix_make(5,0)))), (desired_speed - speed)); // temporary...
-    if (I[robot][17] < 0)
-        I[robot][17] = 0;
+    I[robot][17] = Q_mul(Q_mul(urgency, Q_div(Q_as_int(1), (Q_add(Q_mul(Q_as_int(10), *there_yet), Q_as_int(5))))), Q_sub(desired_speed, speed)); // temporary...
+    if (I[robot][17].val < Q_as_int(0).val)
+        I[robot][17] = Q_as_int(0);
 
-    if (distance < 1)
-        I[robot][17] = fix_mul(I[robot][17], distance);
+    if (distance.val < Q_as_int(1).val)
+        I[robot][17] = Q_mul(I[robot][17], distance);
 
-    I[robot][18] = fix_mul(object1, I[robot][17]) + fix_mul(object0, sidestep);
-    I[robot][19] = fix_mul(object0, I[robot][17]) - fix_mul(object1, sidestep);
-    I[robot][17] = 0; // No jumping for AIs
+    I[robot][18] = Q_add(Q_mul(object1, I[robot][17]), Q_mul(object0, sidestep));
+    I[robot][19] = Q_sub(Q_mul(object0, I[robot][17]), Q_mul(object1, sidestep));
+    I[robot][17] = Q_as_int(0); // No jumping for AIs
 
     //	Wakee wakee...
     //	--------------
     if (no_no_not_me[robot] == 0) {
-        no_no_not_me[robot] = (fix_abs(I[robot][18]) + fix_abs(I[robot][19]) + fix_abs(I[robot][16]) > 0);
+        no_no_not_me[robot] = Q_add(Q_add(Q_abs(I[robot][18]), Q_abs(I[robot][19])), Q_abs(I[robot][16])).val > Q_as_int(0).val;
         //        if ( no_no_not_me[robot] != 0 ) mout << "R: " << robot << ", ph= " << on2ph[robot] << " awoken!  " <<
         //        no_no_not_me[robot] << "\n"; mout << ( abs( I[robot][18] ) + abs( I[robot][19] ) + 50*abs(
         //        I[robot][16] ) + abs( I[robot][17] ) ) << "\n"; mout << no_no_not_me[robot] << "\n";
@@ -442,7 +443,7 @@ void robot_set_ai_control(int32_t robot, fix desired_heading, fix desired_speed,
     //+ abs( I[robot][17] ) ) << ".\n";;
 }
 
-int32_t make_robot(fix init_state[6][3], fix params[10]) {
+int32_t make_robot(Q init_state[6][3], Q params[10]) {
 
     //	Sets up everything needed to manufacture a robot with initial state vector
     //	init_state[][] and EDMS motion parameters params[] into soliton. Returns the
@@ -460,7 +461,7 @@ int32_t make_robot(fix init_state[6][3], fix params[10]) {
 
     //	First find out which object we're going to be...
     //	================================================
-    while (S[++object_number][0][0] > END)
+    while (S[++object_number][0][0].val > END.val)
         ; // Jon's first C trickie...
 
     //	Is it an allowed object number?  Are we full? Why are we here? Is there a God?
@@ -486,18 +487,18 @@ int32_t make_robot(fix init_state[6][3], fix params[10]) {
         // Put in the collision information...
         // ===================================
         I[object_number][IDOF_RADIUS] = I[object_number][IDOF_ROBOT_RADIUS];
-        I[object_number][32] = I[object_number][33] = I[object_number][34] = I[object_number][35] = 0;
+        I[object_number][32] = I[object_number][33] = I[object_number][34] = I[object_number][35] = Q_as_int(0);
         I[object_number][36] = I[object_number][IDOF_ROBOT_MASS_RECIP]; // Shrugoff "mass"...
-        I[object_number][IDOF_COLLIDE] = fix_make(-1,0);
-        I[object_number][IDOF_AUTODESTRUCT] = 0; // No kill I...
+        I[object_number][IDOF_COLLIDE] = Q_as_int(-1);
+        I[object_number][IDOF_AUTODESTRUCT] = Q_as_int(0); // No kill I...
 
         // Turn ON collisions for this robot...
         // ------------------------------------
-        I[object_number][5] = 0; // negative values are off...
+        I[object_number][5] = Q_as_int(0); // negative values are off...
 
         // Zero the control initially...
         // =============================
-        I[object_number][16] = I[object_number][18] = I[object_number][19] = I[object_number][17] = 0;
+        I[object_number][16] = I[object_number][18] = I[object_number][19] = I[object_number][17] = Q_as_int(0);
 
         //		Now tell Soliton where to look for the equations of motion...
         //		=============================================================

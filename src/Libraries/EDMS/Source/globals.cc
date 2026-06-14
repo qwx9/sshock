@@ -23,9 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	This is the GLOBALS file for EDMS.  It's a girl?!
 //	=================================================
 
-#include "fix.h"
+#include "fixpp.h"
 
-fix END = fix_from_float(-9999.), VACUUM = fix_from_float(0.), MARBLE = fix_from_float(1.), FIELD_POINT = fix_from_float(2.), ROBOT = fix_make(3,0), BIPED = fix_make(4,0), PELVIS = fix_make(5,0), DEATH = fix_make(6,0), D_FRAME = fix_make(7,0);
+Q END = Q_from_double(-9999.), VACUUM = Q_from_double(0.), MARBLE = Q_from_double(1.), FIELD_POINT = Q_from_double(2.), ROBOT = Q_from_int(3), BIPED = Q_from_int(4), PELVIS = Q_from_int(5), DEATH = Q_from_int(6), D_FRAME = Q_from_int(7);
 
 int32_t min_physics_handle = 0;
 

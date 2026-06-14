@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	===================
 //	Jon Blackley, Oct. 25, 1991
 
+//#include <iostream>
 #include "edms_int.h" //Object types, END conventions, etc.
 #include "idof.h"
 #include "physhand.h"
@@ -46,7 +47,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // For convenience
 #define HashSpew(a) Spewpp(DSRC_EDMS_Hash, a)
 
-fix S[MAX_OBJ][7][4]; // State stream... Accessable to all...
+Q S[MAX_OBJ][7][4]; // State stream... Accessable to all...
 
 extern void EDMS_kill_object(physics_handle ph);
 
@@ -57,27 +58,27 @@ extern void EDMS_kill_object(physics_handle ph);
 // Why does this get set to 100 and then immediately reset to .02
 // in soliton_lite? - DS
 
-fix snooz_threshold = fix_make(100, 0);
+Q snooz_threshold = Q_from_int(100);
 
 int32_t EDMS_integrating = 0;
 
 EDMS_Argblock_Pointer A; // non-vector type arguments for perturbation...
 
-fix I[MAX_OBJ][DOF_MAX], // Internal degrees of freedom...
+Q I[MAX_OBJ][DOF_MAX], // Internal degrees of freedom...
     k[4][MAX_OBJ][7];  // expansion coefficients...
 
 void (*idof_functions[MAX_OBJ])(int32_t),       // Pointers to the appropriate places...
     (*equation_of_motion[MAX_OBJ][7])(int32_t); // The integer is the object number...
 
-fix *utility_pointer[MAX_OBJ]; // Biped skeletons, Jello translucencies, etc...
+Q *utility_pointer[MAX_OBJ]; // Biped skeletons, Jello translucencies, etc...
 
-fix hash_scale = fix_from_float(1.0); // The ratio betwixt coordinate and collision...
+Q hash_scale = Q_from_double(1.0); // The ratio betwixt coordinate and collision...
 
 // Courtesy of C++ and inline fixpoint and such...
 // ===============================================
-const fix one_sixth = fix_from_float(.1666666666667), // Overboard?
-    point_five = fix_from_float(.5), point_one_two_five = fix_from_float(.125), two = fix_from_float(2.), point_1 = fix_from_float(0.1),
-        min_scale_slice = fix_from_float(.03); // �����.03
+const Q one_sixth = Q_from_double(.1666666666667), // Overboard?
+    point_five = Q_from_double(.5), point_one_two_five = Q_from_double(.125), two = Q_from_double(2.), point_1 = Q_from_double(0.1),
+        min_scale_slice = Q_from_double(.03); // �����.03
 
 //      Sleeping...
 //      -----------
@@ -91,7 +92,7 @@ int32_t industrial_strength[MAX_OBJ];
 //      *******************HACK*HACK*HACK*HACK*****************************+
 //      ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-void soliton(fix /*timestep*/) {}
+void soliton(Q /*timestep*/) {}
 
 // Soliton_Lite (tm)...
 // ====================
@@ -106,31 +107,31 @@ bool A_is_active = false;
 //	we'll subject to some speed trials.  This could be used for certain applications, such as
 //	out-of scope models or complex aggregate or articulated objects.  Well, let's see...
 //	====================================================================================
-void soliton_lite(fix timestep) {
+void soliton_lite(Q timestep) {
     extern void robot_idof(int32_t), pelvis_idof(int32_t);
 
     int32_t object = 0;
     int32_t coord = 0;
-    fix *S_Object;
+    Q *S_Object;
 
-    fix frequency_check;
-    fix average_frequency;
+    Q frequency_check;
+    Q average_frequency;
     int32_t count = 0;
 
     // Copy the state vector initially into the argument vector...
     // ===========================================================
-    for (object = 0; S[object][0][0] > END; object++) {
-        if(object >= nelem(no_no_not_me)){
-        	fprint(2, "soliton: %d >= %d\n", object, nelem(no_no_not_me));
-        	abort();
-        }
+    for (object = 0; S[object][0][0].val > END.val; object++) {
+    	if(object >= MAX_OBJ){
+			TRACE("soliton: S overflow");
+			break;
+    	}
         if (no_no_not_me[object] == 1) {
-            S_Object = (fix *)S[object];
+            S_Object = (Q *)S[object];
 
             state_delete_object(object);
-            for (coord = 0; coord < 7 && S_Object[coord << 2] > END; coord++) {
-                A[object][coord][0] = S_Object[coord << 2];
-                A[object][coord][1] = S_Object[(coord << 2) + 1];
+            for (coord = 0; coord < 7 && S_Object[coord << 2].val > END.val; coord++) {
+                A[object][coord][0].val = S_Object[coord << 2].val;
+                A[object][coord][1].val = S_Object[(coord << 2) + 1].val;
             }
             state_write_object(object); // Here to initialize new models for sure...
         }
@@ -139,64 +140,68 @@ void soliton_lite(fix timestep) {
     // Here is the leading (order zero) term...
     // ========================================
     count = 0;
-    average_frequency = 0;
+    average_frequency = Q_as_int(0);
 
-    for (object = 0; S[object][0][0] > END; object++) {
+    for (object = 0; S[object][0][0].val > END.val; object++) {
+    	if(object >= MAX_OBJ){
+			TRACE("soliton: S overflow");
+			break;
+    	}
         if (no_no_not_me[object] == 1) {
-            S_Object = (fix *)S[object];
+            S_Object = (Q *)S[object];
 
             // Are we wasting time...
             // ----------------------
-            frequency_check = 0;
+            frequency_check = Q_as_int(0);
 
             //       mout << "II0\n";
             (*idof_functions[object])(object);
 
-            for (coord = 0; coord < 7 && S_Object[coord << 2] > END; coord++) {
-                k[0][object][coord] = fix_mul(timestep, S_Object[(coord << 2) + 2]);
-                if (fix_abs(S_Object[(coord << 2) + 2]) > fix_from_float(.001)) {
+            for (coord = 0; coord < 7 && S_Object[coord << 2].val > END.val; coord++) {
+                k[0][object][coord].val = fix_mul(timestep.val, S_Object[(coord << 2) + 2].val);
+                if (Q_abs(S_Object[(coord << 2) + 2]).val > Q_as_double(.001).val) {
                     // This check makes the function discontinuous (it goes from 10000 down
                     // to 1000 when S[object][coord][2] reaches 100)... - DS
-                    if (fix_abs(S_Object[(coord << 2) + 2]) < fix_make(100,0))
-                        frequency_check += fix_mul(S_Object[(coord << 2) + 2], S_Object[(coord << 2) + 2]);
+                    if (Q_abs(S_Object[(coord << 2) + 2]).val < Q_as_int(100).val)
+                        frequency_check.val += fix_mul(S_Object[(coord << 2) + 2].val, S_Object[(coord << 2) + 2].val);
                     else
-                        frequency_check += fix_make(1000, 0);
+                        frequency_check.val += fix_make(1000, 0);
                 }
 
-                if (fix_abs(S_Object[(coord << 2) + 1]) > fix_from_float(.001)) {
-                    if (fix_abs(S_Object[(coord << 2) + 1]) < fix_make(50,0))
-                        frequency_check += fix_div(
-                            fix_mul(S_Object[(coord << 2) + 1], S_Object[(coord << 2) + 1]), I[object][31]);
+                if (Q_abs(S_Object[(coord << 2) + 1]).val > Q_as_double(.001).val) {
+                    if (Q_abs(S_Object[(coord << 2) + 1]).val < Q_as_int(50).val)
+                        frequency_check.val += fix_div(
+                            fix_mul(S_Object[(coord << 2) + 1].val, S_Object[(coord << 2) + 1].val), I[object][31].val);
                     else
-                        frequency_check += fix_make(1000, 0);
+                        frequency_check.val += fix_make(1000, 0);
                 }
 
                 // This is angular velocity I think - DS
-                if ((I[object][IDOF_MODEL] == ROBOT) && (coord == 3))
-                    frequency_check += fix_abs(fix_mul(fix_make(50,0), S_Object[(coord << 2) + 2]));
+                if ((I[object][IDOF_MODEL].val == ROBOT.val) && (coord == 3))
+                    frequency_check = Q_add(frequency_check, Q_abs(Q_mul(Q_as_int(50), S_Object[(coord << 2) + 2])));
             }
 
             // Are you in stiff and in need of invariant imbedding?
             // ----------------------------------------------------
             industrial_strength[object] = 0; // Guilty until...
-            if (frequency_check > fix_make(15, 0)) {
+            if (frequency_check.val > Q_as_int(15).val) {
                 //          mout << "-";
                 industrial_strength[object] = 1;
             }
 
             count += 1;
-            average_frequency += frequency_check;
+            average_frequency = Q_add(average_frequency, frequency_check);
 
             //       mout << "f: " << frequency_check << "\n";
 
-            if (frequency_check < snooz_threshold) {
+            if (frequency_check.val < snooz_threshold.val) {
                 EDMS_sleepy_snoozy(on2ph[object]);
                 no_no_not_me[object] = 0;
-                if (I[object][IDOF_MODEL] == PELVIS)
+                if (I[object][IDOF_MODEL].val == PELVIS.val)
                     no_no_not_me[object] = 1; // Hack for now...
-                if (I[object][IDOF_MODEL] == BIPED)
+                if (I[object][IDOF_MODEL].val == BIPED.val)
                     no_no_not_me[object] = 1;
-                if (I[object][IDOF_MODEL] == D_FRAME)
+                if (I[object][IDOF_MODEL].val == D_FRAME.val)
                     no_no_not_me[object] = 1;
                 //          if (no_no_not_me[object] == 0) { mout << "!EDMS: sleeping f = " << frequency_check << "\n";}
             }
@@ -205,21 +210,25 @@ void soliton_lite(fix timestep) {
 
     // Sleeping...
     // -----------
-    snooz_threshold = fix_from_float(.2);
+    snooz_threshold = Q_as_double(.2);
 
     // Here is a frobbed term...
     // -------------------------
 
     // mout << "frob...\n";
 
-    for (object = 0; S[object][0][0] > END; object++) {
+    for (object = 0; S[object][0][0].val > END.val; object++) {
+    	if(object >= MAX_OBJ){
+			TRACE("soliton: S overflow");
+			break;
+    	}
         if (no_no_not_me[object] == 1) {
-            S_Object = (fix *)S[object];
+            S_Object = (Q *)S[object];
 
             state_delete_object(object); // Do collisions...
-            for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0] > END; coord++) {
-                A[object][coord][0] += fix_mul(timestep, S_Object[(coord << 2) + 1]);
-                A[object][coord][1] += k[0][object][coord];
+            for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0].val > END.val; coord++) {
+                A[object][coord][0].val += fix_mul(timestep.val, S_Object[(coord << 2) + 1].val);
+                A[object][coord][1].val += k[0][object][coord].val;
             }
             write_object(object); // Do collisions...
         }
@@ -231,9 +240,13 @@ void soliton_lite(fix timestep) {
 
     // Now for the more complicated step...
     // ====================================
-    for (object = 0; S[object][0][0] > END; object++) {
+    for (object = 0; S[object][0][0].val > END.val; object++) {
+    	if(object >= MAX_OBJ){
+			TRACE("soliton: S overflow");
+			break;
+    	}
         if (no_no_not_me[object] == 1) {
-            S_Object = (fix *)S[object];
+            S_Object = (Q *)S[object];
 
             // If we've got a hot one, EDMS now becomes industrial strength (note collisions set above)...
             // -------------------------------------------------------------------------------------------
@@ -243,13 +256,13 @@ void soliton_lite(fix timestep) {
                 // First order...
                 // --------------
                 delete_object(object);
-                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0] > END; coord++) {
-                    A[object][coord][0] =
-                        S_Object[(coord << 2) + 0] +
-                        fix_mul(fix_mul(point_five, timestep), S_Object[(coord << 2) + 1]) +
-                        fix_mul(fix_mul(point_one_two_five, timestep), k[0][object][coord]);
-                    A[object][coord][1] =
-                        S_Object[(coord << 2) + 1] + fix_mul(point_five, k[0][object][coord]);
+                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0].val > END.val; coord++) {
+                    A[object][coord][0].val =
+                        S_Object[(coord << 2) + 0].val +
+                        fix_mul(fix_mul(point_five.val, timestep.val), S_Object[(coord << 2) + 1].val) +
+                        fix_mul(fix_mul(point_one_two_five.val, timestep.val), k[0][object][coord].val);
+                    A[object][coord][1].val =
+                        S_Object[(coord << 2) + 1].val + fix_mul(point_five.val, k[0][object][coord].val);
                 }
                 write_object(object);
 
@@ -257,47 +270,47 @@ void soliton_lite(fix timestep) {
 
                 (*idof_functions[object])(object);
 
-                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0] > END; coord++) {
-                    k[1][object][coord] = fix_mul(timestep, S_Object[(coord << 2) + 2]);
+                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0].val > END.val; coord++) {
+                    k[1][object][coord].val = fix_mul(timestep.val, S_Object[(coord << 2) + 2].val);
                 }
 
                 // Second order...
                 // ---------------
                 delete_object(object);
-                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0] > END; coord++) {
-                    A[object][coord][0] =
-                        S_Object[(coord << 2) + 0] +
-                        fix_mul(fix_mul(point_five, timestep), S_Object[(coord << 2) + 1]) +
-                        fix_mul(fix_mul(point_one_two_five, timestep), k[1][object][coord]);
-                    A[object][coord][1] =
-                        S_Object[(coord << 2) + 1] + fix_mul(point_five, k[1][object][coord]);
+                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0].val > END.val; coord++) {
+                    A[object][coord][0].val =
+                        S_Object[(coord << 2) + 0].val +
+                        fix_mul(fix_mul(point_five.val, timestep.val), S_Object[(coord << 2) + 1].val) +
+                        fix_mul(fix_mul(point_one_two_five.val, timestep.val), k[1][object][coord].val);
+                    A[object][coord][1].val =
+                        S_Object[(coord << 2) + 1].val + fix_mul(point_five.val, k[1][object][coord].val);
                 }
                 write_object(object);
 
                 //          mout << "II2\n";
                 (*idof_functions[object])(object);
 
-                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0] > END; coord++) {
-                    k[2][object][coord] = fix_mul(timestep, S_Object[(coord << 2) + 2]);
+                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0].val > END.val; coord++) {
+                    k[2][object][coord].val = fix_mul(timestep.val, S_Object[(coord << 2) + 2].val);
                 }
 
                 // Third order...
                 // --------------
                 delete_object(object);
-                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0] > END; coord++) {
+                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0].val > END.val; coord++) {
                     // Different convergence requirement from other terms!
-                    A[object][coord][0] = S_Object[(coord << 2) + 0] +
-                                              fix_mul(timestep, S_Object[(coord << 2) + 1]) +
-                                              fix_mul(fix_mul(point_five, timestep), k[2][object][coord]);
-                    A[object][coord][1] = S_Object[(coord << 2) + 1] + k[2][object][coord];
+                    A[object][coord][0].val = S_Object[(coord << 2) + 0].val +
+                                              fix_mul(timestep.val, S_Object[(coord << 2) + 1].val) +
+                                              fix_mul(fix_mul(point_five.val, timestep.val), k[2][object][coord].val);
+                    A[object][coord][1].val = S_Object[(coord << 2) + 1].val + k[2][object][coord].val;
                 }
                 write_object(object);
 
                 //          mout << "II3\n";
                 (*idof_functions[object])(object);
 
-                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0] > END; coord++) {
-                    k[3][object][coord] = fix_mul(timestep, S_Object[(coord << 2) + 2]);
+                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0].val > END.val; coord++) {
+                    k[3][object][coord].val = fix_mul(timestep.val, S_Object[(coord << 2) + 2].val);
                 }
             } // End of stoked...
             else {
@@ -305,14 +318,14 @@ void soliton_lite(fix timestep) {
                 // ===================
                 (*idof_functions[object])(object);
 
-                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0] > END; coord++) {
-                    k[1][object][coord] = fix_mul(timestep, S_Object[(coord << 2) + 2]);
+                for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0].val > END.val; coord++) {
+                    k[1][object][coord].val = fix_mul(timestep.val, S_Object[(coord << 2) + 2].val);
                 }
             } // End of else for regular guy...
 
             // Does anybody need to wake up?
             // -----------------------------
-            for (coord = 0; coord < MAX_OBJ && S[coord][0][0] > END; coord++)
+            for (coord = 0; coord < MAX_OBJ && S[coord][0][0].val > END.val; coord++)
                 if (alarm_clock[coord] != 0) {
                     //          mout << "Alarm2: " << coord << "\n";
                     alarm_clock[coord] = 0;
@@ -325,35 +338,39 @@ void soliton_lite(fix timestep) {
 
     // Hey! We're already able to assemble the solution!  Wasn't that better than soliton?
     // ===-----======-------------------------------------------------
-    for (object = 0; S[object][0][0] > END; object++) {
+    for (object = 0; S[object][0][0].val > END.val; object++) {
+    	if(object >= MAX_OBJ){
+			TRACE("soliton: S overflow");
+			break;
+    	}
         if (no_no_not_me[object] == 1) {
             total += 1;
-            fix anus[7];
+            Q anus[7];
 
-            S_Object = (fix *)S[object];
+            S_Object = (Q *)S[object];
 
             // Calculate the multiplier...
             // ---------------------------
-            if (I[object][IDOF_MODEL] == D_FRAME) {
-                fix lagrange_multiplier = fix_div(fix_from_float(.5), timestep);
-                fix l_m;
-                fix lagrange;
+            if (I[object][IDOF_MODEL].val == D_FRAME.val) {
+                Q lagrange_multiplier = Q_div(Q_as_double(.5), timestep);
+                Q l_m;
+                Q lagrange;
 
-                lagrange = (1 << 16) - (fix_mul(S_Object[(3 << 2) + 0], S_Object[(3 << 2) + 0]) +
-                                            fix_mul(S_Object[(4 << 2) + 0], S_Object[(4 << 2) + 0]) +
-                                            fix_mul(S_Object[(5 << 2) + 0], S_Object[(5 << 2) + 0]) +
-                                            fix_mul(S_Object[(6 << 2) + 0], S_Object[(6 << 2) + 0]));
-                l_m = fix_mul(lagrange_multiplier, lagrange);
-                anus[0] = anus[1] = anus[2] = 0;
-                anus[3] = fix_mul(S_Object[(3 << 2) + 0], l_m);
-                anus[4] = fix_mul(S_Object[(4 << 2) + 0], l_m);
-                anus[5] = fix_mul(S_Object[(5 << 2) + 0], l_m);
-                anus[6] = fix_mul(S_Object[(6 << 2) + 0], l_m);
+                lagrange.val = (1 << 16) - (fix_mul(S_Object[(3 << 2) + 0].val, S_Object[(3 << 2) + 0].val) +
+                                            fix_mul(S_Object[(4 << 2) + 0].val, S_Object[(4 << 2) + 0].val) +
+                                            fix_mul(S_Object[(5 << 2) + 0].val, S_Object[(5 << 2) + 0].val) +
+                                            fix_mul(S_Object[(6 << 2) + 0].val, S_Object[(6 << 2) + 0].val));
+                l_m.val = fix_mul(lagrange_multiplier.val, lagrange.val);
+                anus[0].val = anus[1].val = anus[2].val = 0;
+                anus[3].val = fix_mul(S_Object[(3 << 2) + 0].val, l_m.val);
+                anus[4].val = fix_mul(S_Object[(4 << 2) + 0].val, l_m.val);
+                anus[5].val = fix_mul(S_Object[(5 << 2) + 0].val, l_m.val);
+                anus[6].val = fix_mul(S_Object[(6 << 2) + 0].val, l_m.val);
             } // End of calculation...
 
             // Lupe over coordinates...
             // ------------------------
-            for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0] > END; coord++) {
+            for (coord = 0; coord < 7 && S_Object[(coord << 2) + 0].val > END.val; coord++) {
                 if (industrial_strength[object] == 1) {
                     // These guys need more multiplies...
                     // ----------------------------------
@@ -361,26 +378,26 @@ void soliton_lite(fix timestep) {
 
                     // Check for Dirac...
                     // ------------------
-                    if (I[object][IDOF_MODEL] == D_FRAME) {
+                    if (I[object][IDOF_MODEL].val == D_FRAME.val) {
                         //                mout << "D";
 
-                        S_Object[(coord << 2) + 0] += fix_mul(
-                            timestep, (S_Object[(coord << 2) + 1] + anus[coord] +
-                                           fix_mul(one_sixth, (k[0][object][coord] + k[1][object][coord] +
-                                                                   k[2][object][coord]))));
+                        S_Object[(coord << 2) + 0].val += fix_mul(
+                            timestep.val, (S_Object[(coord << 2) + 1].val + anus[coord].val +
+                                           fix_mul(one_sixth.val, (k[0][object][coord].val + k[1][object][coord].val +
+                                                                   k[2][object][coord].val))));
                     } else {
                         //                mout << "N";
 
-                        S_Object[(coord << 2) + 0] += fix_mul(
-                            timestep, (S_Object[(coord << 2) + 1] +
-                                           fix_mul(one_sixth, (k[0][object][coord] + k[1][object][coord] +
-                                                                   k[2][object][coord]))));
+                        S_Object[(coord << 2) + 0].val += fix_mul(
+                            timestep.val, (S_Object[(coord << 2) + 1].val +
+                                           fix_mul(one_sixth.val, (k[0][object][coord].val + k[1][object][coord].val +
+                                                                   k[2][object][coord].val))));
                     }
 
-                    S_Object[(coord << 2) + 1] +=
-                        fix_mul(one_sixth, (k[0][object][coord] +
-                                                fix_mul(two, (k[1][object][coord] + k[2][object][coord]) +
-                                                                     k[3][object][coord])));
+                    S_Object[(coord << 2) + 1].val +=
+                        fix_mul(one_sixth.val, (k[0][object][coord].val +
+                                                fix_mul(two.val, (k[1][object][coord].val + k[2][object][coord].val) +
+                                                                     k[3][object][coord].val)));
                 } else {
                     // These guys don't...
                     // ===================
@@ -388,20 +405,20 @@ void soliton_lite(fix timestep) {
 
                     // Use the multiplier...
                     // ---------------------
-                    if (I[object][IDOF_MODEL] == D_FRAME) {
-                        S_Object[(coord << 2) + 0] =
-                            S_Object[(coord << 2) + 0] +
-                            fix_mul(timestep, (S_Object[(coord << 2) + 1] + anus[coord])) +
-                            fix_mul(point_five,
-                                    (fix_mul(fix_mul(timestep, timestep), k[0][object][coord])));
+                    if (I[object][IDOF_MODEL].val == D_FRAME.val) {
+                        S_Object[(coord << 2) + 0].val =
+                            S_Object[(coord << 2) + 0].val +
+                            fix_mul(timestep.val, (S_Object[(coord << 2) + 1].val + anus[coord].val)) +
+                            fix_mul(point_five.val,
+                                    (fix_mul(fix_mul(timestep.val, timestep.val), k[0][object][coord].val)));
                     } else {
-                        S_Object[(coord << 2) + 0] += fix_mul(
-                            timestep, (S_Object[(coord << 2) + 1] +
-                                           fix_mul(fix_mul(point_five, timestep), k[0][object][coord])));
+                        S_Object[(coord << 2) + 0].val += fix_mul(
+                            timestep.val, (S_Object[(coord << 2) + 1].val +
+                                           fix_mul(fix_mul(point_five.val, timestep.val), k[0][object][coord].val)));
                     }
 
-                    S_Object[(coord << 2) + 1] +=
-                        fix_mul(point_five, (k[0][object][coord] + k[1][object][coord]));
+                    S_Object[(coord << 2) + 1].val +=
+                        fix_mul(point_five.val, (k[0][object][coord].val + k[1][object][coord].val));
                 } // End of else for regular guys...
             }
 
@@ -410,7 +427,7 @@ void soliton_lite(fix timestep) {
             delete_object(object);
             state_write_object(object);
 
-            if (I[object][IDOF_AUTODESTRUCT] < 0)
+            if (I[object][IDOF_AUTODESTRUCT].val < Q_as_int(0).val)
                 EDMS_kill_object(on2ph[object]); // You deserve to die!
         }
     }
@@ -425,7 +442,7 @@ void soliton_lite(fix timestep) {
 // efficiency of the integration step, while remaining very stable.  Details about its use
 // will follow when it proves useful...
 // ====================================
-void soliton_vector(fix timestep) {
+void soliton_vector(Q timestep) {
     // Here i yam...
     // -------------
     EDMS_integrating = 1;
@@ -438,15 +455,15 @@ void soliton_vector(fix timestep) {
 
     // Stupid scaling for now, for FF prototype which is very SLOW!
     // -----------------------------------------------------------
-    while (timestep > min_scale_slice) {
+    while (timestep.val > min_scale_slice.val) {
         count++;
         soliton_lite(min_scale_slice);
-        timestep -= min_scale_slice;
+        timestep = Q_sub(timestep, min_scale_slice);
     }
 
     // Now do the rest...
     // ==================
-    if (timestep > fix_from_float(.01) || count == 0)
+    if (timestep.val > Q_as_double(.01).val || count == 0)
         soliton_lite(timestep);
     // else mout << "!EDMS: timestep is small, dt = " << timestep << "\n";
 
@@ -460,11 +477,11 @@ void soliton_vector(fix timestep) {
 // Here is an integrator that fools the models into not colliding.  Hopefully not often used.
 // It is a version of Soliton Lite(tm)...
 // ======================================
-void soliton_lite_holistic(fix /*timestep*/) {}
+void soliton_lite_holistic(Q /*timestep*/) {}
 
 // Here is the holistic vector integrator...
 // =========================================
-void soliton_vector_holistic(fix /*timestep*/) {}
+void soliton_vector_holistic(Q /*timestep*/) {}
 
 //	Have some utility routines...
 //	=============================
@@ -475,7 +492,7 @@ void soliton_vector_holistic(fix /*timestep*/) {}
 void EDMS_initialize(EDMS_data *D) {
     extern uint32_t data[EDMS_DATA_SIZE][EDMS_DATA_SIZE];
     int32_t object = 0, coord = 0, deriv = 0;
-    const fix collision_size = fix_make(EDMS_DATA_SIZE, 0);
+    const Q collision_size = Q_as_int(EDMS_DATA_SIZE);
 
     // Set the starting physics_handle...
     // ==================================
@@ -493,11 +510,11 @@ void EDMS_initialize(EDMS_data *D) {
 
     // Set the scale of the playfield and zero the collision data...
     // =============================================================
-    hash_scale = D->playfield_size;
-    hash_scale = fix_div(collision_size, hash_scale);
+    hash_scale = Q_as_fix(D->playfield_size);
+    hash_scale = Q_div(collision_size, hash_scale);
 
-    // printf("hash_scale: %f\n", fix_float(hash_scale));
-    // printf("collision_size: %f\n", fix_float(collision_size));
+    // printf("hash_scale: %f\n", fix_float(hash_scale.to_fix()));
+    // printf("collision_size: %f\n", fix_float(collision_size.to_fix()));
 
     for (coord = 0; coord < EDMS_DATA_SIZE; coord++) {
         for (deriv = 0; deriv < EDMS_DATA_SIZE; deriv++) {
@@ -519,7 +536,7 @@ void EDMS_initialize(EDMS_data *D) {
         }
 
         I[object][IDOF_MODEL] = VACUUM; // Look, Ma, no object!
-        I[object][IDOF_AUTODESTRUCT] = 0;      // Don't kill...
+        I[object][IDOF_AUTODESTRUCT] = Q_as_int(0);      // Don't kill...
     }
 
     // Finally, set all the sleepers to waking states...
@@ -538,7 +555,7 @@ int32_t EDMS_kill(int32_t deadguy) {
 
     // First see if there is, in fact, an object there...
     // ==================================================
-    if (S[deadguy][0][0] > END) {
+    if (S[deadguy][0][0].val > END.val) {
         //    if (EDMS_integrating == 1) mout << "Deleting " << deadguy << "\n";
 
         // Release from any contractual involvements with other objects...
@@ -547,7 +564,7 @@ int32_t EDMS_kill(int32_t deadguy) {
 
         // Faster, pussycat, kill kill.  First perform the garbage collection...
         // =====================================================================
-        for (object = deadguy + 1; object < MAX_OBJ && S[object][0][0] > END; object++) {
+        for (object = deadguy + 1; object < MAX_OBJ && S[object][0][0].val > END.val; object++) {
             if (A_is_active && no_no_not_me[(object - 1)] == 1)
                 delete_object(object - 1);
             else
@@ -575,8 +592,8 @@ int32_t EDMS_kill(int32_t deadguy) {
 
             // Fix the excluded collision information...
             // =========================================
-            if (I[(object - 1)][IDOF_COLLIDE] > fix_make(-1,0))
-                I[fix_int(I[(object - 1)][IDOF_COLLIDE])][IDOF_COLLIDE] = object - 1;
+            if (I[(object - 1)][IDOF_COLLIDE].val > Q_as_int(-1).val)
+                I[Q_to_int(I[(object - 1)][IDOF_COLLIDE])][IDOF_COLLIDE] = Q_as_int(object - 1);
 
             // Utility pointers also need fixing...
             // ====================================
@@ -612,7 +629,7 @@ int32_t EDMS_kill(int32_t deadguy) {
         }
 
         I[(object - 1)][30] = VACUUM; // Nothing there...
-        I[(object - 1)][38] = 0;      // Don't kill...
+        I[(object - 1)][38] = Q_as_int(0);      // Don't kill...
 
         // Points nowhere...
         // =================
@@ -638,13 +655,13 @@ int32_t EDMS_kill(int32_t deadguy) {
 //	Collision wakeup...
 //	===================
 void collision_wakeup(int32_t object) {
-    fix idof_state[DOF_MAX], state[7][4], arg[7][4];
+    Q idof_state[DOF_MAX], state[7][4], arg[7][4];
 
     int32_t coord = 0, deriv = 0, new_object = 0;
 
     physics_handle ph;
 
-    fix *utility_save;
+    Q *utility_save;
     void (*idof_function_save)(int);
 
     extern void inventory_and_statistics();
@@ -680,7 +697,7 @@ void collision_wakeup(int32_t object) {
 
     // Where do I store the copy...
     // ============================
-    while (S[new_object++][0][0] > END)
+    while (S[new_object++][0][0].val > END.val)
         ;
     new_object -= 1;
 
@@ -718,8 +735,8 @@ void collision_wakeup(int32_t object) {
 
     // Fix the excluded collision information...
     // =========================================
-    if (I[new_object][IDOF_COLLIDE] > fix_make(-1,0))
-        I[fix_int(I[new_object][IDOF_COLLIDE])][IDOF_COLLIDE] = new_object;
+    if (I[new_object][IDOF_COLLIDE].val > Q_as_int(-1).val)
+        I[Q_to_int(I[new_object][IDOF_COLLIDE])][IDOF_COLLIDE] = Q_as_int(new_object);
 }
 
 #pragma require_prototypes off

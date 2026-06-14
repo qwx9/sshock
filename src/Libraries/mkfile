@@ -123,6 +123,7 @@ HFILES=\
 	EDMS/Source/edms_int.h\
 	EDMS/Source/edms_mod.h\
 	EDMS/Source/externs.h\
+	EDMS/Source/fixpp.h\
 	EDMS/Source/idof.h\
 	EDMS/Source/physhand.h\
 	EDMS/Source/ss_flet.h\
