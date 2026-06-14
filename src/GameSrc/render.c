@@ -190,7 +190,7 @@ errtype render_hack_cameras(void) {
                                (count == 1 || (((hack_cam_fr_count >> FRAME_PARITY_SHF) ^ camera_map[i]) & 1) == 0)))) {
             curr_hack_cam = camera_map[i] - 1;
             hack_frc_objs[curr_hack_cam] = hack_cam_objs[i];
-            fr_camera_update(&hack_cam, (unsigned int)hack_cam_objs[i], 0, 0);
+            fr_camera_update(&hack_cam, (uintptr_t)hack_cam_objs[i], 0, 0);
             fr_rend(hack_cam_frcs[camera_map[i] - 1]);
         }
     }
@@ -230,14 +230,14 @@ errtype hack_camera_takeover(int hack_cam) {
     hack_eye = eye_mods[1];
     eye_mods[1] = 0;
 
-    fr_camera_update(cam, (unsigned int)hack_cam_objs[hack_cam], 0, 0);
+    fr_camera_update(cam, (uintptr_t)hack_cam_objs[hack_cam], 0, 0);
     hack_takeover = hack_cam + 1;
     return (OK);
 }
 
 errtype hack_camera_relinquish(void) {
     cams *cam = fr_camera_getdef();
-    fr_camera_update(cam, (unsigned int)PLAYER_OBJ, 0, 0);
+    fr_camera_update(cam, (uintptr_t)PLAYER_OBJ, 0, 0);
 
     // force refresh of this hack camera.
     hack_frc_objs[camera_map[hack_takeover - 1] - 1] = OBJ_NULL;

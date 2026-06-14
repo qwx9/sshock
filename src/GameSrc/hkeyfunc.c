@@ -1142,14 +1142,14 @@ uchar current_camera_func(ushort keycode, uint32_t context, intptr_t data) {
         fr_camera_modtype(&objmode_cam, CAMTYPE_ABS, CAMBIT_OBJ);
         cam_ptr_hack = fr_camera_getpos(NULL);
         memcpy(cam_locs, cam_ptr_hack, 6 * sizeof(fix));
-        fr_camera_update(&objmode_cam, cam_locs, CAM_UPDATE_NONE, NULL);
+        fr_camera_update(&objmode_cam, (uintptr_t)cam_locs, CAM_UPDATE_NONE, 0);
         if (motion_cam == NULL)
             camera_info("camera dynamic");
         break;
     case OBJ_CURRENT_CAMERA:
         camera_info("current obj");
         fr_camera_modtype(&objmode_cam, CAMTYPE_OBJ, CAMBIT_OBJ);
-        fr_camera_update(&objmode_cam, (void *)current_object, CAM_UPDATE_NONE, NULL);
+        fr_camera_update(&objmode_cam, (uintptr_t)current_object, CAM_UPDATE_NONE, 0);
         break;
     }
     cam_mode = (uchar)data;
