@@ -31,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Includes
 #include "objclass.h"
 
-#pragma pack on
+//#pragma pack on
 
 // Instance typedefs
 typedef struct {
@@ -141,7 +141,7 @@ typedef struct _PlotSmallstuffProp {
     ObjID target;
 } PlotSmallstuffProp;
 
-#pragma pack off
+//#pragma pack off
 
 // Big Stuff
 #define NUM_ELECTRONIC_BIGSTUFF 9

@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "objsim.h"
 #include "objclass.h"
 
-#pragma pack on	// 2
+//#pragma pack on	// 2
 
 typedef struct {
     //   COMMON_OBJSPEC_FIELDS;
@@ -264,6 +264,6 @@ extern ObjCritter default_critter;
 #define set_crit_view(osid, newview) \
     objCritters[osid].current_posture = (newview << 8) + (objCritters[osid].current_posture & 0xF)
 
-#pragma pack off
+//#pragma pack off
 
 #endif // __OBJCRIT_H

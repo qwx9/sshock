@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "objgame.h"
 #include "objcrit.h"
 
-#pragma pack on	// 2
+//#pragma pack on	// 2
 
 // The overall object properties typedef
 typedef struct ObjProp {
@@ -118,6 +118,6 @@ ObjProp ObjProps[NUM_OBJECT];
 extern ObjProp ObjProps[NUM_OBJECT];
 #endif
 
-#pragma pack off
+//#pragma pack off
 
 #endif // __OBJPROP_H

@@ -64,7 +64,7 @@ typedef short ObjSpecID;
 #include "objapp.h"
 #endif
 
-#pragma pack on // 2
+//#pragma pack on // 2
 
 // The common data for all objects
 typedef struct Obj {
@@ -319,6 +319,6 @@ uchar ObjInstInit(ObjID id, ObjSpecID specid, ObjSubClass subclass);
 
 //////////////////////////////
 
-#pragma pack off
+//#pragma pack off
 
 #endif // __OBJECTS_H

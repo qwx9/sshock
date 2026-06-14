@@ -153,7 +153,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "2d.h"
 #include "fix.h"
 
-#pragma pack on	// 2
+//#pragma pack on	// 2
 
 // MLA defines
 #define SwapFix(x, y)   \
@@ -359,7 +359,7 @@ extern g3s_vector g3d_light_src, g3d_light_trans;
 extern g3s_vector g3d_light_src, g3d_light_trans;
 extern g3s_vector g3d_view_vec, g3d_light_vec;
 
-#pragma pack off	// 2
+//#pragma pack off	// 2
 
 // DG: my compiler was not happy about the names "or" and "and", so I appended a
 // _

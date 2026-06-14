@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Includes
 #include "objclass.h"
 
-#pragma pack on
+//#pragma pack on
 
 // Instance Stuff
 typedef struct {
@@ -134,7 +134,7 @@ typedef struct DataSoftwareProp {
     ubyte dummy;
 } DataSoftwareProp;
 
-#pragma pack off
+//#pragma pack off
 
 // Drug
 #define NUM_STATS_DRUG 7

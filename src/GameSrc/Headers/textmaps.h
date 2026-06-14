@@ -87,7 +87,7 @@ typedef struct {
     ubyte sizes_loaded;
 } TextureMap;
 
-#pragma pack on
+//#pragma pack on
 
 typedef struct {
     char family_texture;
@@ -101,7 +101,7 @@ typedef struct {
     char group_pos;
 } TextureProp;
 
-#pragma pack off
+//#pragma pack off
 
 #define ANIMTEXTURE_CYCLE 0x01
 

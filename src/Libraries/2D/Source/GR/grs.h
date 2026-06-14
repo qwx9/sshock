@@ -106,7 +106,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "fix.h"
 
-#pragma pack on	// 2
+//#pragma pack on	// 2
 
 /* system information structure. */
 typedef struct {
@@ -242,6 +242,6 @@ typedef struct {
    fix x,y,z;    /* 3's */
 } grs_point3d;
 
-#pragma pack off
+//#pragma pack off
 
 #endif /* !__GRS_H */

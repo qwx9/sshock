@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Includes
 #include "objclass.h"
 
-#pragma pack on	// 2
+//#pragma pack on	// 2
 
 // Instance Typedefs
 typedef struct {
@@ -420,6 +420,6 @@ extern ObjTrap default_trap;
 extern ObjContainer default_container;
 #endif
 
-#pragma pack off
+//#pragma pack off
 
 #endif // __OBJGAME_H

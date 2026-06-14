@@ -31,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Includes
 #include "objclass.h"
 
-#pragma pack on
+//#pragma pack on
 
 // Instance Data
 typedef struct {
@@ -254,7 +254,7 @@ typedef struct _TimedGrenadeProp {
     ubyte timing_deviation;
 } TimedGrenadeProp;
 
-#pragma pack off
+//#pragma pack off
 
 // Gun
 #define NUM_PISTOL_GUN     5

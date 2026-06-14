@@ -79,7 +79,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "resformat.h"
 
-#pragma pack on	// 2
+//#pragma pack on	// 2
 
 //	---------------------------------------------------------
 //		ID AND REF DEFINITIONS AND MACROS
@@ -318,6 +318,8 @@ void ResUnmake(Id id);
 
 //	Resource-file disk format:  header, data, dir
 
+#pragma pack on	// 2
+
 typedef struct {
     char signature[16];   // "LG ResFile v2.0\n",
     char comment[96];     // user comment, terminated with '\z'
@@ -347,6 +349,8 @@ typedef struct {
                     // (this size is valid disk size even if not comp.)
     uint8_t type;   // resource type
 } ResDirEntry;
+
+#pragma pack off
 
 #define	GBIT8(p)	(((uchar*)(p))[0])
 #define	GBIT16(p)	(((uchar*)(p))[0]|(((uchar*)(p))[1]<<8))
@@ -403,6 +407,6 @@ int32_t ResPack(int32_t filenum);                   // remove empty entries
 // DG: a case-insensitive fopen()-wrapper (see resfile.c)
 extern FILE *fopen_caseless(const char *path, const char *mode);
 
-#pragma pack off
+//#pragma pack off
 
 #endif

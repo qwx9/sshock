@@ -28,7 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif // !defined(__cplusplus)
 
-#pragma pack on	// 2
+//#pragma pack on	// 2
 
 typedef struct {
    grs_point3d normal;
@@ -1641,7 +1641,7 @@ extern void fcount_stop(void);
 extern void fcount_report(void);
 extern void fcount_install(void);
 
-#pragma pack off
+//#pragma pack off
 
 #if defined(__cplusplus)
 }

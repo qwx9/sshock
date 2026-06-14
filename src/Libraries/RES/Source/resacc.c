@@ -52,7 +52,7 @@ void *ResDecode(void *raw, size_t *size, UserDecodeData ud)
     // Layout.
     const ResLayout *layout = (const ResLayout*)ud;
     // Working pointer into the raw data.
-    uchar *rp = raw;
+    uchar *orp = raw, *rp = raw;
     // Number of entries, if it's an array.
     int nentries = (layout->flags & LAYOUT_FLAG_ARRAY) ? *size / layout->dsize : 1;
     // Total size of the decoded data.
@@ -63,6 +63,7 @@ void *ResDecode(void *raw, size_t *size, UserDecodeData ud)
         bufsize += *size - layout->dsize;
     }
     void *buff = malloc(bufsize);
+    memset(buff, 0, bufsize);
     int i;
     for (i = 0; i < nentries; ++i) {
         uchar *b = ((uchar *)buff) + i * layout->msize;
@@ -104,8 +105,14 @@ void *ResDecode(void *raw, size_t *size, UserDecodeData ud)
             default:
                 assert(!"Invalid resource field type");
             }
+            if(field->type != RFFT_PAD){
+            	if(rp > orp + layout->dsize)
+            		ERROR("%lld > %d", (uvlong)(uintptr)rp-(uvlong)(uintptr)orp, layout->dsize);
+           		assert(rp <= orp + layout->dsize);
+           	}
             ++field;
         }
+        orp = rp;
     }
     // Update size with the decoded data size.
     *size = bufsize;

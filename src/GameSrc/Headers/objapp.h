@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __OBJAPP_H
 #define __OBJAPP_H
 
-#pragma pack on	// 2
+//#pragma pack on	// 2
 
 /*
 ** $Header: r:/prj/cit/src/inc/RCS/objapp.h 1.25 1994/08/30 07:15:21 xemu Exp $
@@ -211,6 +211,7 @@ typedef struct {
 // isnt it neat that you cant do sizeof(ObjRefStateBin) in a #if
 // i love cpp with an unholy, inhuman, and altogether pathetic way
 
+/* no.
 #if (SIZEOF_AN_OBJREFSTATEBIN == 4)
 #define ObjRefStateBinEqual(bin1, bin2) (*((int *)(&bin1)) == *((int *)(&bin2)))
 #elif (SIZEOF_AN_OBJREFSTATEBIN == 2)
@@ -220,6 +221,8 @@ typedef struct {
 #else
 #define ObjRefStateBinEqual(bin1, bin2) (!memcmp(&(bin1), &(bin2), sizeof(ObjRefStateBin)))
 #endif
+*/
+#define	ObjRefStateBinEqual(a, b) ((a).sq.x == (b).sq.x && (a).sq.y == (b).sq.y)
 #define ObjRefStateBinCopy(srcbin, dstbin) \
     do {                                   \
         dstbin = srcbin;                   \
@@ -284,6 +287,8 @@ typedef struct {
 
 void ObjInfoInit(ObjInfo *info);
 
+void ObjCheck(void);
+
 //////////////////////////////
 //
 // This should initialize the following iterator.  Nice name, huh?
@@ -303,6 +308,6 @@ void ObjRefStateBinIteratorInit(void);
 
 uchar ObjRefStateBinIterator(ObjRefStateBin *bin);
 
-#pragma pack off
+//#pragma pack off
 
 #endif // OBJAPP_H
