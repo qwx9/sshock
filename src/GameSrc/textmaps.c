@@ -317,7 +317,7 @@ errtype Init_Lighting(void) {
 
 errtype load_master_texture_properties(void) {
     int version, i;
-    char *cp;
+    char *cp, *cs;
 
     texture_properties = (TextureProp *)malloc(GAME_TEXTURES * sizeof(TextureProp));
 
@@ -336,7 +336,7 @@ errtype load_master_texture_properties(void) {
     int len = ftell(f);
     rewind(f);
 
-    cp = (char *)malloc((len + 1) * sizeof(char));
+    cp = cs = (char *)malloc((len + 1) * sizeof(char));
     fread(cp, len, 1, f);
     fclose(f);
 
@@ -347,8 +347,21 @@ errtype load_master_texture_properties(void) {
         if (version == TEXTPROP_VERSION_NUMBER) {
             // 363 seems magic. GAME_TEXTURES instead?
             for (i = 0; i < 363; i++) {
+            	/*
                 memmove(&texture_properties[i], cp, 11);
                 cp += 11;
+                */
+                texture_properties[i].family_texture = *cp++;
+                texture_properties[i].target_texture = *cp++;
+                texture_properties[i].resilience = *(short *)cp;
+                cp += 2;
+                texture_properties[i].distance_mod = *(short *)cp;
+                cp += 2;
+                texture_properties[i].friction_climb = *cp++;
+                texture_properties[i].friction_walk = *cp++;
+                texture_properties[i].force_dir = *cp++;
+                texture_properties[i].anim_group = *cp++;
+                texture_properties[i].group_pos = *cp++;
             }
         } else {
             ERROR("Skipping loading textprops.dat, bad version!");
@@ -397,6 +410,9 @@ errtype load_master_texture_properties(void) {
           printf("Cannot load textprops!\n");
        }
      }*/
+
+	assert(cp - cs <= len);
+	free(cs);
 
     return (OK);
 }

@@ -1381,7 +1381,7 @@ errtype ObjClassInit(ObjID id, ObjSpecID specid, int subclass) {
 errtype obj_load_properties(void) {
     // Handle   res;
     int version, i, j;
-    char *cp;
+    char *cp, *cs;
 
     // extern void SwapLongBytes(void *pval4);
     // extern void SwapShortBytes(void *pval2);
@@ -1399,7 +1399,7 @@ errtype obj_load_properties(void) {
     int len = ftell(f);
     rewind(f);
 
-    cp = (char *)malloc((len + 1) * sizeof(char));
+    cp = cs = (char *)malloc((len + 1) * sizeof(char));
     fread(cp, len, 1, f);
     fclose(f);
 
@@ -1417,8 +1417,14 @@ errtype obj_load_properties(void) {
     //-------------
     // GUNS
     //-------------
+    /*
     memmove(GunProps, cp, sizeof(GunProps));
     cp += sizeof(GunProps);
+    */
+    for(i=0; i<nelem(GunProps); i++){
+    	GunProps[i].fire_rate = *cp++;
+    	GunProps[i].useable_ammo_type = *cp++;
+    }
 
     // BlockMoveData(cp, PistolGunProps, NUM_PISTOL_GUN);     Dummies
     cp += NUM_PISTOL_GUN;
@@ -1583,8 +1589,13 @@ errtype obj_load_properties(void) {
         }
     }
 
+	/*
     memmove(SlowPhysicsProps, cp, sizeof(SlowPhysicsProps));
     cp += sizeof(SlowPhysicsProps);
+    */
+    for(i=0; i<nelem(SlowPhysicsProps); i++)
+		for(j=0; j<NUM_SLOW_VCOLORS; j++)
+			SlowPhysicsProps[i].vcolors[j] = *cp++;
 
     // BlockMoveData(cp, CameraPhysicsProps, NUM_CAMERA_PHYSICS);                       Dummies
     cp += NUM_CAMERA_PHYSICS;
@@ -1695,8 +1706,13 @@ errtype obj_load_properties(void) {
     cp += NUM_GEAR_SMALLSTUFF;
     cp += NUM_CARDS_SMALLSTUFF;
 
+	/*
     memmove(CyberSmallstuffProps, cp, sizeof(CyberSmallstuffProps));
     cp += sizeof(CyberSmallstuffProps);
+    */
+	for(i=0; i<nelem(CyberSmallstuffProps); i++)
+		for(j=0; j<NUM_SMALLSTUFF_VCOLORS; j++)
+			CyberSmallstuffProps[i].vcolors[j] = *cp++;
 
     cp += NUM_ONTHEWALL_SMALLSTUFF;
 
@@ -1738,8 +1754,14 @@ errtype obj_load_properties(void) {
     //  ANIMATING OBJECTS
     //----------------
 
+	/*
     memmove(AnimatingProps, cp, sizeof(AnimatingProps));
     cp += sizeof(AnimatingProps);
+    */
+    for(i=0; i<nelem(AnimatingProps); i++){
+	    AnimatingProps[i].speed = *cp++;
+	    AnimatingProps[i].flags = *cp++;
+	}
 
     cp += NUM_OBJECT_ANIMATING;
     cp += NUM_TRANSITORY_ANIMATING;
@@ -1831,11 +1853,24 @@ errtype obj_load_properties(void) {
 
     cp += NUM_MUTANT_CRITTER;
 
+	/*
     memmove(RobotCritterProps, cp, sizeof(RobotCritterProps));
     cp += sizeof(RobotCritterProps);
+    */
+    for(i=0; i<nelem(RobotCritterProps); i++){
+ 	   RobotCritterProps[i].backup_weapon = *cp++;
+ 	   RobotCritterProps[i].metal_thickness = *cp++;
+ 	}
 
+	/*
     memmove(CyborgCritterProps, cp, sizeof(CyborgCritterProps));
     cp += sizeof(CyborgCritterProps);
+    */
+    for(i=0; i<nelem(CyborgCritterProps); i++){
+ 	   CyborgCritterProps[i].shield_energy = *(short *)cp;
+ 	   cp += 2;
+ 	}
+
     for (i = 0; i < NUM_CYBORG_CRITTER; i++)
         // SwapShortBytes(&CyborgCritterProps[i].shield_energy);
 
@@ -1860,6 +1895,9 @@ errtype obj_load_properties(void) {
         memmove(op, cp, 27);
         cp += 27;
     }
+
+	assert(cp-cs <= len);
+	free(cs);
 
     // HUnlock(res);
     // ReleaseResource(res);
