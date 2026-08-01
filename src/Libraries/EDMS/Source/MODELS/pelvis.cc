@@ -188,12 +188,12 @@ void pelvis_idof(int32_t object) {
 
     Q bob_fac = Q_mul(bob_speed, Q_abs(Q_sin(bob_arg)));
 
-#define EDMS_HEAD_BOB_HEIGHT Q_as_int(2)
+#define EDMS_HEAD_BOB_HEIGHT 2
 
-    if (bob_fac.val > EDMS_HEAD_BOB_HEIGHT.val)
-        bob_fac = EDMS_HEAD_BOB_HEIGHT;
+    if (bob_fac.val > Q_as_int(EDMS_HEAD_BOB_HEIGHT).val)
+        bob_fac = Q_as_int(EDMS_HEAD_BOB_HEIGHT);
 
-    bob_fac.val = fix_make(Q_to_int(EDMS_HEAD_BOB_HEIGHT), 0) - fix_mul(0x09999, bob_fac.val); // 0x9999 = .6
+    bob_fac.val = fix_make(EDMS_HEAD_BOB_HEIGHT, 0) - fix_mul(0x09999, bob_fac.val); // 0x9999 = .6
 
     if (i_object[10].val > Q_as_int(0).val)
         bob_fac = Q_as_int(1);
@@ -303,7 +303,8 @@ void pelvis_idof(int32_t object) {
             repulsor_speed = Q_mul(repulsor_speed, Q_as_double(-.5));
 
         //              The parameter should be the desired height....
-        Q repul_height = Q_as_fix(ss_edms_bcd_param);
+        Q repul_height;
+        repul_height = Q_as_fix(ss_edms_bcd_param);
 
         Q nearness_or_something = Q_sub(repul_height, A[object][2][0]);
         if (Q_abs(nearness_or_something).val <= Q_as_double(.333).val)
@@ -353,7 +354,7 @@ void pelvis_idof(int32_t object) {
     object21 = Q_add(Q_add(Q_sub(Q_add(Q_add(Q_sub(Q_add(Q_sub(Q_mul(object8, object1), object5), head_kappa[1]), head_delta[1]), io19), body_kappa[1]), body_delta[1]),
                Q_mul(object9, Q_neg(drug_addict1))), object11);
 
-    object22 = Q_add(Q_add(Q_sub(Q_add(Q_add(Q_sub(Q_add(Q_mul(Q_sub(Q_mul(object8, object2), Q_as_int(object18.val == Q_as_int(0).val)), object6), head_kappa[2]), head_delta[2]), object18),
+    object22 = Q_add(Q_add(Q_sub(Q_add(Q_add(Q_sub(Q_add(Q_sub(Q_mul(object8, object2), Q_mul(Q_as_int(object18.val == Q_as_int(0).val), object6)), head_kappa[2]), head_delta[2]), object18),
                body_kappa[2]), body_delta[2]), Q_mul(object9, Q_mul(Q_neg(i_object[23]), A[object][2][1]))), object12);
 
     //	Damage control...
@@ -524,9 +525,9 @@ void get_body_of_death(int32_t object) {
 
     //      Do ANYTHING?
     //      ------------
-    Q abtotal = Q_as_fix(abs(terrain_info.fx) + abs(terrain_info.fy) + abs(terrain_info.fz));
-    abtotal = Q_add(abtotal, Q_as_fix(abs(terrain_info.wx) + abs(terrain_info.wy) + abs(terrain_info.wz)));
-    abtotal = Q_add(abtotal, Q_as_fix(abs(terrain_info.cx) + abs(terrain_info.cy) + abs(terrain_info.cz)));
+    Q abtotal = Q_as_int(abs(terrain_info.fx) + abs(terrain_info.fy) + abs(terrain_info.fz));
+    abtotal = Q_add(abtotal, Q_as_int(abs(terrain_info.wx) + abs(terrain_info.wy) + abs(terrain_info.wz)));
+    abtotal = Q_add(abtotal, Q_as_int(abs(terrain_info.cx) + abs(terrain_info.cy) + abs(terrain_info.cz)));
     if (abtotal.val != Q_as_int(0).val) {
         Q mag = Q_add(Q_mul(i_object[18], i_object[18]), Q_mul(i_object[19], i_object[19]));
         if (mag.val < Q_as_double(.1).val && Q_abs(V_floor[0]).val < Q_mul(Q_as_double(.05), i_object[22]).val && Q_abs(V_floor[1]).val < Q_mul(Q_as_double(.05), i_object[22]).val)
@@ -592,7 +593,7 @@ void do_climbing(int32_t object) {
 
             //                    Set the mojo...
             //                    ===============
-            object18 = Q_mul(Q_as_int(800 * (io17.val > Q_as_int(0).val)), Q_sub(io17, A[object][2][1]));
+            object18 = Q_mul(Q_mul(Q_as_int(800), Q_as_int(io17.val > Q_as_int(0).val)), Q_sub(io17, A[object][2][1]));
         }
     }
 
@@ -610,7 +611,7 @@ void do_climbing(int32_t object) {
 
                 //                              Set the mojo...
                 //                              ===============
-                object18 = Q_mul(Q_as_int(800 * (io17.val > Q_as_int(0).val)), Q_sub(io17, A[object][2][1]));
+                object18 = Q_mul(Q_mul(Q_as_int(800), Q_as_int(io17.val > Q_as_int(0).val)), Q_sub(io17, A[object][2][1]));
             } else {
                 io18 = i_object[18];
                 io19 = i_object[19];

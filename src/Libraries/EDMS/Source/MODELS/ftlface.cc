@@ -56,11 +56,13 @@ physics_handle EDMS_beam_weapon(fix X[3], fix D[3], fix kick, fix knock, fix siz
     physics_handle ph = -1;
     int32_t EXCLUDE = 0;
 
-    Q DD[3];
+    Q XX[3], DD[3];
 
     Q Kick, Knock, Size, Range;
 
-    Q *XX = (Q *)&X[0];
+    XX[0] = Q_as_fix(X[0]);
+    XX[1] = Q_as_fix(X[1]);
+    XX[2] = Q_as_fix(X[2]);
 
     DD[0] = Q_as_fix(D[0]);
     DD[1] = Q_as_fix(D[1]);
