@@ -287,7 +287,7 @@ typedef struct {
 
 void ObjInfoInit(ObjInfo *info);
 
-void ObjCheck(void);
+int ObjCheck(void);
 
 //////////////////////////////
 //

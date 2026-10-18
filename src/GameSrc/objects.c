@@ -340,8 +340,8 @@ uchar ObjDel(ObjID obj) {
     return TRUE;
 }
 
-void ObjCheck(void) {
-	ObjSysOkay();
+int ObjCheck(void) {
+	return ObjSysOkay();
 }
 
 //////////////////////////////
@@ -805,6 +805,23 @@ uchar ObjSysOkay(void) {
             usedObj[cur] = OBJ_USED;
             cur = ((ObjSpec *)(head->data + cur * head->struct_size))->next;
         }
+        cur = ((ObjSpec *)head->data)->headused;
+        while (cur) {
+            if (cur < 0 || cur >= head->size) {
+                DEBUG("%s: Invalid ID (%d) in Class (%d) used chain", __FUNCTION__, cur, i);
+                ret = FALSE;
+            }
+            if (usedObj[cur] == OBJ_FREE) {
+                DEBUG("%s: Class (%d) ObjSpec (%d) is free and used", __FUNCTION__, i, cur);
+                ret = FALSE;
+            }
+            if (usedObj[cur] == OBJ_USED) {
+                DEBUG("%s: Class (%d) ObjSpec (%d) is used twice" __FUNCTION__, i, cur);
+                ret = FALSE;
+            }
+            usedObj[cur] = OBJ_USED;
+            cur = ((ObjSpec *)(head->data + cur * head->struct_size))->next;
+        }
         for (cur = 1; cur < head->size; cur++) {
             if (usedObj[cur] == 0) {
                 DEBUG("%s: Class (%d) ObjSpec (%d) is neither free nor used", __FUNCTION__, i, cur);
@@ -870,13 +887,13 @@ uchar ObjSysOkay(void) {
             if (!ObjRefStateBinEqual(objRefs[ref].state.bin, refbin)) {
                 ObjRefStateBinSprint(str, refbin);
                 ObjRefStateBinSprint(str2, objRefs[ref].state.bin);
-                DEBUG("%s: ObjRef (%d) thinks it is in (%llx) but is in (%llx)", __FUNCTION__, ref, *(uvlong*)&objRefs[ref].state.bin, *(uvlong*)&refbin);
+                DEBUG("%s: ObjRef (%d) thinks it is in %d,%d but is in %d,%d", __FUNCTION__, ref, objRefs[ref].state.bin.sq.x, objRefs[ref].state.bin.sq.y, refbin.sq.x, refbin.sq.y);
                 ret = FALSE;
             }
 
             if (objRefs[ref].obj == OBJ_NULL) {
                 ObjRefStateBinSprint(str, refbin);
-                DEBUG("%s: ObjRef (%d) in (%llx) points to null Obj", __FUNCTION__, ref, *(uvlong*)&refbin);
+                DEBUG("ObjRef (%d) in (%llx) points to null Obj", ref, *(uvlong*)&refbin);
                 ret = FALSE;
             }
 
