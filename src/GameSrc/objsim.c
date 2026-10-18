@@ -1422,8 +1422,10 @@ errtype obj_load_properties(void) {
     cp += sizeof(GunProps);
     */
     for(i=0; i<nelem(GunProps); i++){
-    	GunProps[i].fire_rate = *cp++;
-    	GunProps[i].useable_ammo_type = *cp++;
+    	GunProps[i].fire_rate = *(ubyte *)cp;
+    	cp++;
+    	GunProps[i].useable_ammo_type = *(ubyte *)cp;
+    	cp++;
     }
 
     // BlockMoveData(cp, PistolGunProps, NUM_PISTOL_GUN);     Dummies
@@ -1440,7 +1442,7 @@ errtype obj_load_properties(void) {
         sgp->damage_modifier = *(short *)cp;
         cp += 2;
         // SwapShortBytes(&sgp->damage_modifier);
-        sgp->offense_value = *cp++;
+        sgp->offense_value = *cp++;	/* FIXME: char* vs ubyte */
         sgp->damage_type = *(int *)cp;
         cp += 4;
         // SwapLongBytes(&sgp->damage_type);
@@ -1891,12 +1893,47 @@ errtype obj_load_properties(void) {
 
     for (i = 0; i < NUM_OBJECT; i++) {
         ObjProp *op = &ObjProps[i];
-
+		op->mass = *(int *)cp;
+		cp += 4;
+		op->hit_points = *(short *)cp;
+		cp += 2;
+		op->armor = *(ubyte *)cp;
+		cp++;
+		op->render_type = *(ubyte *)cp;
+		cp++;
+		op->physics_model = *(ubyte *)cp;
+		cp++;
+		op->hardness = *(ubyte *)cp;
+		cp++;
+		op->pep = *(ubyte *)cp;
+		cp++;
+		op->physics_xr = *(ubyte *)cp;
+		cp++;
+		op->physics_y = *(ubyte *)cp;
+		cp++;
+		op->physics_z = *(ubyte *)cp;
+		cp++;
+		op->resistances = *(int *)cp;
+		cp += 4;
+		op->defense_value = *(ubyte *)cp;
+		cp++;
+		op->toughness = *(ubyte *)cp;
+		cp++;
+		op->flags = *(short *)cp;
+		cp += 2;
+ 		op->mfd_id = *(short *)cp;
+		cp += 2;
+ 		op->bitmap_3d = *(short *)cp;
+		cp += 2;
+		op->destroy_effect = *(ubyte *)cp;
+		cp++;
+		/*
         memmove(op, cp, 27);
         cp += 27;
+        */
     }
 
-	assert(cp-cs <= len);
+	assert(cp-cs == len);
 	free(cs);
 
     // HUnlock(res);
