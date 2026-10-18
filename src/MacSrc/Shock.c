@@ -170,7 +170,7 @@ void InitSDL(void) {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) < 0) {
         DEBUG("%s: Init failed", __FUNCTION__);
     }
-    SDL_StartTextInput();
+    //SDL_StartTextInput();	/* no. */
 
     // TODO: figure out some universal set of settings that work...
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);

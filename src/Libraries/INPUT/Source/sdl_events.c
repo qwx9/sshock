@@ -590,7 +590,8 @@ void pump_events(void) {
 
                     // handle non-printable or ctrl'd or alt'd keys here
                     // other cases are handled by text input event below
-                    if (ev.key.keysym.sym < 32 || ev.key.keysym.sym > 126 || (mod & KMOD_CTRL) || (mod & KMOD_ALT)) {
+                    /* no. */
+                    /*if (ev.key.keysym.sym < 32 || ev.key.keysym.sym > 126 || (mod & KMOD_CTRL) || (mod & KMOD_ALT))*/ {
                         keyEvent.state = KBS_DOWN;
                         addKBevent(&keyEvent);
 

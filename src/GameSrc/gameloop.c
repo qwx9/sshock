@@ -170,7 +170,6 @@ void game_loop(void) {
             olh_overlay();
         }
 
-        TRACE("%s: physics_run", __FUNCTION__);
         loopLine(GL | 0x15, physics_run());
         {
             if (!olh_overlay_on && olh_active && !global_fullmap->cyber) {
