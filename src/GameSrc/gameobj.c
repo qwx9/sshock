@@ -722,7 +722,7 @@ void show_obj(ObjID cobjid) {
 
     _fr_p.gX = _fr_cobj->loc.x << 8;
     _fr_p.gZ = _fr_cobj->loc.y << 8;
-    _fr_p.gY = -_fr_cobj->loc.z * height_step >> 3; // down 3, neato magic number technology
+    _fr_p.gY = (fix)(-_fr_cobj->loc.z * height_step) >> 3; // down 3, neato magic number technology
 
     if (_fr_curflags & FR_PICKUPM_MASK) {
         gr_set_fill_parm(fr_cur_obj_col);
