@@ -167,7 +167,10 @@ uchar _tf_set_flet(int flags, fix att, fix dist, fix *norm) {
     cur_fc->comp = tf_rad - dist;
     switch (flags & SS_BCD_AXIS_MASK) {
     case SS_BCD_PRIM_MULTI:
-        *(g3s_vector *)cur_fc->norm = *(g3s_vector *)norm; //    _memcpy32l(cur_fc->norm,norm,3);
+        //*(g3s_vector *)cur_fc->norm = *(g3s_vector *)norm; //    _memcpy32l(cur_fc->norm,norm,3);
+        cur_fc->norm[0] = norm[0];
+        cur_fc->norm[1] = norm[1];
+        cur_fc->norm[2] = norm[2];
 #ifdef USE_OLD_PASSING
         goto i_hate_everyone;
 #endif
