@@ -708,7 +708,7 @@ void InitReadXMI(void) {
     while (SDL_AtomicGet(&ThreadCommand[i]) == THREAD_INIT)
         SDL_Delay(1);
 
-    atexit(ShutdownReadXMI);
+    //atexit(ShutdownReadXMI);
 }
 
 void InitDecXMI(void) {
