@@ -62,7 +62,7 @@ void terrain_object_collide(physics_handle src, ObjID target);
 
 // Internal Prototypes
 fix *localize_object(fix *ax_pt);
-uchar _axial_relativize(fix *src_pts, fix *targ_pts, uchar vec);
+uchar _axial_relativize(g3s_vector *src_pts, g3s_vector *targ_pts, uchar vec);
 uchar setup_cube_face(fix ndist, fix xp, fix yp, fix xhlf, fix yhlf, int nrm_cmp);
 uchar _face_parm_cube(fix *cntr, int x, int y, int z);
 void _face_secret_repulsor_hack(void);
@@ -87,7 +87,7 @@ fix *localize_object(fix *ax_pt) {
 // convert a point into a relative FoRef
 // pass in nothing, oh well
 // implied are the current object, which has a location and an x,y,z
-uchar _axial_relativize(fix *src_pts, fix *targ_pts, uchar vec) // (fixang l_h, fixang l_p, fixang l_b)
+uchar _axial_relativize(g3s_vector *src_pts, g3s_vector *targ_pts, uchar vec) // (fixang l_h, fixang l_p, fixang l_b)
 {
     //   fixang l_h, fixang l_p, fixang l_b)
     fixang l_h, l_p, l_b;
@@ -105,7 +105,7 @@ uchar _axial_relativize(fix *src_pts, fix *targ_pts, uchar vec) // (fixang l_h, 
     // now go relativize
     if ((l_p) | (l_b)) { // if any pitch of bank
         if (((l_b) | (l_h)) == 0)
-            _1d_relativize(l_p, src_pts, targ_pts, 1, 2, 0);
+            _1d_relativize(l_p, src_pts->xyz, targ_pts->xyz, 1, 2, 0);
         else if ((l_b) == 0) { // 2d transform, just pitch and heading..
                                //         Warning(("Obj with pitch and heading changed\n"));
             return FALSE;
@@ -114,10 +114,10 @@ uchar _axial_relativize(fix *src_pts, fix *targ_pts, uchar vec) // (fixang l_h, 
             return FALSE;
         }
     } else if (l_h)
-        _1d_relativize(l_h, src_pts, targ_pts, 0, 1, 2);
+        _1d_relativize(l_h, src_pts->xyz, targ_pts->xyz, 0, 1, 2);
     else
 
-        *(g3s_vector *)targ_pts = *(g3s_vector *)src_pts; // _memcpy32l(targ_pts,src_pts,3);
+        *targ_pts = *src_pts; // _memcpy32l(targ_pts,src_pts,3);
 
     //   mprintf("Rtv'd %x %x %x to %x %x %x from %x %x %x\n",
     //      src_pts[0],src_pts[1],src_pts[2],targ_pts[0],targ_pts[1],targ_pts[2],l_h,l_p,l_b);
@@ -125,8 +125,8 @@ uchar _axial_relativize(fix *src_pts, fix *targ_pts, uchar vec) // (fixang l_h, 
 }
 
 uchar setup_cube_face(fix ndist, fix xp, fix yp, fix xhlf, fix yhlf, int nrm_cmp) {
-    fix unit_norm[3];
-    fix l_pt[3], walls[4][2], nrm[3];
+	g3s_vector unit_norm, nrm;
+    fix l_pt[3], walls[4][2];
     int flg = SS_BCD_PRIM_MULTI | TF_FLG_BOX_FULL;
 
     walls[0][0] = -xhlf;
@@ -141,19 +141,19 @@ uchar setup_cube_face(fix ndist, fix xp, fix yp, fix xhlf, fix yhlf, int nrm_cmp
     l_pt[1] = yp;
     l_pt[2] = ndist;
 
-    LG_memset(unit_norm, 0, 3 * 4); //  _memset32l(unit_norm,0,3);
+    LG_memset(unit_norm.xyz, 0, 3 * 4); //  _memset32l(unit_norm,0,3);
     if (nrm_cmp < 0)
-        unit_norm[(-nrm_cmp) - 1] = -fix_1;
+        unit_norm.xyz[(-nrm_cmp) - 1] = -fix_1;
     else
-        unit_norm[nrm_cmp - 1] = fix_1;
-    _axial_relativize(unit_norm, nrm, TRUE);
-    if (nrm[2] > fix_make(0, 0xC000)) // sure, why not...
+        unit_norm.xyz[nrm_cmp - 1] = fix_1;
+    _axial_relativize(&unit_norm, &nrm, TRUE);
+    if (nrm.xyz[2] > fix_make(0, 0xC000)) // sure, why not...
         flg |= SS_BCD_TYPE_FLOOR;
     else
         flg |= SS_BCD_TYPE_WALL;
     //   mprintf("SCF: dist %x, pos %x %x, size %x %x, norm %x %x %x f
     //   %d\n",ndist,xp,yp,xhlf,yhlf,nrm[0],nrm[1],nrm[2],nrm_cmp);
-    return tf_solve_aligned_face(l_pt, walls, flg, nrm);
+    return tf_solve_aligned_face(l_pt, walls, flg, nrm.xyz);
 }
 
 //#define MIN_SIZE 0x0500
@@ -297,16 +297,17 @@ void facelet_obj(ObjID cobjid) {
         case BARRICADE_TRIPLE: {
             Ref r1 = 0, r2 = 0;
             grs_bitmap *b1;
-            fix fx, fy, fz, loc_pts[3], cube_pts[3];
+            fix fx, fy, fz;
+            g3s_vector loc_pts, cube_pts;
 
             // r1 and r2 are cleared so that we don't lock the resources!
             // NULL so we don't load a bitmap
             b1 = obj_get_model_data(cobjid, &fx, &fy, &fz, NULL, &r1, &r2);
             if (b1 != NULL) {
-                localize_object(loc_pts); // fill in local frame
-                if (_axial_relativize(loc_pts, cube_pts, FALSE)) {
-                    cube_pts[2] -= fz;
-                    tfimp = _face_parm_cube(cube_pts, fx, fy, fz);
+                localize_object(loc_pts.xyz); // fill in local frame
+                if (_axial_relativize(&loc_pts, &cube_pts, FALSE)) {
+                    cube_pts.xyz[2] -= fz;
+                    tfimp = _face_parm_cube(cube_pts.xyz, fx, fy, fz);
                 }
             }
         } break;
@@ -318,7 +319,8 @@ void facelet_obj(ObjID cobjid) {
     case FAUBJ_TL_POLY:
     case FAUBJ_TEXBITMAP:
     case FAUBJ_TPOLY: {
-        fix fix_xoff, fix_yoff, loc_pts[3], door_pts[3];
+        fix fix_xoff, fix_yoff;
+        g3s_vector loc_pts, door_pts;
 
         scale = 0;
         if (objs[cobjid].obclass == CLASS_DOOR)
@@ -333,9 +335,9 @@ void facelet_obj(ObjID cobjid) {
             fix_xoff >>= -scale;
             fix_yoff >>= -scale;
         }
-        localize_object(loc_pts); // fill in local frame
-        if (_axial_relativize(loc_pts, door_pts, FALSE))
-            tfimp = _face_parm_cube(door_pts, fix_xoff, 0, fix_yoff);
+        localize_object(loc_pts.xyz); // fill in local frame
+        if (_axial_relativize(&loc_pts, &door_pts, FALSE))
+            tfimp = _face_parm_cube(door_pts.xyz, fix_xoff, 0, fix_yoff);
         break;
     }
     }
