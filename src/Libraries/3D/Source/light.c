@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // prototypes
 void check_for_near(void);
 void scale_light_vec(void);
-void g3_light_obj(g3s_phandle norm, g3s_phandle pos);
+void g3_light_obj(g3s_vector *norm, g3s_vector *pos);
 fix light_diff_raw(g3s_phandle src, g3s_phandle dest);
 fix light_spec_raw(g3s_phandle src, g3s_phandle dest);
 fix light_dands_raw(g3s_phandle src, g3s_phandle dest);
@@ -78,7 +78,9 @@ void g3_trans_loc_light(void) {
     g3s_phandle p;
 
     p = g3_rotate_point(&_g3d_light_src);
-    _g3d_light_trans = *(g3s_vector *)p;
+    _g3d_light_trans.x = p->x;
+    _g3d_light_trans.y = p->y;
+    _g3d_light_trans.z = p->z;
 }
 
 // evaluates light point relative to another point, src is in world coords
@@ -275,7 +277,7 @@ void g3_light_diff(g3s_phandle norm, g3s_phandle pos) {
 fix light_diff_raw(g3s_phandle src, g3s_phandle dest) {
     fix temp;
 
-    temp = g3_vec_dotprod(&_g3d_light_vec, (g3s_vector *)src);
+    temp = g3_vec_dotprod(&_g3d_light_vec, &src->vec);
 
     // set lighting value in norm
     // test eax for negativity, zero if negative
@@ -316,7 +318,7 @@ void g3_light_spec(g3s_phandle norm, g3s_phandle pos) {
 fix light_spec_raw(g3s_phandle src, g3s_phandle dest) {
     fix temp;
 
-    temp = g3_vec_dotprod(&_g3d_light_vec, (g3s_vector *)src);
+    temp = g3_vec_dotprod(&_g3d_light_vec, &src->vec);
     if (temp < 0) {
         dest->i = _g3d_amb_light >> 4;
         return (dest->i);
@@ -326,7 +328,7 @@ fix light_spec_raw(g3s_phandle src, g3s_phandle dest) {
 
     // take (s.v), note that this is jnorm, if its been done
     // we can eliminate this step intelligently somehow
-    _g3d_sdotv = temp = g3_vec_dotprod(&_g3d_view_vec, (g3s_vector *)tmp1);
+    _g3d_sdotv = temp = g3_vec_dotprod(&_g3d_view_vec, &tmp1->vec);
     temp <<= 1;                       // multiply (s.v) by 2
     temp = fix_mul(temp, _g3d_sdotl); // mult by (s.l)
     temp -= _g3d_ldotv;               // subtract ldotv, done!
@@ -372,7 +374,7 @@ fix light_dands_raw(g3s_phandle src, g3s_phandle dest) {
     // 2(s.l)(s.v) - (l.v)
     // take (s.l) if neg, you know you're done, surface HAS to face the light
 
-    temp = g3_vec_dotprod(&_g3d_light_vec, (g3s_vector *)src);
+    temp = g3_vec_dotprod(&_g3d_light_vec, &src->vec);
     if (temp < 0) {
         dest->i = _g3d_amb_light >> 4;
         return (dest->i);
@@ -381,7 +383,7 @@ fix light_dands_raw(g3s_phandle src, g3s_phandle dest) {
 
     // take (s.v), note that this is jnorm, if its been done
     // we can eliminate this step intelligently somehow
-    _g3d_sdotv = temp = g3_vec_dotprod(&_g3d_view_vec, (g3s_vector *)tmp1);
+    _g3d_sdotv = temp = g3_vec_dotprod(&_g3d_view_vec, &tmp1->vec);
     temp = fix_mul(temp, _g3d_sdotl); // mult by (s.l)
     temp <<= 1;                       // multiply (s.v)(s.l) by 2
     temp -= _g3d_ldotv;               // subtract ldotv, done!
@@ -438,13 +440,18 @@ fix g3_light(g3s_phandle norm, g3s_phandle pos) {
 // all vectors are in object space
 // though we put these in points, they are in object space,
 // not world space
-void g3_light_obj(g3s_phandle norm, g3s_phandle pos) {
+
+g3s_point vtmp1, vtmp2;	/* safety */
+
+void g3_light_obj(g3s_vector *norm, g3s_vector *pos) {
     g3s_point *norm_point;
     g3s_point *pos_point;
     fix shade;
 
-    tmp1 = norm;
-    tmp2 = pos;
+	vtmp1.vec = *norm;
+	vtmp2.vec = *pos;
+    tmp1 = &vtmp1;
+    tmp2 = &vtmp2;
     getpnt(norm_point);
 
     norm_point->gX = norm->gX << 1;
@@ -453,7 +460,7 @@ void g3_light_obj(g3s_phandle norm, g3s_phandle pos) {
 
     // Copy position over to its own point
     getpnt(pos_point);
-    *(g3s_vector *)pos_point = *(g3s_vector *)pos;
+    pos_point->vec = *pos;
 
     shade = g3_light(norm_point, pos_point);
 

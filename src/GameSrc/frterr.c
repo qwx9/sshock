@@ -1844,9 +1844,8 @@ void do_floor_element(int nrm_mask) {
     xy[1] = tf_loc_pt[2] - _fr_fhgt_list[_fdt_hgts[FDT_PT_FLR]];
     switch (code) {
     case 0:
-
-        *(g3s_vector *)_tfunc_rpts =
-            *(g3s_vector *)tf_loc_pt; // sub faster version?      _memcpy32l(_tfunc_rpts,tf_loc_pt,3);
+		_tfunc_rpts[0] = tf_loc_pt[0];
+		_tfunc_rpts[1] = tf_loc_pt[1];
         _tfunc_rpts[2] = xy[1];
         _tfunc_real_floor[0][1] = _tfunc_real_floor[1][1] = fix_1;
         tf_solve_aligned_face(_tfunc_rpts, _tfunc_real_floor, _tfunc_flg | TF_FLG_BOX_FULL, NULL);

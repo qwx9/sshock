@@ -114,9 +114,11 @@ void set_real_terrain_normal(int which, fix mag, fix norm[3]) {
 }
 #else
 void set_dumb_terrain_normal(int which, fix norm[3]) { // we aint proud
-    g3s_vector *targ_vec = (g3s_vector *)(&terrain_info.cx + (which * 3));
-
-    *targ_vec = *(g3s_vector *)norm; //   _memcpy12(targ_vec,norm);
+    switch(which){
+    case 0: terrain_info.cx = norm[0]; terrain_info.cy = norm[1]; terrain_info.cz = norm[2]; break;
+    case 1: terrain_info.fx = norm[0]; terrain_info.fy = norm[1]; terrain_info.fz = norm[2]; break;
+    case 2: terrain_info.wx = norm[0]; terrain_info.wy = norm[1]; terrain_info.wz = norm[2]; break;
+    }
 }
 #endif
 
@@ -127,11 +129,16 @@ void facelet_send(void) {
     tf_norm_set *cur_face;
     tf_norm_cmp *cur_cmp;
     fix mag, *nrm;
+    g3s_vector v;
 
     cur_face = &facets[0];
     for (i = 0; i < 3; i++, cur_face++) {
         if ((cur_face->ia.cnt | cur_face->ua.cnt) == 0) {
-            LG_memset(&terrain_info.cx + (i * 3), 0, 3 * 4); //     _memset32l(&terrain_info.cx+(i*3),0,3);
+            switch(i){
+            case 0: terrain_info.cx = terrain_info.cy = terrain_info.cz = 0; break;
+            case 1: terrain_info.fx = terrain_info.fy = terrain_info.fz = 0; break;
+            case 2: terrain_info.wx = terrain_info.wy = terrain_info.wz = 0; break;
+            }
             continue;                                        // nope not nothing here...
         }
         nrm = cur_face->ua.nrm;
@@ -148,7 +155,10 @@ void facelet_send(void) {
                         nrm[cur_cmp->prim] += cur_cmp->bval;
                 } else // grind through reality, ick
                 {
-                    lmag = g3_vec_mag((g3s_vector *)&cur_cmp->nrm);
+                	v.x = cur_cmp->nrm[0];
+                 	v.y = cur_cmp->nrm[1];
+                 	v.z = cur_cmp->nrm[2];
+                    lmag = g3_vec_mag(&v);
                     cvec = &cur_cmp->nrm[0];
                     recip = fix_div(cur_cmp->bval, lmag); // look, make unitvector*bval all in one happy step
                     nrm[0] += fix_mul(*cvec, recip);
@@ -181,7 +191,10 @@ void facelet_send(void) {
                         nrm[cur_cmp->prim] = cur_cmp->bval;
                 else // grind through reality, ick
                 {
-                    lmag = g3_vec_mag((g3s_vector *)&cur_cmp->nrm);
+                	v.x = cur_cmp->nrm[0];
+                 	v.y = cur_cmp->nrm[1];
+                 	v.z = cur_cmp->nrm[2];
+                    lmag = g3_vec_mag(&v);
                     cvec = nrm;
                     recip = fix_div(cur_cmp->bval, lmag); // look, make unitvector*bval all in one happy step
                     nrm[0] += fix_mul(*cvec, recip);

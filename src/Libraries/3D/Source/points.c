@@ -285,6 +285,28 @@ g3s_codes g3_transform_list(short n, g3s_phandle *dest_list, g3s_vector *v) {
     return (g_codes);
 }
 
+g3s_codes g3_transform_vlist(short n, g3s_phandle *dest_list, fix *p) {
+    int i;
+    g3s_phandle temphand;
+    g3s_vector v;
+
+    g_codes.or_ = 0;
+    g_codes.and_ = 0xff;
+
+    for (i = n; i > 0; i--) {
+    	v.x = *p++;
+    	v.y = *p++;
+    	v.z = *p++;
+        temphand = g3_transform_point(&v);
+        g_codes.or_ |= temphand->codes;
+        g_codes.and_ &= temphand->codes;
+
+        *(dest_list++) = temphand;
+    }
+    return (g_codes);
+}
+
+
 // takes esi=ptr to array of vectors, edi=ptr to list for point handles,
 // ecx=count  returns bh=codes and, bl=codes or
 g3s_codes g3_rotate_list(short n, g3s_phandle *dest_list, g3s_vector *v) {

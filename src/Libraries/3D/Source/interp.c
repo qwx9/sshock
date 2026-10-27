@@ -129,7 +129,7 @@ uchar *do_dbg(uchar *);
 
 extern int check_and_draw_common(long c, int n_verts, g3s_phandle *p);
 extern int draw_poly_common(long c, int n_verts, g3s_phandle *p);
-extern void g3_light_obj(g3s_phandle norm, g3s_phandle pos);
+extern void g3_light_obj(g3s_vector *norm, g3s_vector *pos);
 
 void interpreter_loop(uchar *object);
 
@@ -282,7 +282,17 @@ uchar *do_eof(uchar *opcode) // and return extra level
 // v=viewer coords-p
 // if (n*v)<0 then branch to lbl
 uchar *do_jnorm(uchar *opcode) {
-    if (g3_check_normal_facing((g3s_vector *)(opcode + 16), (g3s_vector *)(opcode + 4)))
+	g3s_vector u, v;
+	fix *p;
+
+	p = (fix *)(opcode + 4);
+	u.x = *p++;
+	u.y = *p++;
+	u.z = *p++;
+	v.x = *p++;
+	v.y = *p++;
+	v.z = *p;
+    if (g3_check_normal_facing(&v, &u))
         return opcode + 28; // surface is visible. continue
     else
         return opcode + (*(short *)(opcode + 2)); // surface not visible
@@ -298,8 +308,7 @@ uchar *do_multires(uchar *opcode) {
     short count;
 
     count = *(short *)(opcode + 2);
-
-    g3_transform_list(count, (g3s_phandle *)(resbuf + (*(short *)(opcode + 4))), (g3s_vector *)(opcode + 6));
+    g3_transform_vlist(count, (g3s_phandle *)(resbuf + *(short *)(opcode + 4)), (fix *)(opcode + 6));
     return opcode + 6 + (count * 12);
 }
 
@@ -347,14 +356,27 @@ uchar *do_vpnt_v(uchar *opcode) {
 }
 
 uchar *do_defres(uchar *opcode) {
-    resbuf[*(unsigned short *)(opcode + 2)] = g3_transform_point((g3s_vector *)(opcode + 4));
+	g3s_vector v;
+	fix *p;
+
+	p = (fix *)(opcode + 4);
+	v.x = p[0];
+	v.y = p[1];
+	v.z = p[2];
+    resbuf[*(unsigned short *)(opcode + 2)] = g3_transform_point(&v);
     return opcode + 16;
 }
 
 uchar *do_defres_i(uchar *opcode) {
     g3s_phandle temphand;
+    g3s_vector v;
+    fix *p;
 
-    temphand = g3_transform_point((g3s_vector *)(opcode + 4));
+	p = (fix *)(opcode + 4);
+	v.x = p[0];
+	v.y = p[1];
+	v.z = p[2];
+    temphand = g3_transform_point(&v);
     resbuf[*(unsigned short *)(opcode + 2)] = temphand;
 
     temphand->i = *(short *)(opcode + 16);
@@ -385,7 +407,17 @@ uchar *do_polyres(uchar *opcode) {
 }
 
 uchar *do_sortnorm(uchar *opcode) {
-    if (g3_check_normal_facing((g3s_vector *)(opcode + 14), (g3s_vector *)(opcode + 2))) {
+	g3s_vector u, v;
+	fix *p;
+
+	p = (fix *)(opcode + 2);
+	u.x = *p++;
+	u.y = *p++;
+	u.z = *p++;
+	v.x = *p++;
+	v.y = *p++;
+	v.z = *p;
+    if (g3_check_normal_facing(&v, &u)) {
         interpreter_loop(opcode + (*(short *)(opcode + 26)));
         interpreter_loop(opcode + (*(short *)(opcode + 28)));
     } else {
@@ -561,7 +593,14 @@ uchar *do_yz_rel(uchar *opcode) {
 }
 
 uchar *do_icall_p(uchar *opcode) {
-    g3_start_object_angles_x((g3s_vector *)(opcode + 6), *(fixang *)(parm_data + (*(unsigned short *)(opcode + 18))));
+	g3s_vector v;
+	fix *p;
+
+	p = (fix *)(opcode + 6);
+	v.x = p[0];
+	v.y = p[1];
+	v.z = p[2];
+    g3_start_object_angles_x(&v, *(fixang *)(parm_data + (*(unsigned short *)(opcode + 18))));
     interpreter_loop((uchar *)(*(long *)(opcode + 2)));
     g3_end_object();
 
@@ -569,7 +608,14 @@ uchar *do_icall_p(uchar *opcode) {
 }
 
 uchar *do_icall_h(uchar *opcode) {
-    g3_start_object_angles_y((g3s_vector *)(opcode + 6), *(fixang *)(parm_data + (*(unsigned short *)(opcode + 18))));
+	g3s_vector v;
+	fix *p;
+
+	p = (fix *)(opcode + 6);
+	v.x = p[0];
+	v.y = p[1];
+	v.z = p[2];
+    g3_start_object_angles_y(&v, *(fixang *)(parm_data + (*(unsigned short *)(opcode + 18))));
     interpreter_loop((uchar *)(*(long *)(opcode + 2)));
     g3_end_object();
 
@@ -577,7 +623,14 @@ uchar *do_icall_h(uchar *opcode) {
 }
 
 uchar *do_icall_b(uchar *opcode) {
-    g3_start_object_angles_z((g3s_vector *)(opcode + 6), *(fixang *)(parm_data + (*(unsigned short *)(opcode + 18))));
+	g3s_vector v;
+	fix *p;
+
+	p = (fix *)(opcode + 6);
+	v.x = p[0];
+	v.y = p[1];
+	v.z = p[2];
+    g3_start_object_angles_z(&v, *(fixang *)(parm_data + (*(unsigned short *)(opcode + 18))));
     interpreter_loop((uchar *)(*(long *)(opcode + 2)));
     g3_end_object();
 
@@ -649,8 +702,18 @@ uchar *do_tmap_op(uchar *opcode) {
 // if (n*v)<0 then branch to lbl
 // does lit version of jnorm, for flat lighting
 uchar *do_ljnorm(uchar *opcode) {
-    if (g3_check_normal_facing((g3s_vector *)(opcode + 16), (g3s_vector *)(opcode + 4))) {
-        g3_light_obj((g3s_phandle)(opcode + 4), (g3s_phandle)(opcode + 16));
+	g3s_vector u, v;
+	fix *p;
+
+	p = (fix *)(opcode + 4);
+	u.x = *p++;
+	u.y = *p++;
+	u.z = *p++;
+	v.x = *p++;
+	v.y = *p++;
+	v.z = *p;
+    if (g3_check_normal_facing(&v, &u)) {
+        g3_light_obj(&u, &v);
         return opcode + 28;
     } else
         return opcode + (*(short *)(opcode + 2)); // surface not visible
@@ -658,10 +721,18 @@ uchar *do_ljnorm(uchar *opcode) {
 
 // light diff not near norm
 uchar *do_ldjnorm(uchar *opcode) {
-    fix temp;
+    fix temp, *p;
+	g3s_vector u, v;
 
-    if (g3_check_normal_facing((g3s_vector *)(opcode + 16), (g3s_vector *)(opcode + 4))) {
-        temp = g3_vec_dotprod(&_g3d_light_vec, (g3s_vector *)(opcode + 4));
+	p = (fix *)(opcode + 4);
+	u.x = *p++;
+	u.y = *p++;
+	u.z = *p++;
+	v.x = *p++;
+	v.y = *p++;
+	v.z = *p;
+    if (g3_check_normal_facing(&v, &u)) {
+        temp = g3_vec_dotprod(&_g3d_light_vec, &u);
         temp <<= 1;
         if (temp < 0)
             temp = 0;

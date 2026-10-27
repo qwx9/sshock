@@ -811,15 +811,29 @@ int compute_normal_code(pt3d norm) {
     }
 
 fix project_onto_facelet(pt3d in, pt3d out, pt3d flet[NUM_POINTS]) {
-    g3s_vector topt;
+    g3s_vector topt, norm, vin, vout, v0;
     fix dp;
-    int i;
-    g3s_vector norm = *(g3s_vector *)(flet[NORM_IDX]);
-    g3_vec_sub(&topt, (g3s_vector *)in, (g3s_vector *)(flet[0]));
+
+    vin.x = in[0];
+    vin.y = in[1];
+    vin.z = in[2];
+    v0.x = flet[0][0];
+    v0.y = flet[0][1];
+    v0.z = flet[0][2];
+    norm.x = flet[NORM_IDX][0];
+    norm.y = flet[NORM_IDX][1];
+    norm.z = flet[NORM_IDX][2];
+    g3_vec_sub(&topt, &vin, &v0);
     dp = g3_vec_dotprod(&topt, &norm);
     g3_vec_scale(&norm, &norm, dp);
     // Subtract out normal component
-    g3_vec_sub((g3s_vector *)out, (g3s_vector *)in, &norm);
+    g3_vec_sub(&vout, &vin, &norm);
+    flet[NORM_IDX][0] = norm.x;
+    flet[NORM_IDX][1] = norm.y;
+    flet[NORM_IDX][2] = norm.z;
+    out[0] = vout.x;
+    out[1] = vout.y;
+    out[2] = vout.z;
     PHYS_SPEW(DSRC_PHYSICS_Terrain,
               ("Projection onto facelet: %q %q %q --> %q %q %q\nproj =%q\n", PTARGS(in), PTARGS(out), fix_float(dp)));
     return dp;

@@ -90,7 +90,7 @@ extern void g3_compute_normal_quick(g3s_vector *v, g3s_vector *v0, g3s_vector *v
 // takes 3 rotated points: eax,edx,ebx.
 // returns al=true (& s flag set) if facing. trashes all but ebp
 bool g3_check_poly_facing(g3s_phandle p0, g3s_phandle p1, g3s_phandle p2) {
-    g3_compute_normal_quick(&temp_vector, (g3s_vector *)p0, (g3s_vector *)p1, (g3s_vector *)p2);
+    g3_compute_normal_quick(&temp_vector, &p0->vec, &p1->vec, &p2->vec);
 
     int64_t result =
         fix64_mul(p0->gX, temp_vector.gX) + fix64_mul(p0->gY, temp_vector.gY) + fix64_mul(p0->gZ, temp_vector.gZ);

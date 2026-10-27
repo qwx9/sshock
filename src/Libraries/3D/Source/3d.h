@@ -507,6 +507,7 @@ void g3_copy_point(g3s_phandle dest, g3s_phandle src);
 // do a whole bunch of points. returns codes and & or
 g3s_codes g3_rotate_list(short n, g3s_phandle *dest_list, g3s_vector *v);
 g3s_codes g3_transform_list(short n, g3s_phandle *dest_list, g3s_vector *v);
+g3s_codes g3_transform_vlist(short n, g3s_phandle *dest_list, fix *p);
 g3s_codes g3_project_list(short n, g3s_phandle *point_list);
 
 void g3_free_point(g3s_phandle p);               // adds to free list
